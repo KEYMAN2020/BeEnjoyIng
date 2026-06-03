@@ -19,6 +19,33 @@ app.register_blueprint(auth_bp, url_prefix="/api/v1/auth")
 from user_routes import users_bp
 app.register_blueprint(users_bp, url_prefix="/api/v1/users")
 
+from activities_routes import activities_bp
+app.register_blueprint(activities_bp, url_prefix="/api/v1/activities")
+
+from chat_routes import chat_bp
+app.register_blueprint(chat_bp, url_prefix="/api/v1/chat")
+
+from captain_routes import captain_bp
+app.register_blueprint(captain_bp, url_prefix="/api/v1/captain")
+
+from partner_routes import partner_bp
+app.register_blueprint(partner_bp, url_prefix="/api/v1/partner")
+
+from payment_routes import payment_bp
+app.register_blueprint(payment_bp, url_prefix="/api/v1/payment")
+
+from health_routes import health_bp
+app.register_blueprint(health_bp, url_prefix="/api/v1/health")
+
+from notification_routes import notification_bp
+app.register_blueprint(notification_bp, url_prefix="/api/v1/notifications")
+
+from system_routes import system_bp
+app.register_blueprint(system_bp, url_prefix="/api/v1/system")
+
+from system_routes import regions_bp
+app.register_blueprint(regions_bp, url_prefix="/api/v1/regions")
+
 
 # ── 健康检查 ─────────────────────────────────────────────
 
