@@ -180,10 +180,10 @@ def create_activity():
     tags:
       - 活动
 
-    请求: {title, description, cover_image, category_id, location_name, location_address,
-           location_lat, location_lng, city, district, start_time, end_time,
-           signup_deadline, max_participants, min_participants, price, safety_level,
-           age_min, age_max, has_waitlist, tags}
+    # 请求: {title, description, cover_image, category_id, location_name, location_address,
+    #        location_lat, location_lng, city, district, start_time, end_time,
+    #        signup_deadline, max_participants, min_participants, price, safety_level,
+    #        age_min, age_max, has_waitlist, tags}
     """
     data = request.get_json(silent=True) or {}
     user_id = g.current_user["user_id"]
@@ -784,7 +784,7 @@ def checkin_activity(activity_id):
     tags:
       - 活动
 
-    请求: {user_id}
+    # 请求: {user_id}
     """
     captain_id = g.current_user["user_id"]
 
@@ -895,8 +895,6 @@ def rate_activity(activity_id):
     ---
     tags:
       - 活动
-
-    请求: {rating: "好评"/"中评"/"差评"}
     """
     user_id = g.current_user["user_id"]
     data = request.get_json(silent=True) or {}
@@ -948,8 +946,6 @@ def review_activity(activity_id):
     ---
     tags:
       - 活动
-
-    请求: {action: "approve"/"reject", comment: "...", safety_check_passed: bool}
     """
     user_id = g.current_user["user_id"]
     role = g.current_user.get("role", "user")
@@ -1016,7 +1012,7 @@ def report_activity(activity_id):
     tags:
       - 活动
 
-    请求: {reason: "..."}
+    # 请求: {reason: "..."}
     """
     user_id = g.current_user["user_id"]
     data = request.get_json(silent=True) or {}
@@ -1139,7 +1135,7 @@ def add_album_photo(activity_id):
     tags:
       - 活动
 
-    请求: {image_url, description?}
+    # 请求: {image_url, description?}
     """
     user_id = g.current_user["user_id"]
 
@@ -1214,7 +1210,7 @@ def submit_activity_report(activity_id):
     tags:
       - 活动
 
-    请求: {actual_count, abnormal_count, abnormal_details, photos, weather_condition, notes}
+    # 请求: {actual_count, abnormal_count, abnormal_details, photos, weather_condition, notes}
     """
     user_id = g.current_user["user_id"]
 
@@ -1274,7 +1270,7 @@ def add_site_photo(activity_id):
     tags:
       - 活动
 
-    请求: {image_url}
+    # 请求: {image_url}
     """
     user_id = g.current_user["user_id"]
 
