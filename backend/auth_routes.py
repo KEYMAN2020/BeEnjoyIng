@@ -67,15 +67,16 @@ def send_code():
 
     generate_verification_code(phone, purpose="login")
 
-    # 查一下该手机号是否有用户（仅用于日志，不影响流程）
+    # 记录日志（仅已有用户）
     user = execute_query_one("SELECT id FROM users WHERE phone = %s AND deleted_at IS NULL", (phone,))
-    log_operation(
-        operator_id=user["id"] if user else 0,
-        action="SEND_CODE",
-        target_type="auth",
-        detail=f"发送验证码 phone={phone}",
-        ip_address=_get_ip(),
-    )
+    if user:
+        log_operation(
+            operator_id=user["id"],
+            action="SEND_CODE",
+            target_type="auth",
+            detail=f"发送验证码 phone={phone}",
+            ip_address=_get_ip(),
+        )
 
     return success({"expire_in": 300}, "验证码已发送")
 
@@ -448,12 +449,13 @@ def verify_identity():
     user = execute_query_one(
         "SELECT id FROM users WHERE phone = %s AND deleted_at IS NULL", (phone,)
     )
-    log_operation(
-        operator_id=user["id"] if user else 0,
-        action="VERIFY_IDENTITY",
-        target_type="auth",
-        detail=f"身份验证 phone={phone}",
-        ip_address=_get_ip(),
-    )
+    if user:
+        log_operation(
+            operator_id=user["id"],
+            action="VERIFY_IDENTITY",
+            target_type="auth",
+            detail=f"身份验证 phone={phone}",
+            ip_address=_get_ip(),
+        )
 
     return success({"verified": True}, "身份验证通过")
