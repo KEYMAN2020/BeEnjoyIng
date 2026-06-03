@@ -16,6 +16,9 @@ app = Flask(__name__)
 from auth_routes import auth_bp
 app.register_blueprint(auth_bp, url_prefix="/api/v1/auth")
 
+from user_routes import users_bp
+app.register_blueprint(users_bp, url_prefix="/api/v1/users")
+
 
 # ── 健康检查 ─────────────────────────────────────────────
 
