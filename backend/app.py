@@ -1,28 +1,51 @@
 """Flask 应用入口 — BeEnjoyIng API
 
-注册所有 Blueprint，提供 /health 健康检查端点、Swagger 文档、文件上传。
+集成：CORS / Swagger / Sentry / 限流 / 结构化日志 / 文件上传 / 增强健康检查
 """
 
 import os
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
 from flasgger import Swagger
 
 from response import ApiError
-from db import close_connection
-from config import Config
+from db import close_connection, get_connection
+from config import active_config as Config
+from logger import log
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# ── CORS（跨域） ────────────────────────────────────────
+# ── Sentry 错误监控 ────────────────────────────────────
+if Config.SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.flask import FlaskIntegration
+    sentry_sdk.init(
+        dsn=Config.SENTRY_DSN,
+        integrations=[FlaskIntegration()],
+        traces_sample_rate=0.1,
+    )
+    log.info("Sentry 已初始化", dsn_prefix=Config.SENTRY_DSN[:20])
+
+# ── CORS 跨域 ──────────────────────────────────────────
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-# ── Swagger API 文档 ────────────────────────────────────
+# ── Swagger API 文档 ───────────────────────────────────
 swagger = Swagger(app, template=Config.SWAGGER)
 
+# ── 限流 ───────────────────────────────────────────────
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
-# ── 注册 Blueprint ──────────────────────────────────────
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=[Config.RATELIMIT_DEFAULT],
+    enabled=getattr(Config, "RATELIMIT_ENABLED", True),
+)
+
+
+# ── 注册 Blueprint ─────────────────────────────────────
 
 from auth_routes import auth_bp
 app.register_blueprint(auth_bp, url_prefix="/api/v1/auth")
@@ -65,16 +88,15 @@ def uploaded_file(filename):
     return send_from_directory(Config.UPLOAD_FOLDER, filename)
 
 
-# ── 上传 API（通用文件上传） ─────────────────────────────
-from flask import request
-from upload_helper import save_uploaded_file, ALLOWED_IMAGE_EXT
+# ── 上传 API ────────────────────────────────────────────
+from upload_helper import save_uploaded_file
+
 
 @app.post("/api/v1/upload")
+@limiter.limit(Config.RATELIMIT_UPLOAD)
 def upload_file():
     """上传文件（图片/语音）
 
-    请求: multipart/form-data, field="file"
-    响应: {"code": 0, "data": {"url": "/uploads/...", "filename": "xxx.jpg"}}
     ---
     tags:
       - 文件上传
@@ -85,40 +107,32 @@ def upload_file():
         name: file
         type: file
         required: true
-        description: 上传的文件（图片或语音）
       - in: formData
         name: subdir
         type: string
         required: false
-        description: 子目录（avatars/albums/site_photos/voice）
     responses:
-      200:
-        description: 上传成功
+      200: {description: 上传成功}
+      400: {description: 文件错误}
     """
     file = request.files.get("file")
     subdir = request.form.get("subdir", "uploads")
-
     if not file:
         return jsonify({"code": 400, "data": None, "message": "请选择文件"}), 400
 
     try:
         url = save_uploaded_file(file, subdir=subdir)
-        return jsonify({
-            "code": 0,
-            "data": {"url": url, "filename": file.filename},
-            "message": "上传成功",
-        })
+        log.info("文件上传", filename=file.filename, subdir=subdir, url=url)
+        return jsonify({"code": 0, "data": {"url": url, "filename": file.filename}, "message": "上传成功"})
     except ValueError as e:
         return jsonify({"code": 400, "data": None, "message": str(e)}), 400
 
 
-# ── 批量上传 ─────────────────────────────────────────────
 @app.post("/api/v1/upload/multiple")
+@limiter.limit(Config.RATELIMIT_UPLOAD)
 def upload_multiple():
     """批量上传文件
 
-    请求: multipart/form-data, field="files[]" (多个文件)
-    响应: {"code": 0, "data": {"urls": ["/uploads/...", ...]}}
     ---
     tags:
       - 文件上传
@@ -130,14 +144,11 @@ def upload_multiple():
         type: array
         items: {type: file}
         required: true
-        description: 多个文件
     responses:
-      200:
-        description: 上传成功
+      200: {description: 上传成功}
     """
     files = request.files.getlist("files[]")
     subdir = request.form.get("subdir", "uploads")
-
     if not files:
         return jsonify({"code": 400, "data": None, "message": "请选择文件"}), 400
 
@@ -149,6 +160,7 @@ def upload_multiple():
         except ValueError:
             continue
 
+    log.info("批量上传", count=len(urls), subdir=subdir)
     return jsonify({
         "code": 0,
         "data": {"urls": urls, "count": len(urls)},
@@ -156,11 +168,11 @@ def upload_multiple():
     })
 
 
-# ── 健康检查 ─────────────────────────────────────────────
+# ── 增强健康检查 ───────────────────────────────────────
 
 @app.get("/health")
 def health():
-    """健康检查端点
+    """增强健康检查（含数据库连接检测）
 
     ---
     tags:
@@ -168,14 +180,33 @@ def health():
     responses:
       200:
         description: 服务正常
+        schema:
+          type: object
+          properties:
+            status: {type: string, example: ok}
+            database: {type: string, example: connected}
+            version: {type: string, example: 1.0.0}
     """
-    return jsonify({"status": "ok"})
+    checks = {"status": "ok", "version": "1.0.0"}
+
+    # 检查数据库
+    try:
+        conn = get_connection()
+        conn.ping()
+        checks["database"] = "connected"
+    except Exception as e:
+        checks["database"] = f"error: {e}"
+        checks["status"] = "degraded"
+
+    status_code = 200 if checks["status"] == "ok" else 503
+    return jsonify(checks), status_code
 
 
 # ── 错误处理 ─────────────────────────────────────────────
 
 @app.errorhandler(ApiError)
 def handle_api_error(error: ApiError):
+    log.warning("业务异常", message=error.message, status=error.status_code)
     return error.to_response()
 
 
@@ -184,18 +215,39 @@ def not_found(_e):
     return jsonify({"code": 404, "data": None, "message": "接口不存在"}), 404
 
 
+@app.errorhandler(429)
+def ratelimit_handler(_e):
+    """限流触发处理"""
+    log.warning("限流触发", ip=request.remote_addr, path=request.path)
+    return jsonify({"code": 429, "data": None, "message": "请求过于频繁，请稍后再试"}), 429
+
+
 @app.errorhandler(500)
-def server_error(_e):
+def server_error(e):
+    log.error("服务器内部错误", exc_info=True)
+    if Config.SENTRY_DSN:
+        try:
+            import sentry_sdk
+            sentry_sdk.capture_exception(e)
+        except Exception:
+            pass
     return jsonify({"code": 500, "data": None, "message": "服务器内部错误"}), 500
 
 
 # ── 请求生命周期 ─────────────────────────────────────────
 
+@app.before_request
+def log_request():
+    """记录请求日志"""
+    if request.path.startswith("/api/"):
+        log.info("请求", method=request.method, path=request.path, ip=request.remote_addr)
+
+
 @app.teardown_appcontext
 def shutdown_db_session(_exception=None):
-    """请求结束后关闭数据库连接"""
     close_connection()
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    log.info("BeEnjoyIng API 启动", env=os.getenv("FLASK_ENV", "development"), port=5000)
+    app.run(host="0.0.0.0", port=5000, debug=Config.DEBUG)

@@ -55,9 +55,27 @@ def _login_response(user: dict) -> tuple:
 @auth_bp.post("/send-code")
 def send_code():
     """发送验证码（Mock 版，打印到控制台）
-
-    请求: {"phone": "13800138000"}
-    响应: {"code": 0, "data": {"expire_in": 300}, "message": "验证码已发送"}
+    ---
+    tags:
+      - 认证
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            phone: {type: string, example: "13800138000"}
+    responses:
+      200:
+        description: 验证码已发送
+        schema:
+          type: object
+          properties:
+            code: {type: integer, example: 0}
+            data: {type: object, properties: {expire_in: {type: integer, example: 300}}}
+            message: {type: string, example: 验证码已发送}
+      400: {description: 手机号格式错误}
     """
     data = request.get_json(silent=True) or {}
     phone = data.get("phone", "")
@@ -86,10 +104,37 @@ def send_code():
 # ═══════════════════════════════════════════════════════
 @auth_bp.post("/register")
 def register():
-    """手机号 + 验证码 + 密码 注册
-
-    请求: {"phone": "13800138000", "code": "123456", "password": "abc123", "nickname": "王阿姨"}
-    响应: {"code": 0, "data": {"access_token": "...", "user": {...}}}
+    """手机号 + 验证码 + 密码 注册（自动创建用户资料）
+    ---
+    tags:
+      - 认证
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            phone: {type: string, example: "13800138000"}
+            code: {type: string, example: "123456"}
+            password: {type: string, example: "abc123"}
+            nickname: {type: string, example: "王阿姨"}
+    responses:
+      201:
+        description: 注册成功，返回令牌
+        schema:
+          type: object
+          properties:
+            code: {type: integer, example: 0}
+            data:
+              type: object
+              properties:
+                access_token: {type: string}
+                refresh_token: {type: string}
+                expires_in: {type: integer, example: 1800}
+                user: {type: object}
+      400: {description: 手机号/密码/验证码错误}
+      409: {description: 手机号已注册}
     """
     data = request.get_json(silent=True) or {}
     phone = data.get("phone", "")
@@ -155,9 +200,36 @@ def register():
 @auth_bp.post("/login")
 def login():
     """手机号 + 密码登录
-
-    请求: {"phone": "13800138000", "password": "abc123"}
-    响应: {"code": 0, "data": {"access_token": "...", "refresh_token": "...", "user": {...}}}
+    ---
+    tags:
+      - 认证
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            phone: {type: string, example: "13800138000"}
+            password: {type: string, example: "abc123"}
+    responses:
+      200:
+        description: 登录成功
+        schema:
+          type: object
+          properties:
+            code: {type: integer, example: 0}
+            data:
+              type: object
+              properties:
+                access_token: {type: string}
+                refresh_token: {type: string}
+                expires_in: {type: integer, example: 1800}
+                user: {type: object}
+      400: {description: 手机号格式错误/缺少密码}
+      401: {description: 密码错误}
+      403: {description: 账号已禁用}
+      404: {description: 用户不存在}
     """
     data = request.get_json(silent=True) or {}
     phone = data.get("phone", "")
@@ -205,9 +277,33 @@ def login():
 @auth_bp.post("/login-code")
 def login_code():
     """手机号 + 验证码登录（不存在则自动注册）
-
-    请求: {"phone": "13800138000", "code": "123456"}
-    响应: {"code": 0, "data": {"access_token": "...", "user": {...}}}
+    ---
+    tags:
+      - 认证
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            phone: {type: string, example: "13800138000"}
+            code: {type: string, example: "123456"}
+    responses:
+      200:
+        description: 登录成功
+        schema:
+          type: object
+          properties:
+            code: {type: integer, example: 0}
+            data:
+              type: object
+              properties:
+                access_token: {type: string}
+                refresh_token: {type: string}
+                user: {type: object}
+      400: {description: 手机号/验证码错误}
+      403: {description: 账号已禁用}
     """
     data = request.get_json(silent=True) or {}
     phone = data.get("phone", "")
@@ -266,9 +362,33 @@ def login_code():
 @auth_bp.post("/refresh")
 def refresh():
     """用 refresh_token 换取新的 access_token
-
-    请求: {"refresh_token": "..."}
-    响应: {"code": 0, "data": {"access_token": "...", "expires_in": 1800}}
+    ---
+    tags:
+      - 认证
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            refresh_token: {type: string}
+    responses:
+      200:
+        description: 令牌已刷新
+        schema:
+          type: object
+          properties:
+            code: {type: integer, example: 0}
+            data:
+              type: object
+              properties:
+                access_token: {type: string}
+                expires_in: {type: integer, example: 1800}
+      400: {description: 缺少refresh_token}
+      401: {description: 令牌无效或已过期}
+      403: {description: 账号已禁用}
+      404: {description: 用户不存在}
     """
     data = request.get_json(silent=True) or {}
     refresh_token = data.get("refresh_token", "")
@@ -305,7 +425,14 @@ def refresh():
 @auth_bp.post("/logout")
 @require_auth
 def logout():
-    """登出（当前为无状态登出，客户端自行丢弃令牌）"""
+    """登出（无状态登出，客户端自行丢弃令牌）
+    ---
+    tags:
+      - 认证
+    responses:
+      200: {description: 已登出}
+      401: {description: 未登录}
+    """
     user_id = g.current_user["user_id"]
 
     log_operation(
@@ -325,9 +452,23 @@ def logout():
 @auth_bp.post("/reset-password")
 def reset_password():
     """验证码验证身份后重置密码
-
-    请求: {"phone": "13800138000", "code": "123456", "new_password": "newpass123"}
-    响应: {"code": 0, "data": {}, "message": "密码已重置"}
+    ---
+    tags:
+      - 认证
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            phone: {type: string, example: "13800138000"}
+            code: {type: string, example: "123456"}
+            new_password: {type: string, example: "newpass123"}
+    responses:
+      200: {description: 密码已重置}
+      400: {description: 手机号/验证码/密码格式错误}
+      404: {description: 用户不存在}
     """
     data = request.get_json(silent=True) or {}
     phone = data.get("phone", "")
@@ -383,9 +524,22 @@ def reset_password():
 @require_auth
 def change_password():
     """已登录用户修改密码
-
-    请求: {"old_password": "xxx", "new_password": "yyy"}
-    响应: {"code": 0, "data": {}, "message": "密码已修改"}
+    ---
+    tags:
+      - 认证
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            old_password: {type: string}
+            new_password: {type: string}
+    responses:
+      200: {description: 密码已修改}
+      400: {description: 密码格式错误或相同}
+      401: {description: 原密码错误或未登录}
     """
     data = request.get_json(silent=True) or {}
     old_password = data.get("old_password", "")
@@ -433,9 +587,30 @@ def change_password():
 @auth_bp.post("/verify-identity")
 def verify_identity():
     """通过验证码验证手机号身份（不发令牌，仅确认）
-
-    请求: {"phone": "13800138000", "code": "123456"}
-    响应: {"code": 0, "data": {"verified": true}, "message": "身份验证通过"}
+    ---
+    tags:
+      - 认证
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            phone: {type: string, example: "13800138000"}
+            code: {type: string, example: "123456"}
+    responses:
+      200:
+        description: 身份验证通过
+        schema:
+          type: object
+          properties:
+            code: {type: integer, example: 0}
+            data:
+              type: object
+              properties:
+                verified: {type: boolean, example: true}
+      400: {description: 手机号/验证码错误}
     """
     data = request.get_json(silent=True) or {}
     phone = data.get("phone", "")

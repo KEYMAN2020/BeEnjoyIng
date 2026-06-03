@@ -109,7 +109,11 @@ def _build_dynamic_update(table: str, data: dict, allowed_fields: list, key_fiel
 @users_bp.get("/me")
 @require_auth
 def get_my_profile():
-    """获取当前登录用户完整信息（users + user_profiles + user_stats 三表联合）"""
+    """获取当前登录用户完整信息（users + user_profiles + user_stats 三表联合）
+    ---
+    tags:
+      - 用户
+    """
     user_id = g.current_user["user_id"]
 
     user = execute_query_one(
@@ -129,7 +133,11 @@ def get_my_profile():
 @users_bp.put("/me")
 @require_auth
 def update_my_profile_full():
-    """完整更新用户资料（users + user_profiles）"""
+    """完整更新用户资料（users + user_profiles）
+    ---
+    tags:
+      - 用户
+    """
     user_id = g.current_user["user_id"]
     data = request.get_json(silent=True) or {}
 
@@ -205,7 +213,11 @@ def update_my_profile_full():
 @users_bp.patch("/me")
 @require_auth
 def update_my_profile_partial():
-    """部分更新用户资料"""
+    """部分更新用户资料
+    ---
+    tags:
+      - 用户
+    """
     user_id = g.current_user["user_id"]
     data = request.get_json(silent=True) or {}
 
@@ -247,7 +259,11 @@ def update_my_profile_partial():
 # ── #4 GET /api/v1/users/<user_id>/public ──────────────
 @users_bp.get("/<int:user_id>/public")
 def get_public_profile(user_id):
-    """获取指定用户的公开资料"""
+    """获取指定用户的公开资料
+    ---
+    tags:
+      - 用户
+    """
     user = execute_query_one(
         "SELECT id, nickname, avatar_url, role FROM users WHERE id = %s AND deleted_at IS NULL",
         (user_id,),
@@ -262,7 +278,11 @@ def get_public_profile(user_id):
 # ── #5 GET /api/v1/users/<user_id>/stats ───────────────
 @users_bp.get("/<int:user_id>/stats")
 def get_user_stats(user_id):
-    """获取用户统计数据"""
+    """获取用户统计数据
+    ---
+    tags:
+      - 用户
+    """
     user = execute_query_one("SELECT id, nickname, avatar_url, role FROM users WHERE id = %s AND deleted_at IS NULL", (user_id,))
     if not user:
         return error("用户不存在", 404)
@@ -286,7 +306,11 @@ def get_user_stats(user_id):
 # ── #6 GET /api/v1/users/search ────────────────────────
 @users_bp.get("/search")
 def search_users():
-    """按昵称搜索用户，分页"""
+    """按昵称搜索用户，分页
+    ---
+    tags:
+      - 用户
+    """
     keyword = request.args.get("keyword", "").strip()
     page = int(request.args.get("page", 1))
     size = int(request.args.get("size", 20))
@@ -320,7 +344,11 @@ def search_users():
 @users_bp.post("/upload-avatar")
 @require_auth
 def upload_avatar():
-    """上传头像（存 URL）"""
+    """上传头像（存 URL）
+    ---
+    tags:
+      - 用户
+    """
     user_id = g.current_user["user_id"]
     data = request.get_json(silent=True) or {}
     avatar_url = data.get("avatar_url", "")
@@ -345,7 +373,11 @@ def upload_avatar():
 @users_bp.post("/friends/request")
 @require_auth
 def send_friend_request():
-    """发送好友申请"""
+    """发送好友申请
+    ---
+    tags:
+      - 用户
+    """
     user_id = g.current_user["user_id"]
     data = request.get_json(silent=True) or {}
     target_user_id = data.get("target_user_id")
@@ -389,7 +421,11 @@ def send_friend_request():
 @users_bp.put("/friends/request/<int:request_id>")
 @require_auth
 def handle_friend_request(request_id):
-    """处理好友申请"""
+    """处理好友申请
+    ---
+    tags:
+      - 用户
+    """
     user_id = g.current_user["user_id"]
     data = request.get_json(silent=True) or {}
     action = data.get("action", "")
@@ -449,7 +485,11 @@ def handle_friend_request(request_id):
 @users_bp.get("/friends")
 @require_auth
 def list_friends():
-    """获取好友列表"""
+    """获取好友列表
+    ---
+    tags:
+      - 用户
+    """
     user_id = g.current_user["user_id"]
     page = int(request.args.get("page", 1))
     size = int(request.args.get("size", 20))
@@ -488,7 +528,11 @@ def list_friends():
 @users_bp.delete("/friends/<int:friend_id>")
 @require_auth
 def remove_friend(friend_id):
-    """删除好友（软删除，双向）"""
+    """删除好友（软删除，双向）
+    ---
+    tags:
+      - 用户
+    """
     user_id = g.current_user["user_id"]
 
     # 正向
@@ -516,7 +560,11 @@ def remove_friend(friend_id):
 @users_bp.get("/messages")
 @require_auth
 def list_messages():
-    """获取私信列表（按会话聚合，显示最新一条）"""
+    """获取私信列表（按会话聚合，显示最新一条）
+    ---
+    tags:
+      - 用户
+    """
     user_id = g.current_user["user_id"]
     page = int(request.args.get("page", 1))
     size = int(request.args.get("size", 20))
@@ -564,7 +612,11 @@ def list_messages():
 @users_bp.post("/messages")
 @require_auth
 def send_message():
-    """发送私信"""
+    """发送私信
+    ---
+    tags:
+      - 用户
+    """
     user_id = g.current_user["user_id"]
     data = request.get_json(silent=True) or {}
     receiver_id = data.get("receiver_id")
@@ -597,7 +649,11 @@ def send_message():
 @users_bp.post("/<int:target_id>/report")
 @require_auth
 def report_user(target_id):
-    """举报用户"""
+    """举报用户
+    ---
+    tags:
+      - 用户
+    """
     user_id = g.current_user["user_id"]
     data = request.get_json(silent=True) or {}
     reason = data.get("reason", "")

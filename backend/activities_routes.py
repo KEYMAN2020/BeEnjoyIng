@@ -57,8 +57,62 @@ def _activity_to_dict(a: dict) -> dict:
 @activities_bp.get("")
 def list_activities():
     """获取活动列表（支持筛选和分页）
-
-    查询参数: category_id, city, status, start_date, end_date, keyword, page, per_page
+    ---
+    tags:
+      - 活动
+    parameters:
+      - name: category_id
+        in: query
+        type: integer
+        required: false
+        description: 分类ID
+      - name: city
+        in: query
+        type: string
+        required: false
+        description: 城市
+      - name: status
+        in: query
+        type: string
+        required: false
+        default: approved
+        description: 状态（默认只显示已通过）
+      - name: start_date
+        in: query
+        type: string
+        required: false
+        description: 起始日期
+      - name: end_date
+        in: query
+        type: string
+        required: false
+      - name: keyword
+        in: query
+        type: string
+        required: false
+        description: 标题关键词搜索
+      - name: page
+        in: query
+        type: integer
+        default: 1
+      - name: per_page
+        in: query
+        type: integer
+        default: 20
+    responses:
+      200:
+        description: 活动列表（分页）
+        schema:
+          type: object
+          properties:
+            code: {type: integer, example: 0}
+            data:
+              type: object
+              properties:
+                activities: {type: array}
+                total: {type: integer}
+                page: {type: integer}
+                per_page: {type: integer}
     """
     category_id = request.args.get("category_id", type=int)
     city = request.args.get("city", "")
@@ -122,6 +176,9 @@ def list_activities():
 @require_auth
 def create_activity():
     """创建活动（领队/合作伙伴）
+    ---
+    tags:
+      - 活动
 
     请求: {title, description, cover_image, category_id, location_name, location_address,
            location_lat, location_lng, city, district, start_time, end_time,
@@ -207,7 +264,11 @@ def create_activity():
 # ═══════════════════════════════════════════════════════
 @activities_bp.get("/categories")
 def list_categories():
-    """获取活动分类列表"""
+    """获取活动分类列表
+    ---
+    tags:
+      - 活动
+    """
     rows = execute_query(
         "SELECT * FROM activity_categories WHERE is_active = 1 AND deleted_at IS NULL ORDER BY sort_order ASC",
     )
@@ -226,7 +287,11 @@ def list_categories():
 # ═══════════════════════════════════════════════════════
 @activities_bp.get("/tags")
 def list_tags():
-    """获取活动标签列表"""
+    """获取活动标签列表
+    ---
+    tags:
+      - 活动
+    """
     rows = execute_query(
         "SELECT * FROM activity_tags WHERE is_active = 1 ORDER BY sort_order ASC",
     )
@@ -246,6 +311,9 @@ def list_tags():
 @require_auth
 def my_activities():
     """获取我的活动列表（作为参与者或领队）
+    ---
+    tags:
+      - 活动
 
     查询参数: type (participant/captain), status, page, per_page
     """
@@ -311,6 +379,9 @@ def my_activities():
 @activities_bp.get("/nearby")
 def nearby_activities():
     """获取附近活动
+    ---
+    tags:
+      - 活动
 
     查询参数: lat, lng, radius_km (默认 10), page, per_page
     """
@@ -362,7 +433,11 @@ def nearby_activities():
 # ═══════════════════════════════════════════════════════
 @activities_bp.get("/<int:activity_id>")
 def get_activity(activity_id):
-    """获取活动详情"""
+    """获取活动详情
+    ---
+    tags:
+      - 活动
+    """
     activity = execute_query_one(
         "SELECT * FROM activities WHERE id = %s AND deleted_at IS NULL",
         (activity_id,),
@@ -410,7 +485,11 @@ def get_activity(activity_id):
 @activities_bp.put("/<int:activity_id>")
 @require_auth
 def update_activity(activity_id):
-    """更新活动信息（仅创建者可操作）"""
+    """更新活动信息（仅创建者可操作）
+    ---
+    tags:
+      - 活动
+    """
     user_id = g.current_user["user_id"]
 
     activity = execute_query_one(
@@ -482,7 +561,11 @@ def update_activity(activity_id):
 @activities_bp.delete("/<int:activity_id>")
 @require_auth
 def delete_activity(activity_id):
-    """删除活动（软删除，仅创建者或管理员）"""
+    """删除活动（软删除，仅创建者或管理员）
+    ---
+    tags:
+      - 活动
+    """
     user_id = g.current_user["user_id"]
     role = g.current_user.get("role", "user")
 
@@ -518,7 +601,11 @@ def delete_activity(activity_id):
 @activities_bp.post("/<int:activity_id>/signup")
 @require_auth
 def signup_activity(activity_id):
-    """报名参加活动"""
+    """报名参加活动
+    ---
+    tags:
+      - 活动
+    """
     user_id = g.current_user["user_id"]
 
     activity = execute_query_one(
@@ -589,7 +676,11 @@ def signup_activity(activity_id):
 @activities_bp.post("/<int:activity_id>/cancel")
 @require_auth
 def cancel_signup(activity_id):
-    """取消报名"""
+    """取消报名
+    ---
+    tags:
+      - 活动
+    """
     user_id = g.current_user["user_id"]
 
     signup = execute_query_one(
@@ -641,7 +732,11 @@ def cancel_signup(activity_id):
 @activities_bp.get("/<int:activity_id>/signups")
 @require_auth
 def list_signups(activity_id):
-    """获取活动报名列表（仅领队和管理员）"""
+    """获取活动报名列表（仅领队和管理员）
+    ---
+    tags:
+      - 活动
+    """
     user_id = g.current_user["user_id"]
     role = g.current_user.get("role", "user")
 
@@ -685,6 +780,9 @@ def list_signups(activity_id):
 @require_auth
 def checkin_activity(activity_id):
     """活动签到（领队操作）
+    ---
+    tags:
+      - 活动
 
     请求: {user_id}
     """
@@ -737,7 +835,11 @@ def checkin_activity(activity_id):
 @activities_bp.post("/<int:activity_id>/favorite")
 @require_auth
 def favorite_activity(activity_id):
-    """收藏活动"""
+    """收藏活动
+    ---
+    tags:
+      - 活动
+    """
     user_id = g.current_user["user_id"]
 
     activity = execute_query_one(
@@ -768,7 +870,11 @@ def favorite_activity(activity_id):
 @activities_bp.delete("/<int:activity_id>/favorite")
 @require_auth
 def unfavorite_activity(activity_id):
-    """取消收藏活动"""
+    """取消收藏活动
+    ---
+    tags:
+      - 活动
+    """
     user_id = g.current_user["user_id"]
 
     execute_update(
@@ -786,6 +892,9 @@ def unfavorite_activity(activity_id):
 @require_auth
 def rate_activity(activity_id):
     """评价活动
+    ---
+    tags:
+      - 活动
 
     请求: {rating: "好评"/"中评"/"差评"}
     """
@@ -836,6 +945,9 @@ def rate_activity(activity_id):
 @require_auth
 def review_activity(activity_id):
     """审核活动（管理员/运营）
+    ---
+    tags:
+      - 活动
 
     请求: {action: "approve"/"reject", comment: "...", safety_check_passed: bool}
     """
@@ -900,6 +1012,9 @@ def review_activity(activity_id):
 @require_auth
 def report_activity(activity_id):
     """举报活动
+    ---
+    tags:
+      - 活动
 
     请求: {reason: "..."}
     """
@@ -948,7 +1063,11 @@ def report_activity(activity_id):
 @activities_bp.post("/<int:activity_id>/waitlist")
 @require_auth
 def join_waitlist(activity_id):
-    """加入候补名单"""
+    """加入候补名单
+    ---
+    tags:
+      - 活动
+    """
     user_id = g.current_user["user_id"]
 
     activity = execute_query_one(
@@ -990,7 +1109,11 @@ def join_waitlist(activity_id):
 # ═══════════════════════════════════════════════════════
 @activities_bp.get("/<int:activity_id>/albums")
 def list_albums(activity_id):
-    """获取活动相册"""
+    """获取活动相册
+    ---
+    tags:
+      - 活动
+    """
     rows = execute_query(
         "SELECT * FROM activity_albums WHERE activity_id = %s AND deleted_at IS NULL ORDER BY sort_order ASC",
         (activity_id,),
@@ -1012,6 +1135,9 @@ def list_albums(activity_id):
 @require_auth
 def add_album_photo(activity_id):
     """添加活动相册照片（领队或管理员）
+    ---
+    tags:
+      - 活动
 
     请求: {image_url, description?}
     """
@@ -1053,7 +1179,11 @@ def add_album_photo(activity_id):
 @activities_bp.delete("/<int:activity_id>/albums/<int:photo_id>")
 @require_auth
 def delete_album_photo(activity_id, photo_id):
-    """删除活动相册照片（领队或管理员）"""
+    """删除活动相册照片（领队或管理员）
+    ---
+    tags:
+      - 活动
+    """
     user_id = g.current_user["user_id"]
 
     activity = execute_query_one(
@@ -1080,6 +1210,9 @@ def delete_album_photo(activity_id, photo_id):
 @require_auth
 def submit_activity_report(activity_id):
     """提交活动总结报告（领队）
+    ---
+    tags:
+      - 活动
 
     请求: {actual_count, abnormal_count, abnormal_details, photos, weather_condition, notes}
     """
@@ -1137,6 +1270,9 @@ def submit_activity_report(activity_id):
 @require_auth
 def add_site_photo(activity_id):
     """添加活动场地照片（领队）
+    ---
+    tags:
+      - 活动
 
     请求: {image_url}
     """
@@ -1177,7 +1313,11 @@ def add_site_photo(activity_id):
 @activities_bp.get("/my-favorites")
 @require_auth
 def my_favorites():
-    """获取我收藏的活动列表"""
+    """获取我收藏的活动列表
+    ---
+    tags:
+      - 活动
+    """
     user_id = g.current_user["user_id"]
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 20, type=int)
