@@ -263,7 +263,7 @@ def get_public_profile(user_id):
 @users_bp.get("/<int:user_id>/stats")
 def get_user_stats(user_id):
     """获取用户统计数据"""
-    user = execute_query_one("SELECT id, nickname, avatar_url FROM users WHERE id = %s AND deleted_at IS NULL", (user_id,))
+    user = execute_query_one("SELECT id, nickname, avatar_url, role FROM users WHERE id = %s AND deleted_at IS NULL", (user_id,))
     if not user:
         return error("用户不存在", 404)
 
