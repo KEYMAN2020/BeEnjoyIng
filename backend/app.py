@@ -3,28 +3,12 @@
 注册所有 Blueprint，提供 /health 健康检查端点。
 """
 
-from __future__ import annotations
-
-import sys
-from pathlib import Path
-
 from flask import Flask, jsonify
 
-# Allow importing the shared structured logger from ../references/logger.py
-ROOT_DIR = Path(__file__).resolve().parent.parent
-REFERENCES_DIR = ROOT_DIR / "references"
-if str(REFERENCES_DIR) not in sys.path:
-    sys.path.insert(0, str(REFERENCES_DIR))
-
-from logger import init_logger  # noqa: E402
-
-from response import ApiError  # noqa: E402
-from db import close_connection  # noqa: E402
-
-PROJECT_ID = "proj_20260602_2340"
+from response import ApiError
+from db import close_connection
 
 app = Flask(__name__)
-slog = init_logger(PROJECT_ID)
 
 
 # ── 注册 Blueprint ──────────────────────────────────────
