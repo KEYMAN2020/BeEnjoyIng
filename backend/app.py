@@ -1,14 +1,25 @@
 """Flask 应用入口 — BeEnjoyIng API
 
-注册所有 Blueprint，提供 /health 健康检查端点。
+注册所有 Blueprint，提供 /health 健康检查端点、Swagger 文档、文件上传。
 """
 
-from flask import Flask, jsonify
+import os
+from flask import Flask, jsonify, send_from_directory
+from flask_cors import CORS
+from flasgger import Swagger
 
 from response import ApiError
 from db import close_connection
+from config import Config
 
 app = Flask(__name__)
+app.config.from_object(Config)
+
+# ── CORS（跨域） ────────────────────────────────────────
+CORS(app, resources={r"/api/*": {"origins": "*"}})
+
+# ── Swagger API 文档 ────────────────────────────────────
+swagger = Swagger(app, template=Config.SWAGGER)
 
 
 # ── 注册 Blueprint ──────────────────────────────────────
@@ -47,11 +58,117 @@ from system_routes import regions_bp
 app.register_blueprint(regions_bp, url_prefix="/api/v1/regions")
 
 
+# ── 文件上传服务 ────────────────────────────────────────
+@app.route("/uploads/<path:filename>")
+def uploaded_file(filename):
+    """提供上传文件的静态访问"""
+    return send_from_directory(Config.UPLOAD_FOLDER, filename)
+
+
+# ── 上传 API（通用文件上传） ─────────────────────────────
+from flask import request
+from upload_helper import save_uploaded_file, ALLOWED_IMAGE_EXT
+
+@app.post("/api/v1/upload")
+def upload_file():
+    """上传文件（图片/语音）
+
+    请求: multipart/form-data, field="file"
+    响应: {"code": 0, "data": {"url": "/uploads/...", "filename": "xxx.jpg"}}
+    ---
+    tags:
+      - 文件上传
+    consumes:
+      - multipart/form-data
+    parameters:
+      - in: formData
+        name: file
+        type: file
+        required: true
+        description: 上传的文件（图片或语音）
+      - in: formData
+        name: subdir
+        type: string
+        required: false
+        description: 子目录（avatars/albums/site_photos/voice）
+    responses:
+      200:
+        description: 上传成功
+    """
+    file = request.files.get("file")
+    subdir = request.form.get("subdir", "uploads")
+
+    if not file:
+        return jsonify({"code": 400, "data": None, "message": "请选择文件"}), 400
+
+    try:
+        url = save_uploaded_file(file, subdir=subdir)
+        return jsonify({
+            "code": 0,
+            "data": {"url": url, "filename": file.filename},
+            "message": "上传成功",
+        })
+    except ValueError as e:
+        return jsonify({"code": 400, "data": None, "message": str(e)}), 400
+
+
+# ── 批量上传 ─────────────────────────────────────────────
+@app.post("/api/v1/upload/multiple")
+def upload_multiple():
+    """批量上传文件
+
+    请求: multipart/form-data, field="files[]" (多个文件)
+    响应: {"code": 0, "data": {"urls": ["/uploads/...", ...]}}
+    ---
+    tags:
+      - 文件上传
+    consumes:
+      - multipart/form-data
+    parameters:
+      - in: formData
+        name: files[]
+        type: array
+        items: {type: file}
+        required: true
+        description: 多个文件
+    responses:
+      200:
+        description: 上传成功
+    """
+    files = request.files.getlist("files[]")
+    subdir = request.form.get("subdir", "uploads")
+
+    if not files:
+        return jsonify({"code": 400, "data": None, "message": "请选择文件"}), 400
+
+    urls = []
+    for file in files:
+        try:
+            url = save_uploaded_file(file, subdir=subdir)
+            urls.append(url)
+        except ValueError:
+            continue
+
+    return jsonify({
+        "code": 0,
+        "data": {"urls": urls, "count": len(urls)},
+        "message": f"成功上传 {len(urls)} 个文件",
+    })
+
+
 # ── 健康检查 ─────────────────────────────────────────────
 
 @app.get("/health")
 def health():
-    """健康检查端点"""
+    """健康检查端点
+
+    ---
+    tags:
+      - 系统
+    responses:
+      200:
+        description: 服务正常
+    """
     return jsonify({"status": "ok"})
 
 
