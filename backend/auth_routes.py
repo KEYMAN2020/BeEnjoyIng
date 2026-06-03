@@ -355,7 +355,7 @@ def reset_password():
     )
     if existing:
         execute_update(
-            "UPDATE user_auth SET auth_value = %s, updated_at = NOW() WHERE id = %s",
+            "UPDATE user_auth SET auth_value = %s WHERE id = %s",
             (pwd_hash, existing["id"]),
         )
     else:

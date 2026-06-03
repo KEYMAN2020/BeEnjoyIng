@@ -13,6 +13,6 @@ def log_operation(
 ) -> int:
     """记录一条操作日志，返回日志 ID"""
     sql = """INSERT INTO operation_logs
-             (operator_id, action, target_type, target_id, detail, ip_address)
-             VALUES (%s, %s, %s, %s, %s, %s)"""
+             (operator_id, action, target_type, target_id, detail, ip_address, created_at)
+             VALUES (%s, %s, %s, %s, %s, %s, NOW())"""
     return execute_insert(sql, (operator_id, action, target_type, target_id, detail, ip_address))
