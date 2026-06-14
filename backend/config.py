@@ -13,8 +13,8 @@ load_dotenv(dotenv_path=_env_path, override=True)
 
 class Config:
     """基础配置"""
-    SECRET_KEY = os.getenv("SECRET_KEY", "be-enjoying-secret-key-2026-32bytes!")
-    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "be-enjoying-jwt-secret-32bytes!")
+    SECRET_KEY = os.getenv("SECRET_KEY", "")
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "")
 
     # MySQL
     DB_HOST = os.getenv("DB_HOST", "localhost")
@@ -35,7 +35,7 @@ class Config:
     ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "gif", "webp", "mp3", "wav", "ogg", "amr"}
 
     # 高德地图 Web API
-    AMAP_KEY = os.getenv("AMAP_KEY", "4cae03e0ef24554110c6055673d122e0")
+    AMAP_KEY = os.getenv("AMAP_KEY", "")
 
     # Swagger
     SWAGGER = {
