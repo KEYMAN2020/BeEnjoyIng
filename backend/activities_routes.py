@@ -3,11 +3,16 @@
 路由前缀: /api/v1/activities
 """
 
+import math
+import json
+import urllib.request
 from flask import Blueprint, request, g
 from response import success, error
 from db import execute_query, execute_query_one, execute_insert, execute_update
 from auth_decorator import require_auth
+from jwt_helper import decode_token
 from operation_log import log_operation
+from config import Config
 
 activities_bp = Blueprint("activities", __name__)
 
@@ -17,6 +22,27 @@ activities_bp = Blueprint("activities", __name__)
 
 def _get_ip():
     return request.headers.get("X-Forwarded-For", request.remote_addr or "")
+
+
+def _haversine(lat1, lng1, lat2, lng2):
+    """计算两点间直线距离（米）"""
+    if None in (lat1, lng1, lat2, lng2):
+        return None
+    R = 6371000
+    d_lat = math.radians(lat2 - lat1)
+    d_lng = math.radians(lng2 - lng1)
+    a = math.sin(d_lat / 2) ** 2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(d_lng / 2) ** 2
+    return round(R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a)))
+
+
+def _try_get_current_user():
+    """可选鉴权：尝试解析 JWT，不强制"""
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        payload = decode_token(auth_header[len("Bearer "):])
+        if payload:
+            return payload
+    return None
 
 
 def _activity_to_dict(a: dict) -> dict:
@@ -433,7 +459,7 @@ def nearby_activities():
 # ═══════════════════════════════════════════════════════
 @activities_bp.get("/<int:activity_id>")
 def get_activity(activity_id):
-    """获取活动详情
+    """获取活动详情（含可选用户上下文：my_status / is_favorited / 距离）
     ---
     tags:
       - 活动
@@ -446,6 +472,7 @@ def get_activity(activity_id):
         return error("活动不存在", 404)
 
     result = _activity_to_dict(activity)
+    result["activity_date"] = activity["activity_date"].isoformat() if hasattr(activity["activity_date"], "isoformat") else activity.get("activity_date", "")
 
     # 获取标签
     tags = execute_query(
@@ -457,9 +484,9 @@ def get_activity(activity_id):
     )
     result["tags"] = [{"id": t["id"], "name": t["name"], "icon": t.get("icon", "")} for t in tags]
 
-    # 获取领队信息
+    # 获取领队信息（含手机号）
     captain = execute_query_one(
-        "SELECT id, nickname, avatar_url FROM users WHERE id = %s",
+        "SELECT id, nickname, avatar_url, phone FROM users WHERE id = %s",
         (activity["captain_id"],),
     )
     if captain:
@@ -467,6 +494,7 @@ def get_activity(activity_id):
             "user_id": captain["id"],
             "nickname": captain["nickname"],
             "avatar_url": captain.get("avatar_url", ""),
+            "phone": captain.get("phone", ""),
         }
 
     # 获取封面相册
@@ -476,7 +504,125 @@ def get_activity(activity_id):
     )
     result["photos"] = [p["image_url"] for p in photos]
 
+    # —— 可选用户上下文：my_status / is_favorited / 距离 ——
+    user = _try_get_current_user()
+    if user:
+        user_id = user["user_id"]
+
+        # 报名状态
+        signup = execute_query_one(
+            "SELECT status FROM activity_signups WHERE activity_id = %s AND user_id = %s AND deleted_at IS NULL",
+            (activity_id, user_id),
+        )
+        result["my_status"] = signup["status"] if signup else None
+
+        # 收藏状态
+        fav = execute_query_one(
+            "SELECT id FROM activity_favorites WHERE user_id = %s AND activity_id = %s",
+            (user_id, activity_id),
+        )
+        result["is_favorited"] = bool(fav)
+    else:
+        result["my_status"] = None
+        result["is_favorited"] = False
+
+    # 距离计算（请求传 lat / lng）
+    try:
+        lat = request.args.get("lat", type=float)
+        lng = request.args.get("lng", type=float)
+    except (TypeError, ValueError):
+        lat = lng = None
+    if lat and lng and activity.get("location_lat") and activity.get("location_lng"):
+        result["distance"] = _haversine(
+            lat, lng,
+            float(activity["location_lat"]),
+            float(activity["location_lng"]),
+        )
+    else:
+        result["distance"] = None
+
     return success({"activity": result})
+
+
+# ═══════════════════════════════════════════════════════
+# 7b. 活动天气（从高德天气 API 获取）
+# ═══════════════════════════════════════════════════════
+@activities_bp.get("/<int:activity_id>/weather")
+def activity_weather(activity_id):
+    """获取活动当天的天气预报
+    ---
+    tags:
+      - 活动
+    """
+    activity = execute_query_one(
+        "SELECT city, district, activity_date FROM activities WHERE id = %s AND deleted_at IS NULL",
+        (activity_id,),
+    )
+    if not activity:
+        return error("活动不存在", 404)
+
+    # 用城市名查 adcode
+    city_name = activity.get("city", "").replace("市", "").replace("地区", "").replace("盟", "")
+    adcode = None
+    if city_name:
+        row = execute_query_one(
+            "SELECT code FROM regions WHERE (name LIKE %s OR name LIKE %s) AND level IN (1,2) LIMIT 1",
+            (f"{city_name}%", f"{city_name}市%"),
+        )
+        if row:
+            adcode = row["code"]
+
+    if not adcode:
+        return success({"weather": None, "message": "无法确定城市"})
+
+    key = Config.AMAP_KEY
+    if not key:
+        return success({"weather": None, "message": "天气服务未配置"})
+
+    url = (
+        f"https://restapi.amap.com/v3/weather/weatherInfo"
+        f"?key={key}&city={adcode}&extensions=all"
+    )
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "BeEnjoyIng/1.0"})
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except Exception as e:
+        print(f"[Gaode Weather API] error: {e}")
+        return success({"weather": None, "message": "获取天气失败"})
+
+    if data.get("status") != "1" or not data.get("forecasts"):
+        return success({"weather": None, "message": "天气数据为空"})
+
+    # 匹配活动日期
+    activity_date = str(activity["activity_date"])[:10] if activity.get("activity_date") else ""
+    casts = data["forecasts"][0].get("casts", [])
+    matched = None
+    for cast in casts:
+        if cast.get("date") == activity_date:
+            matched = {
+                "date": cast["date"],
+                "day_weather": cast.get("dayweather", ""),
+                "night_weather": cast.get("nightweather", ""),
+                "day_temp": cast.get("daytemp", ""),
+                "night_temp": cast.get("nighttemp", ""),
+                "day_wind": cast.get("daywind", ""),
+            }
+            break
+
+    if not matched and casts:
+        # 取最近一天的预报
+        c = casts[0]
+        matched = {
+            "date": c.get("date", ""),
+            "day_weather": c.get("dayweather", ""),
+            "night_weather": c.get("nightweather", ""),
+            "day_temp": c.get("daytemp", ""),
+            "night_temp": c.get("nighttemp", ""),
+            "day_wind": c.get("daywind", ""),
+        }
+
+    return success({"weather": matched})
 
 
 # ═══════════════════════════════════════════════════════
@@ -1026,20 +1172,6 @@ def report_activity(activity_id):
     )
     if not activity:
         return error("活动不存在", 404)
-
-    execute_insert(
-        "INSERT INTO activity_reports (activity_id, captain_id, actual_count, abnormal_count, created_at) VALUES (%s, %s, 0, 0, NOW())",
-        (activity_id, user_id),
-    )
-    # Note: actual column mismatch - but activity_reports has activity_id, captain_id, actual_count, abnormal_count
-    # Actually let me check the activity_reports table again...
-    # activity_reports: id, activity_id, captain_id, actual_count, abnormal_count, abnormal_details, photos, weather_condition, notes, submitted_at, ext_data, created_at, updated_at
-    # Hmm, there's no "reason" column. This table is more of a "captain report" table.
-    # Let me use operation_log to log the report instead.
-
-    # Actually, looking more carefully, this table seems to be for captain's activity report after the event.
-    # For "reporting" (举报) an activity, we should just use operation_log.
-    # Let me fix this - just log it to operation_logs
 
     log_operation(
         operator_id=user_id,
