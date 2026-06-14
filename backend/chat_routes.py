@@ -152,6 +152,12 @@ def get_messages(group_id):
     user_id = g.current_user["user_id"]
     member = execute_query_one("SELECT id FROM chat_group_members WHERE group_id = %s AND user_id = %s AND deleted_at IS NULL", (group_id, user_id))
     if not member:
+        # 尝试通过 activity_id 查找群聊（兼容前端传入 activity_id）
+        grp = execute_query_one("SELECT id FROM chat_groups WHERE activity_id = %s AND status = 'active' LIMIT 1", (group_id,))
+        if grp:
+            group_id = grp["id"]
+            member = execute_query_one("SELECT id FROM chat_group_members WHERE group_id = %s AND user_id = %s AND deleted_at IS NULL", (group_id, user_id))
+    if not member:
         return error("您不是该群成员", 403)
 
     before_id = request.args.get("before_id", type=int)
@@ -209,6 +215,12 @@ def send_message(group_id):
     user_id = g.current_user["user_id"]
     member = execute_query_one("SELECT id FROM chat_group_members WHERE group_id = %s AND user_id = %s AND deleted_at IS NULL", (group_id, user_id))
     if not member:
+        # 尝试通过 activity_id 查找群聊（兼容前端传入 activity_id）
+        grp = execute_query_one("SELECT id FROM chat_groups WHERE activity_id = %s AND status = 'active' LIMIT 1", (group_id,))
+        if grp:
+            group_id = grp["id"]
+            member = execute_query_one("SELECT id FROM chat_group_members WHERE group_id = %s AND user_id = %s AND deleted_at IS NULL", (group_id, user_id))
+    if not member:
         return error("您不是该群成员", 403)
 
     data = request.get_json(silent=True) or {}
@@ -227,7 +239,19 @@ def send_message(group_id):
         "INSERT INTO chat_messages (group_id, sender_id, msg_type, content, voice_url, voice_duration, image_url, created_at) VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())",
         (group_id, user_id, msg_type, data.get("content", ""), data.get("voice_url"), data.get("voice_duration"), data.get("image_url")),
     )
-    return success({"message_id": msg_id}, "发送成功"), 201
+    # 返回完整的消息对象，方便前端直接显示
+    msg = execute_query_one("""
+        SELECT m.*, u.nickname, u.avatar_url
+        FROM chat_messages m JOIN users u ON u.id = m.sender_id
+        WHERE m.id = %s
+    """, (msg_id,))
+    return success({
+        "message": {
+            "id": msg["id"], "sender_id": msg["sender_id"], "nickname": msg["nickname"],
+            "avatar_url": msg.get("avatar_url", ""), "msg_type": msg["msg_type"],
+            "content": msg.get("content", ""), "created_at": msg["created_at"].isoformat() if hasattr(msg["created_at"], "isoformat") else msg["created_at"],
+        }
+    }, "发送成功"), 201
 
 
 @chat_bp.post("/groups/<int:group_id>/read")

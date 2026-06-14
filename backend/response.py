@@ -24,6 +24,10 @@ class ApiError(Exception):
 
 
 def success(data=None, message="ok"):
+    # 想直接返回数据本体，不加包裹？
+    # return jsonify(data)
+
+    # 或者返回现在的格式？
     return jsonify({"code": 0, "data": data, "message": message})
 
 

@@ -204,7 +204,7 @@ def frontend_assets(filename):
 @app.route("/<path:path>")
 def frontend_spa_fallback(path):
     """SPA 路由回退 — 非 API 路径返回 index.html"""
-    if path.startswith("api/") or path.startswith("apidocs/") or path.startswith("health") or path.startswith("uploads/"):
+    if path.startswith("api/") or path.startswith("apidocs/") or path.startswith("uploads/"):
         return jsonify({"error": "not found"}), 404
     index_path = os.path.join(FRONTEND_DIST, "index.html")
     if os.path.isfile(index_path):
@@ -219,37 +219,8 @@ def frontend_spa_fallback(path):
 
 
 # ── 增强健康检查 ───────────────────────────────────────
-
-@app.get("/health")
-def health():
-    """增强健康检查（含数据库连接检测）
-
-    ---
-    tags:
-      - 系统
-    responses:
-      200:
-        description: 服务正常
-        schema:
-          type: object
-          properties:
-            status: {type: string, example: ok}
-            database: {type: string, example: connected}
-            version: {type: string, example: 1.0.0}
-    """
-    checks = {"status": "ok", "version": "1.0.0"}
-
-    # 检查数据库
-    try:
-        conn = get_connection()
-        conn.ping()
-        checks["database"] = "connected"
-    except Exception as e:
-        checks["database"] = f"error: {e}"
-        checks["status"] = "degraded"
-
-    status_code = 200 if checks["status"] == "ok" else 503
-    return jsonify(checks), status_code
+# 注意：健康检查端点已移至 /api/v1/health，避免与前端 /health 页面冲突
+# 通过 health_routes blueprint 注册：app.register_blueprint(health_bp, url_prefix="/api/v1/health")
 
 
 # ── 错误处理 ─────────────────────────────────────────────

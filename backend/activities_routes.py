@@ -102,7 +102,7 @@ def list_activities():
         type: string
         required: false
         default: approved
-        description: 状态（默认只显示已通过）
+        description: 状态（默认只显示开启中）
       - name: start_date
         in: query
         type: string
@@ -163,7 +163,7 @@ def list_activities():
         conditions.append("a.status = %s")
         params.append(status)
     else:
-        conditions.append("a.status = 'approved'")  # 默认只看已通过
+        conditions.append("a.status = 'open'")  # 默认只看开启中
     if start_date:
         conditions.append("a.start_time >= %s")
         params.append(start_date)
@@ -213,23 +213,20 @@ def create_activity():
     """
     data = request.get_json(silent=True) or {}
     user_id = g.current_user["user_id"]
-    role = g.current_user.get("role", "user")
 
-    # 只有 captain/admin 可以创建活动
-    if role not in ("admin", "captain"):
-        # 检查是否已申请成为 captain
-        cap = execute_query_one(
-            "SELECT status FROM captain_applications WHERE user_id = %s AND deleted_at IS NULL ORDER BY id DESC LIMIT 1",
-            (user_id,),
-        )
-        if not cap or cap["status"] != "approved":
-            return error("仅认证领队可以创建活动", 403)
+    # 每个人最多同时创建 3 个「开启中」的活动（只计算自己创建的，加入别人的不限制）
+    active_count = execute_query_one(
+        "SELECT COUNT(*) AS cnt FROM activities WHERE captain_id = %s AND status = 'open' AND deleted_at IS NULL",
+        (user_id,),
+    )
+    if active_count and active_count["cnt"] >= 3:
+        return error("您最多同时创建 3 个开启中的活动，请先结束或解散已有活动", 400)
 
     title = data.get("title", "")
     if not title or len(title) < 2:
         return error("活动标题至少 2 个字符", 400)
 
-    category_id = data.get("category_id", type=int)
+    category_id = data.get("category_id")
     if not category_id:
         return error("请选择活动分类", 400)
 
@@ -246,7 +243,7 @@ def create_activity():
             max_participants, min_participants, price, safety_level,
             age_min, age_max, has_waitlist, status, created_at, updated_at)
            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                   %s, %s, %s, %s, %s, %s, %s, 'pending', NOW(), NOW())""",
+                   %s, %s, %s, %s, %s, %s, %s, 'open', NOW(), NOW())""",
         (
             user_id, category_id, title, data.get("description", ""),
             data.get("cover_image", ""),
@@ -270,6 +267,40 @@ def create_activity():
                 (activity_id, tag_id),
             )
 
+    # 创建者自动报名（计数 +1）
+    execute_insert(
+        "INSERT INTO activity_signups (activity_id, user_id, status, signed_up_at, created_at, updated_at) VALUES (%s, %s, 'registered', NOW(), NOW(), NOW())",
+        (activity_id, user_id),
+    )
+    execute_update(
+        "UPDATE activities SET current_participants = COALESCE(current_participants, 0) + 1 WHERE id = %s",
+        (activity_id,),
+    )
+
+    # 自动创建活动群聊
+    group_id = execute_insert(
+        """INSERT INTO chat_groups
+           (activity_id, name, captain_id, member_count, status, created_at, updated_at)
+           VALUES (%s, %s, %s, 1, 'active', NOW(), NOW())""",
+        (activity_id, title, user_id),
+    )
+
+    # 创建者自动加入群聊
+    execute_insert(
+        """INSERT INTO chat_group_members
+           (group_id, user_id, joined_at, created_at)
+           VALUES (%s, %s, NOW(), NOW())""",
+        (group_id, user_id),
+    )
+
+    # 发送通知：已加入活动群聊
+    execute_insert(
+        """INSERT INTO notifications
+           (user_id, type, title, content, ref_type, ref_id, created_at)
+           VALUES (%s, 'system', %s, %s, 'activity', %s, NOW())""",
+        (user_id, "已加入活动群聊", f"您已加入「{title}」活动群聊", activity_id),
+    )
+
     log_operation(
         operator_id=user_id,
         action="CREATE_ACTIVITY",
@@ -282,7 +313,7 @@ def create_activity():
     activity = execute_query_one(
         "SELECT * FROM activities WHERE id = %s", (activity_id,)
     )
-    return success(_activity_to_dict(activity), "活动已创建，等待审核"), 201
+    return success(_activity_to_dict(activity), "活动已创建"), 201
 
 
 # ═══════════════════════════════════════════════════════
@@ -336,15 +367,15 @@ def list_tags():
 @activities_bp.get("/my")
 @require_auth
 def my_activities():
-    """获取我的活动列表（作为参与者或领队）
+    """获取我的活动列表（我报名参与的 + 我创建的）
     ---
     tags:
       - 活动
 
-    查询参数: type (participant/captain), status, page, per_page
+    查询参数: type (participant/captain/all), status, page, per_page
     """
     user_id = g.current_user["user_id"]
-    act_type = request.args.get("type", "participant")
+    act_type = request.args.get("type", "all")
     status = request.args.get("status", "")
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 20, type=int)
@@ -367,8 +398,8 @@ def my_activities():
                   ORDER BY a.created_at DESC
                   LIMIT %s OFFSET %s"""
         rows = execute_query(sql, params + [per_page, offset])
-    else:
-        conditions = ["s.user_id = %s", "s.deleted_at IS NULL", "a.deleted_at IS NULL"]
+    elif act_type == "participant":
+        conditions = ["s.user_id = %s", "s.deleted_at IS NULL", "a.deleted_at IS NULL", "s.status != 'cancelled'"]
         params = [user_id]
         if status:
             if status in ("registered", "cancelled"):
@@ -387,9 +418,35 @@ def my_activities():
                   FROM activity_signups s
                   JOIN activities a ON a.id = s.activity_id
                   WHERE {where}
-                  ORDER BY s.signed_up_at DESC
+                  ORDER BY CASE WHEN a.status = 'open' THEN 0 ELSE 1 END, a.start_time ASC
                   LIMIT %s OFFSET %s"""
         rows = execute_query(sql, params + [per_page, offset])
+    else:
+        # type=all: 我创建的 + 我报名的（去重）
+        params = [user_id, user_id, per_page, (page - 1) * per_page]
+        count_sql = """SELECT COUNT(*) AS total FROM (
+            SELECT a.id FROM activities a WHERE a.captain_id = %s AND a.deleted_at IS NULL
+            UNION
+            SELECT a.id FROM activity_signups s
+            JOIN activities a ON a.id = s.activity_id
+            WHERE s.user_id = %s AND s.deleted_at IS NULL AND a.deleted_at IS NULL AND s.status != 'cancelled'
+        ) AS t"""
+        total = execute_query_one(count_sql, params[:2])["total"]
+
+        sql = """SELECT a.*,
+                        (SELECT s.status FROM activity_signups s
+                         WHERE s.activity_id = a.id AND s.user_id = %s AND s.deleted_at IS NULL ORDER BY s.id DESC LIMIT 1) AS signup_status
+                 FROM (
+                     SELECT a.id FROM activities a WHERE a.captain_id = %s AND a.deleted_at IS NULL
+                     UNION
+                     SELECT a.id FROM activity_signups s
+                     JOIN activities a ON a.id = s.activity_id
+                     WHERE s.user_id = %s AND s.deleted_at IS NULL AND a.deleted_at IS NULL AND s.status != 'cancelled'
+                 ) AS t
+                 JOIN activities a ON a.id = t.id
+                 ORDER BY CASE WHEN a.status = 'open' THEN 0 ELSE 1 END, a.start_time ASC
+                 LIMIT %s OFFSET %s"""
+        rows = execute_query(sql, [user_id, user_id, user_id, per_page, (page - 1) * per_page])
 
     return success({
         "activities": [_activity_to_dict(r) for r in rows],
@@ -428,7 +485,7 @@ def nearby_activities():
 
     conditions = [
         "a.deleted_at IS NULL",
-        "a.status = 'approved'",
+        "a.status = 'open'",
         "a.location_lat BETWEEN %s AND %s",
         "a.location_lng BETWEEN %s AND %s",
     ]
@@ -472,7 +529,9 @@ def get_activity(activity_id):
         return error("活动不存在", 404)
 
     result = _activity_to_dict(activity)
-    result["activity_date"] = activity["activity_date"].isoformat() if hasattr(activity["activity_date"], "isoformat") else activity.get("activity_date", "")
+    # 活动日期从 start_time 提取（数据库无 activity_date 字段）
+    st = activity.get("start_time")
+    result["activity_date"] = st.isoformat()[:10] if hasattr(st, "isoformat") else (str(st)[:10] if st else "")
 
     # 获取标签
     tags = execute_query(
@@ -545,6 +604,57 @@ def get_activity(activity_id):
 
 
 # ═══════════════════════════════════════════════════════
+# 7a. 地点搜索（高德 Input Tips API）
+# ═══════════════════════════════════════════════════════
+@activities_bp.get("/search-places")
+def search_places():
+    """高德地图地点搜索提示
+    ---
+    tags:
+      - 活动
+    parameters:
+      - name: keyword
+        in: query
+        type: string
+        required: true
+      - name: city
+        in: query
+        type: string
+        required: false
+    """
+    keyword = request.args.get("keyword", "")
+    city = request.args.get("city", "")
+    if not keyword or len(keyword) < 1:
+        return success({"places": []})
+
+    import requests as req
+    try:
+        params = {
+            "key": Config.AMAP_KEY,
+            "keywords": keyword,
+            "datatype": "all",
+            "city": city or "",
+        }
+        r = req.get("https://restapi.amap.com/v3/assistant/inputtips", params=params, timeout=5)
+        data = r.json()
+        if data.get("status") == "1" and data.get("tips"):
+            places = []
+            for tip in data["tips"]:
+                places.append({
+                    "location_name": tip.get("name", ""),
+                    "location_address": tip.get("address", ""),
+                    "city": tip.get("city", ""),
+                    "district": tip.get("district", ""),
+                    "location": tip.get("location", ""),
+                })
+            return success({"places": places})
+        return success({"places": []})
+    except Exception as e:
+        print(f"[Amap Input Tips] error: {e}")
+        return success({"places": []})
+
+
+# ═══════════════════════════════════════════════════════
 # 7b. 活动天气（从高德天气 API 获取）
 # ═══════════════════════════════════════════════════════
 @activities_bp.get("/<int:activity_id>/weather")
@@ -555,11 +665,15 @@ def activity_weather(activity_id):
       - 活动
     """
     activity = execute_query_one(
-        "SELECT city, district, activity_date FROM activities WHERE id = %s AND deleted_at IS NULL",
+        "SELECT city, district, start_time FROM activities WHERE id = %s AND deleted_at IS NULL",
         (activity_id,),
     )
     if not activity:
         return error("活动不存在", 404)
+
+    # 活动日期从 start_time 提取
+    st = activity.get("start_time")
+    activity_date = st.isoformat()[:10] if hasattr(st, "isoformat") else (str(st)[:10] if st else "")
 
     # 用城市名查 adcode
     city_name = activity.get("city", "").replace("市", "").replace("地区", "").replace("盟", "")
@@ -593,9 +707,6 @@ def activity_weather(activity_id):
 
     if data.get("status") != "1" or not data.get("forecasts"):
         return success({"weather": None, "message": "天气数据为空"})
-
-    # 匹配活动日期
-    activity_date = str(activity["activity_date"])[:10] if activity.get("activity_date") else ""
     casts = data["forecasts"][0].get("casts", [])
     matched = None
     for cast in casts:
@@ -646,8 +757,8 @@ def update_activity(activity_id):
         return error("活动不存在", 404)
     if activity["captain_id"] != user_id and g.current_user.get("role") != "admin":
         return error("无权修改此活动", 403)
-    if activity["status"] in ("approved", "rejected") and g.current_user.get("role") != "admin":
-        return error("活动已审核通过，无法修改", 400)
+    if activity["status"] != "open" and g.current_user.get("role") != "admin":
+        return error("仅开启中的活动可以修改", 400)
 
     data = request.get_json(silent=True) or {}
     updates = []
@@ -742,6 +853,146 @@ def delete_activity(activity_id):
 
 
 # ═══════════════════════════════════════════════════════
+# 9b. 解散活动（创建者手动解散）
+# ═══════════════════════════════════════════════════════
+@activities_bp.post("/<int:activity_id>/disband")
+@require_auth
+def disband_activity(activity_id):
+    """解散活动（仅创建者）
+    ---
+    tags:
+      - 活动
+    """
+    user_id = g.current_user["user_id"]
+
+    activity = execute_query_one(
+        "SELECT * FROM activities WHERE id = %s AND deleted_at IS NULL",
+        (activity_id,),
+    )
+    if not activity:
+        return error("活动不存在", 404)
+    if activity["captain_id"] != user_id:
+        return error("仅活动创建者可以解散活动", 403)
+
+    if activity["status"] != "open":
+        return error("仅开启中的活动可以解散", 400)
+
+    execute_update(
+        "UPDATE activities SET status = 'disbanded', updated_at = NOW() WHERE id = %s",
+        (activity_id,),
+    )
+
+    # 发送通知给创建者
+    try:
+        execute_insert(
+            "INSERT INTO notifications (user_id, title, content, type, ref_type, ref_id, created_at) VALUES (%s, %s, %s, 'system', 'activity', %s, NOW())",
+            (user_id, "活动已解散", f"您已成功解散活动「{activity['title']}」", activity_id),
+        )
+    except Exception:
+        pass
+
+    log_operation(
+        operator_id=user_id,
+        action="DISBAND_ACTIVITY",
+        target_type="activity",
+        target_id=activity_id,
+        detail=f"解散活动: {activity['title']}",
+        ip_address=_get_ip(),
+    )
+
+    # 自动解散群聊
+    try:
+        execute_update(
+            "UPDATE chat_groups SET status = 'disbanded', updated_at = NOW() WHERE activity_id = %s AND status = 'active'",
+            (activity_id,),
+        )
+    except Exception:
+        pass
+
+    return success(None, "活动已解散")
+
+
+# ═══════════════════════════════════════════════════════
+# 9c. 完成活动（创建者标记活动为已结束）
+# ═══════════════════════════════════════════════════════
+@activities_bp.post("/<int:activity_id>/complete")
+@require_auth
+def complete_activity(activity_id):
+    """完成/结束活动（仅创建者）
+    ---
+    tags:
+      - 活动
+    """
+    user_id = g.current_user["user_id"]
+
+    activity = execute_query_one(
+        "SELECT * FROM activities WHERE id = %s AND deleted_at IS NULL",
+        (activity_id,),
+    )
+    if not activity:
+        return error("活动不存在", 404)
+    if activity["captain_id"] != user_id:
+        return error("仅活动创建者可以结束活动", 403)
+    if activity["status"] != "open":
+        return error("仅开启中的活动可以结束", 400)
+
+    execute_update(
+        "UPDATE activities SET status = 'ended', updated_at = NOW() WHERE id = %s",
+        (activity_id,),
+    )
+
+    # 通知创建者
+    try:
+        execute_insert(
+            "INSERT INTO notifications (user_id, title, content, type, ref_type, ref_id, created_at) VALUES (%s, %s, %s, 'system', 'activity', %s, NOW())",
+            (user_id, "活动已结束", f"活动「{activity['title']}」已顺利完成", activity_id),
+        )
+    except Exception:
+        pass
+
+    log_operation(
+        operator_id=user_id,
+        action="COMPLETE_ACTIVITY",
+        target_type="activity",
+        target_id=activity_id,
+        detail=f"完成活动: {activity['title']}",
+        ip_address=_get_ip(),
+    )
+
+    return success(None, "活动已结束")
+
+
+def _auto_close_expired_activities():
+    """自动将超过结束时间 3 天的开启中活动标记为已过期"""
+    try:
+        execute_update("""
+            UPDATE activities
+            SET status = 'expired', updated_at = NOW()
+            WHERE status = 'open'
+              AND end_time IS NOT NULL
+              AND end_time < DATE_SUB(NOW(), INTERVAL 3 DAY)
+              AND deleted_at IS NULL
+        """)
+        # 通知创建者
+        rows = execute_query("""
+            SELECT id, captain_id, title FROM activities
+            WHERE status = 'expired'
+              AND updated_at > DATE_SUB(NOW(), INTERVAL 1 MINUTE)
+              AND deleted_at IS NULL
+        """)
+        for r in (rows or []):
+            try:
+                execute_insert(
+                    "INSERT INTO notifications (user_id, title, content, type, ref_type, ref_id, created_at) VALUES (%s, %s, %s, 'system', 'activity', %s, NOW())",
+                    (r["captain_id"], "活动已过期", f"活动「{r['title']}」已结束超过3天，系统已自动标记为已过期", r["id"]),
+                )
+            except Exception:
+                pass
+    except Exception as e:
+        print(f"[AutoExpire] error: {e}")
+
+
+# ═══════════════════════════════════════════════════════
 # 10. 报名活动
 # ═══════════════════════════════════════════════════════
 @activities_bp.post("/<int:activity_id>/signup")
@@ -760,8 +1011,8 @@ def signup_activity(activity_id):
     )
     if not activity:
         return error("活动不存在", 404)
-    if activity["status"] != "approved":
-        return error("活动尚未审核通过", 400)
+    if activity["status"] != "open":
+        return error("活动当前不可报名", 400)
 
     # 检查是否已报名
     existing = execute_query_one(
@@ -788,6 +1039,24 @@ def signup_activity(activity_id):
                 target_id=activity_id,
                 ip_address=_get_ip(),
             )
+            # 重新加入群聊
+            try:
+                group = execute_query_one(
+                    "SELECT id FROM chat_groups WHERE activity_id = %s AND status = 'active' LIMIT 1",
+                    (activity_id,),
+                )
+                if group:
+                    already_in = execute_query_one(
+                        "SELECT id FROM chat_group_members WHERE group_id = %s AND user_id = %s",
+                        (group["id"], user_id),
+                    )
+                    if not already_in:
+                        execute_insert(
+                            "INSERT INTO chat_group_members (group_id, user_id, joined_at, created_at) VALUES (%s, %s, NOW(), NOW())",
+                            (group["id"], user_id),
+                        )
+            except Exception:
+                pass
             return success(None, "已重新报名")
 
     if activity["current_participants"] >= activity["max_participants"]:
@@ -812,6 +1081,37 @@ def signup_activity(activity_id):
         target_id=activity_id,
         ip_address=_get_ip(),
     )
+
+    # 自动加入活动群聊
+    try:
+        group = execute_query_one(
+            "SELECT id FROM chat_groups WHERE activity_id = %s AND status = 'active' LIMIT 1",
+            (activity_id,),
+        )
+        if group:
+            already_in = execute_query_one(
+                "SELECT id FROM chat_group_members WHERE group_id = %s AND user_id = %s",
+                (group["id"], user_id),
+            )
+            if not already_in:
+                execute_insert(
+                    "INSERT INTO chat_group_members (group_id, user_id, joined_at, created_at) VALUES (%s, %s, NOW(), NOW())",
+                    (group["id"], user_id),
+                )
+                execute_update(
+                    "UPDATE chat_groups SET member_count = member_count + 1, updated_at = NOW() WHERE id = %s",
+                    (group["id"],),
+                )
+                # 发送入群通知
+                try:
+                    execute_insert(
+                        "INSERT INTO notifications (user_id, type, title, content, ref_type, ref_id, created_at) VALUES (%s, 'system', %s, %s, 'activity', %s, NOW())",
+                        (user_id, "已加入活动群聊", f"您已加入「{activity['title']}」活动群聊", activity_id),
+                    )
+                except Exception:
+                    pass
+    except Exception:
+        pass
 
     return success({"signup_id": signup_id, "activity_id": activity_id}, "报名成功"), 201
 
@@ -1110,7 +1410,7 @@ def review_activity(activity_id):
     if action not in ("approve", "reject"):
         return error("审核操作必须为 approve 或 reject", 400)
 
-    new_status = "approved" if action == "approve" else "rejected"
+    new_status = "open" if action == "approve" else "rejected"
     execute_update(
         "UPDATE activities SET status = %s, updated_at = NOW() WHERE id = %s",
         (new_status, activity_id),

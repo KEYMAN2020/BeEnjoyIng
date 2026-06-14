@@ -1,9 +1,14 @@
 """应用配置 — 支持多环境分离"""
 
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()  # 从 .env 文件加载
+# 从 config.py 所在目录向上查找 .env 文件
+_env_path = Path(__file__).resolve().parent / ".env"
+if not _env_path.exists():
+    _env_path = Path(__file__).resolve().parent.parent / ".env"  # backend/backend/→backend/
+load_dotenv(dotenv_path=_env_path, override=True)
 
 
 class Config:
@@ -28,6 +33,9 @@ class Config:
     UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", os.path.join(os.path.dirname(__file__), "uploads"))
     MAX_CONTENT_LENGTH = 10 * 1024 * 1024
     ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "gif", "webp", "mp3", "wav", "ogg", "amr"}
+
+    # 高德地图 Web API
+    AMAP_KEY = os.getenv("AMAP_KEY", "4cae03e0ef24554110c6055673d122e0")
 
     # Swagger
     SWAGGER = {
