@@ -4,10 +4,8 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# 从 config.py 所在目录向上查找 .env 文件
-_env_path = Path(__file__).resolve().parent / ".env"
-if not _env_path.exists():
-    _env_path = Path(__file__).resolve().parent.parent / ".env"  # backend/backend/→backend/
+_env_path = Path("/etc/be-enjoying/.env")
+# 统一从 /etc/be-enjoying/.env 读取配置
 load_dotenv(dotenv_path=_env_path, override=True)
 
 
