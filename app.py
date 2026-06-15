@@ -168,6 +168,41 @@ def upload_multiple():
     })
 
 
+
+# ── 好友 / 私信 前端 ──────────────────────────────────
+FRIEND_DIST = os.path.join(os.path.dirname(os.path.abspath(__file__)), "friend_dist")
+
+@app.route("/friends")
+@app.route("/friends/<path:sub>")
+def frontend_friends(sub=""):
+    p = os.path.join(FRIEND_DIST, sub) if sub else os.path.join(FRIEND_DIST, "index.html")
+    if sub and os.path.isfile(p) and not sub.endswith(".html"):
+        return send_from_directory(FRIEND_DIST, sub)
+    ipath = os.path.join(FRIEND_DIST, "index.html")
+    if os.path.isfile(ipath):
+        with open(ipath, encoding="utf-8") as f:
+            r = make_response(f.read(), 200)
+            r.headers["Content-Type"] = "text/html; charset=utf-8"
+            return r
+    return jsonify({"error": "not found"}), 404
+
+@app.route("/messages")
+@app.route("/messages/<path:sub>")
+def frontend_messages(sub=""):
+    p = os.path.join(FRIEND_DIST, sub) if sub else os.path.join(FRIEND_DIST, "index.html")
+    if sub and os.path.isfile(p) and not sub.endswith(".html"):
+        return send_from_directory(FRIEND_DIST, sub)
+    ipath = os.path.join(FRIEND_DIST, "index.html")
+    if os.path.isfile(ipath):
+        with open(ipath, encoding="utf-8") as f:
+            r = make_response(f.read(), 200)
+            r.headers["Content-Type"] = "text/html; charset=utf-8"
+            return r
+    return jsonify({"error": "not found"}), 404
+
+@app.route("/friend_dist/<path:filename>")
+def frontend_friend_assets(filename):
+    return send_from_directory(FRIEND_DIST, filename)
 # ── 前端 SPA 静态托管 ──────────────────────────────────
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -204,7 +239,7 @@ def frontend_assets(filename):
 @app.route("/<path:path>")
 def frontend_spa_fallback(path):
     """SPA 路由回退 — 非 API 路径返回 index.html"""
-    if path.startswith("api/") or path.startswith("apidocs/") or path.startswith("health") or path.startswith("uploads/"):
+    if path.startswith("api/") or path.startswith("apidocs/") or path.startswith("uploads/"):
         return jsonify({"error": "not found"}), 404
     index_path = os.path.join(FRONTEND_DIST, "index.html")
     if os.path.isfile(index_path):
@@ -219,37 +254,8 @@ def frontend_spa_fallback(path):
 
 
 # ── 增强健康检查 ───────────────────────────────────────
-
-@app.get("/health")
-def health():
-    """增强健康检查（含数据库连接检测）
-
-    ---
-    tags:
-      - 系统
-    responses:
-      200:
-        description: 服务正常
-        schema:
-          type: object
-          properties:
-            status: {type: string, example: ok}
-            database: {type: string, example: connected}
-            version: {type: string, example: 1.0.0}
-    """
-    checks = {"status": "ok", "version": "1.0.0"}
-
-    # 检查数据库
-    try:
-        conn = get_connection()
-        conn.ping()
-        checks["database"] = "connected"
-    except Exception as e:
-        checks["database"] = f"error: {e}"
-        checks["status"] = "degraded"
-
-    status_code = 200 if checks["status"] == "ok" else 503
-    return jsonify(checks), status_code
+# 注意：健康检查端点已移至 /api/v1/health，避免与前端 /health 页面冲突
+# 通过 health_routes blueprint 注册：app.register_blueprint(health_bp, url_prefix="/api/v1/health")
 
 
 # ── 错误处理 ─────────────────────────────────────────────
