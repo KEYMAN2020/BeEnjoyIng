@@ -481,37 +481,6 @@ def handle_friend_request(request_id):
     return success(None, msg)
 
 
-# ── #10.5 GET /api/v1/users/friends/requests/pending ──
-@users_bp.get("/friends/requests/pending")
-@require_auth
-def list_pending_friend_requests():
-    """获取发给我的待处理好友请求
-    ---
-    tags:
-      - 用户
-    """
-    user_id = g.current_user["user_id"]
-    requests = execute_query(
-        "SELECT uf.id AS request_id, uf.user_id, u.nickname, u.avatar_url, uf.source, uf.created_at "
-        "FROM user_friends uf "
-        "JOIN users u ON u.id = uf.user_id "
-        "WHERE uf.friend_id = %s AND uf.status = 'pending' AND uf.deleted_at IS NULL AND u.deleted_at IS NULL "
-        "ORDER BY uf.created_at DESC",
-        (user_id,),
-    )
-    items = []
-    for r in requests:
-        items.append({
-            "request_id": r["request_id"],
-            "user_id": r["user_id"],
-            "nickname": r["nickname"],
-            "avatar_url": r.get("avatar_url", ""),
-            "source": r["source"],
-            "created_at": str(r["created_at"]) if r.get("created_at") else None,
-        })
-    return success({"items": items})
-
-
 # ── #10 GET /api/v1/users/friends ──────────────────────
 @users_bp.get("/friends")
 @require_auth

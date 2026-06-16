@@ -1,0 +1,81 @@
+"""应用配置 — 支持多环境分离"""
+
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+_env_path = Path("/etc/be-enjoying/.env")
+# 统一从 /etc/be-enjoying/.env 读取配置
+load_dotenv(dotenv_path=_env_path, override=True)
+
+
+class Config:
+    """基础配置"""
+    SECRET_KEY = os.getenv("SECRET_KEY", "")
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "")
+
+    # MySQL
+    DB_HOST = os.getenv("DB_HOST", "localhost")
+    DB_PORT = int(os.getenv("DB_PORT", 3306))
+    DB_USER = os.getenv("DB_USER", "root")
+    DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+    DB_NAME = os.getenv("DB_NAME", "silver_vitality")
+    DB_CHARSET = "utf8mb4"
+
+    JSON_AS_ASCII = False
+
+    # 验证码
+    SMS_CODE_EXPIRE = 300
+
+    # 文件上传
+    UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", os.path.join(os.path.dirname(__file__), "uploads"))
+    MAX_CONTENT_LENGTH = 10 * 1024 * 1024
+    ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "gif", "webp", "mp3", "wav", "ogg", "amr"}
+
+    # 高德地图 Web API
+    AMAP_KEY = os.getenv("AMAP_KEY", "")
+
+    # Swagger
+    SWAGGER = {
+        "title": "BeEnjoyIng API",
+        "description": "中老年社交活动平台后端接口",
+        "version": "1.0.0",
+        "termsOfService": "",
+        "hide_top_text": True,
+    }
+
+    # Sentry
+    SENTRY_DSN = os.getenv("SENTRY_DSN", "")
+
+    # 限流
+    RATELIMIT_DEFAULT = "200/hour"
+    RATELIMIT_AUTH = "10/minute"      # 认证接口限流
+    RATELIMIT_UPLOAD = "30/minute"    # 上传限流
+
+
+class DevelopmentConfig(Config):
+    """开发环境"""
+    DEBUG = True
+    RATELIMIT_ENABLED = False
+
+
+class TestingConfig(Config):
+    """测试环境"""
+    TESTING = True
+    RATELIMIT_ENABLED = False
+
+
+class ProductionConfig(Config):
+    """生产环境"""
+    DEBUG = False
+    RATELIMIT_ENABLED = True
+
+
+# 根据环境变量选择配置
+config_map = {
+    "development": DevelopmentConfig,
+    "testing": TestingConfig,
+    "production": ProductionConfig,
+}
+
+active_config = config_map.get(os.getenv("FLASK_ENV", "development"), DevelopmentConfig)

@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  be-enjoying:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: be-enjoying-api
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - DB_HOST=${DB_HOST:-localhost}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_USER=${DB_USER:-root}
+      - DB_PASSWORD=${DB_PASSWORD:-Vitality2026!}
+      - DB_NAME=${DB_NAME:-silver_vitality}
+      - SECRET_KEY=${SECRET_KEY:-be-enjoying-secret-key-2026-32bytes!}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-be-enjoying-jwt-secret-32bytes!}
+      - SENTRY_DSN=${SENTRY_DSN:-}
+    volumes:
+      - be-enjoying-uploads:/app/uploads
+    restart: always
+    networks:
+      - be-enjoying-net
+
+volumes:
+  be-enjoying-uploads:
+
+networks:
+  be-enjoying-net:
+    driver: bridge

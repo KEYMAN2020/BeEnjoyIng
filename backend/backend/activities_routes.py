@@ -47,15 +47,6 @@ def _try_get_current_user():
 
 def _activity_to_dict(a: dict) -> dict:
     """活动信息转字典"""
-    status_map = {
-        "open": {"text": "进行中", "color": "green"},
-        "ended": {"text": "已结束", "color": "gray"},
-        "disbanded": {"text": "已解散", "color": "red"},
-        "expired": {"text": "已过期", "color": "orange"},
-    }
-    st = a["status"]
-    sinfo = status_map.get(st, {"text": st, "color": "gray"})
-
     return {
         "id": a["id"],
         "captain_id": a["captain_id"],
@@ -81,15 +72,6 @@ def _activity_to_dict(a: dict) -> dict:
         "age_min": a.get("age_min"),
         "age_max": a.get("age_max"),
         "status": a["status"],
-        "status_text": sinfo["text"],
-        "status_color": sinfo["color"],
-        "captain": {
-            "id": a["captain_id"],
-            "nickname": a.get("captain_nickname", ""),
-            "avatar_url": a.get("captain_avatar_url", ""),
-            "phone": a.get("captain_phone", ""),
-        } if a.get("captain_nickname") is not None else None,
-        "is_captain": a.get("is_captain", 0) == 1,
         "reject_reason": a.get("reject_reason"),
         "created_at": a["created_at"].isoformat() if hasattr(a["created_at"], "isoformat") else a["created_at"],
     }
@@ -199,12 +181,7 @@ def list_activities():
     total = execute_query_one(count_sql, params)["total"]
 
     offset = (page - 1) * per_page
-    sql = f"""SELECT a.*,
-                       u.nickname AS captain_nickname,
-                       u.avatar_url AS captain_avatar_url,
-                       u.phone AS captain_phone
-                FROM activities a
-                LEFT JOIN users u ON u.id = a.captain_id
+    sql = f"""SELECT a.* FROM activities a
               WHERE {where}
               ORDER BY a.start_time ASC
               LIMIT %s OFFSET %s"""
@@ -416,16 +393,11 @@ def my_activities():
         total = execute_query_one(count_sql, params)["total"]
 
         offset = (page - 1) * per_page
-        sql = f"""SELECT a.*, u.nickname AS captain_nickname,
-                       u.avatar_url AS captain_avatar_url,
-                       u.phone AS captain_phone,
-                       CASE WHEN a.captain_id = %s THEN 1 ELSE 0 END AS is_captain
-                  FROM activities a
-                  LEFT JOIN users u ON u.id = a.captain_id
+        sql = f"""SELECT a.* FROM activities a
                   WHERE {where}
                   ORDER BY a.created_at DESC
                   LIMIT %s OFFSET %s"""
-        rows = execute_query(sql, params + [user_id, per_page, offset])
+        rows = execute_query(sql, params + [per_page, offset])
     elif act_type == "participant":
         conditions = ["s.user_id = %s", "s.deleted_at IS NULL", "a.deleted_at IS NULL", "s.status != 'cancelled'"]
         params = [user_id]
@@ -442,18 +414,13 @@ def my_activities():
         total = execute_query_one(count_sql, params)["total"]
 
         offset = (page - 1) * per_page
-        sql = f"""SELECT a.*, u.nickname AS captain_nickname,
-                       u.avatar_url AS captain_avatar_url,
-                       u.phone AS captain_phone,
-                       s.status AS signup_status, s.signed_up_at,
-                       CASE WHEN a.captain_id = %s THEN 1 ELSE 0 END AS is_captain
+        sql = f"""SELECT a.*, s.status AS signup_status, s.signed_up_at
                   FROM activity_signups s
                   JOIN activities a ON a.id = s.activity_id
-                  LEFT JOIN users u ON u.id = a.captain_id
                   WHERE {where}
                   ORDER BY CASE WHEN a.status = 'open' THEN 0 ELSE 1 END, a.start_time ASC
                   LIMIT %s OFFSET %s"""
-        rows = execute_query(sql, params + [user_id, per_page, offset])
+        rows = execute_query(sql, params + [per_page, offset])
     else:
         # type=all: 我创建的 + 我报名的（去重）
         params = [user_id, user_id, per_page, (page - 1) * per_page]
@@ -466,10 +433,7 @@ def my_activities():
         ) AS t"""
         total = execute_query_one(count_sql, params[:2])["total"]
 
-        sql = f"""SELECT a.*, u.nickname AS captain_nickname,
-                           u.avatar_url AS captain_avatar_url,
-                           u.phone AS captain_phone,
-                           CASE WHEN a.captain_id = %s THEN 1 ELSE 0 END AS is_captain,
+        sql = """SELECT a.*,
                         (SELECT s.status FROM activity_signups s
                          WHERE s.activity_id = a.id AND s.user_id = %s AND s.deleted_at IS NULL ORDER BY s.id DESC LIMIT 1) AS signup_status
                  FROM (
@@ -480,10 +444,9 @@ def my_activities():
                      WHERE s.user_id = %s AND s.deleted_at IS NULL AND a.deleted_at IS NULL AND s.status != 'cancelled'
                  ) AS t
                  JOIN activities a ON a.id = t.id
-                  LEFT JOIN users u ON u.id = a.captain_id
                  ORDER BY CASE WHEN a.status = 'open' THEN 0 ELSE 1 END, a.start_time ASC
                  LIMIT %s OFFSET %s"""
-        rows = execute_query(sql, [user_id, user_id, user_id, user_id, per_page, (page - 1) * per_page])
+        rows = execute_query(sql, [user_id, user_id, user_id, per_page, (page - 1) * per_page])
 
     return success({
         "activities": [_activity_to_dict(r) for r in rows],

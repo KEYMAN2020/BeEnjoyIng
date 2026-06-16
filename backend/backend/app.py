@@ -4,7 +4,7 @@
 """
 
 import os
-from flask import Flask, jsonify, send_from_directory, request, make_response, redirect
+from flask import Flask, jsonify, send_from_directory, request, make_response
 from flask_cors import CORS
 from flasgger import Swagger
 
@@ -201,22 +201,7 @@ def frontend_assets(filename):
     return jsonify({"error": "not found"}), 404
 
 
-# ── 旧路由兼容重定向（Vue → React 迁移）──────────────
-@app.route("/messages")
-@app.route("/messages/<path:subpath>")
-def redirect_messages(subpath=""):
-    target = "/chat" + ("/" + subpath if subpath else "")
-    return redirect(target, 302)
-
-@app.route("/payment-records")
-def redirect_payment_records():
-    return redirect("/payment", 302)
-
-@app.route("/create-activity")
-def redirect_create_activity():
-    return redirect("/activity/new", 302)
-
-@app.route("/<path:path>", methods=["GET"])
+@app.route("/<path:path>")
 def frontend_spa_fallback(path):
     """SPA 路由回退 — 非 API 路径返回 index.html"""
     if path.startswith("api/") or path.startswith("apidocs/") or path.startswith("uploads/"):
