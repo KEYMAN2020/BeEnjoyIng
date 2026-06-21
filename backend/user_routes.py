@@ -25,7 +25,7 @@ def _safe_user(user: dict) -> dict:
         "user_id": user["id"],
         "nickname": user["nickname"],
         "avatar_url": user.get("avatar_url", ""),
-        "role": user["role"],
+        "role": user.get("role", "user"),
     }
 
 
@@ -56,7 +56,7 @@ def _full_user(user: dict, profile: dict | None = None, stats: dict | None = Non
         "phone": user["phone"],
         "nickname": user["nickname"],
         "avatar_url": user.get("avatar_url", ""),
-        "role": user["role"],
+        "role": user.get("role", "user"),
         "is_banned": bool(user["is_banned"]),
         "created_at": str(user["created_at"]) if user.get("created_at") else None,
     }
