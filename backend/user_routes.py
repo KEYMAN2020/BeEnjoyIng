@@ -481,6 +481,37 @@ def handle_friend_request(request_id):
     return success(None, msg)
 
 
+# ── #10.5 GET /api/v1/users/friends/requests/pending ──
+@users_bp.get("/friends/requests/pending")
+@require_auth
+def list_pending_friend_requests():
+    """获取发给我的待处理好友请求
+    ---
+    tags:
+      - 用户
+    """
+    user_id = g.current_user["user_id"]
+    requests = execute_query(
+        "SELECT uf.id AS request_id, uf.user_id, u.nickname, u.avatar_url, uf.source, uf.created_at "
+        "FROM user_friends uf "
+        "JOIN users u ON u.id = uf.user_id "
+        "WHERE uf.friend_id = %s AND uf.status = 'pending' AND uf.deleted_at IS NULL AND u.deleted_at IS NULL "
+        "ORDER BY uf.created_at DESC",
+        (user_id,),
+    )
+    items = []
+    for r in requests:
+        items.append({
+            "request_id": r["request_id"],
+            "user_id": r["user_id"],
+            "nickname": r["nickname"],
+            "avatar_url": r.get("avatar_url", ""),
+            "source": r["source"],
+            "created_at": str(r["created_at"]) if r.get("created_at") else None,
+        })
+    return success({"items": items})
+
+
 # ── #10 GET /api/v1/users/friends ──────────────────────
 @users_bp.get("/friends")
 @require_auth
@@ -644,6 +675,45 @@ def send_message():
     log_operation(user_id, "SEND_MESSAGE", "user_private_messages", msg_id, f"to={receiver_id}", _get_ip())
     return success({"message_id": msg_id}, "消息已发送")
 
+
+
+# ── #13.5 GET /api/v1/users/messages/with/<other_id> ──
+@users_bp.get("/messages/with/<int:other_id>")
+@require_auth
+def get_messages_with(other_id):
+    """获取与指定用户的私信历史
+    ---
+    tags:
+      - 用户
+    """
+    user_id = g.current_user["user_id"]
+    # Verify other user exists
+    other = execute_query_one(
+        "SELECT id, nickname, avatar_url FROM users WHERE id = %s AND deleted_at IS NULL",
+        (other_id,)
+    )
+    if not other:
+        return error("用户不存在", 404)
+
+    sql = (
+        "SELECT id, sender_id, receiver_id, content, created_at "
+        "FROM user_private_messages "
+        "WHERE deleted_at IS NULL "
+        "  AND ((sender_id = %s AND receiver_id = %s) "
+        "       OR (sender_id = %s AND receiver_id = %s)) "
+        "ORDER BY created_at ASC "
+        "LIMIT 200"
+    )
+    msgs = execute_query_all(sql, (user_id, other_id, other_id, user_id))
+
+    return success({
+        "messages": msgs,
+        "other_user": {
+            "user_id": other["id"],
+            "nickname": other["nickname"],
+            "avatar_url": other.get("avatar_url")
+        }
+    })
 
 # ── #14 POST /api/v1/users/<user_id>/report ────────────
 @users_bp.post("/<int:target_id>/report")
