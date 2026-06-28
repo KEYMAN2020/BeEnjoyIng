@@ -1,0 +1,1313 @@
+[2026-06-28 22:11:59 +0800] [2921486] [INFO] Starting gunicorn 22.0.0
+[2026-06-28 22:11:59 +0800] [2921486] [INFO] Listening at: http://0.0.0.0:50001 (2921486)
+[2026-06-28 22:11:59 +0800] [2921486] [INFO] Using worker: sync
+[2026-06-28 22:11:59 +0800] [2921489] [INFO] Booting worker with pid: 2921489
+[2026-06-28 22:11:59 +0800] [2921508] [INFO] Booting worker with pid: 2921508
+[2026-06-28 22:11:59 +0800] [2921509] [INFO] Booting worker with pid: 2921509
+[2026-06-28 22:11:59 +0800] [2921510] [INFO] Booting worker with pid: 2921510
+[2026-06-28 22:22:05 +0800] [2921508] [ERROR] Error handling request /api/v1/users/messages/with/4
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 135, in handle
+    self.handle_request(listener, req, client, addr)
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 178, in handle_request
+    respiter = self.wsgi(environ, resp.start_response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1476, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/llm/drq50001/backend/auth_decorator.py", line 24, in decorated
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/opt/llm/drq50001/backend/user_routes.py", line 707, in get_messages_with
+    msgs = execute_query_all(sql, (user_id, other_id, other_id, user_id))
+           ^^^^^^^^^^^^^^^^^
+NameError: name 'execute_query_all' is not defined
+[2026-06-28 22:24:27 +0800] [2921508] [ERROR] Error handling request /api/v1/users/messages/with/6
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 135, in handle
+    self.handle_request(listener, req, client, addr)
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 178, in handle_request
+    respiter = self.wsgi(environ, resp.start_response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1476, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/llm/drq50001/backend/auth_decorator.py", line 24, in decorated
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/opt/llm/drq50001/backend/user_routes.py", line 707, in get_messages_with
+    msgs = execute_query_all(sql, (user_id, other_id, other_id, user_id))
+           ^^^^^^^^^^^^^^^^^
+NameError: name 'execute_query_all' is not defined
+[2026-06-28 23:14:42 +0800] [2921489] [ERROR] Socket error processing request.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 135, in handle
+    self.handle_request(listener, req, client, addr)
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 193, in handle_request
+    util.reraise(*sys.exc_info())
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/util.py", line 641, in reraise
+    raise value
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 178, in handle_request
+    respiter = self.wsgi(environ, resp.start_response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1476, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_limiter/extension.py", line 1303, in __inner
+    return cast(R, flask.current_app.ensure_sync(obj)(*a, **k))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/llm/drq50001/backend/app.py", line 124, in upload_file
+    url = save_uploaded_file(file, subdir=subdir)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/llm/drq50001/backend/upload_helper.py", line 63, in save_uploaded_file
+    file_storage.save(abs_path)
+  File "/usr/local/lib/python3.11/site-packages/werkzeug/datastructures/file_storage.py", line 129, in save
+    dst = open(dst, "wb")
+          ^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/llm/drq50001/backend/uploads/uploads/avatars/616812347fed484585aeef83fe54d2e5.png'
+[2026-06-28 23:15:31 +0800] [2921508] [ERROR] Socket error processing request.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 135, in handle
+    self.handle_request(listener, req, client, addr)
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 193, in handle_request
+    util.reraise(*sys.exc_info())
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/util.py", line 641, in reraise
+    raise value
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 178, in handle_request
+    respiter = self.wsgi(environ, resp.start_response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1476, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_limiter/extension.py", line 1303, in __inner
+    return cast(R, flask.current_app.ensure_sync(obj)(*a, **k))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/llm/drq50001/backend/app.py", line 124, in upload_file
+    url = save_uploaded_file(file, subdir=subdir)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/llm/drq50001/backend/upload_helper.py", line 63, in save_uploaded_file
+    file_storage.save(abs_path)
+  File "/usr/local/lib/python3.11/site-packages/werkzeug/datastructures/file_storage.py", line 129, in save
+    dst = open(dst, "wb")
+          ^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/llm/drq50001/backend/uploads/uploads/avatars/0d1430fd4a5144a0b3814039d5fe9d7c.png'
+[2026-06-28 23:16:02 +0800] [2921509] [ERROR] Error handling request /api/v1/users/messages/with/6
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 135, in handle
+    self.handle_request(listener, req, client, addr)
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 178, in handle_request
+    respiter = self.wsgi(environ, resp.start_response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1476, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/llm/drq50001/backend/auth_decorator.py", line 24, in decorated
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/opt/llm/drq50001/backend/user_routes.py", line 707, in get_messages_with
+    msgs = execute_query_all(sql, (user_id, other_id, other_id, user_id))
+           ^^^^^^^^^^^^^^^^^
+NameError: name 'execute_query_all' is not defined
+[2026-06-28 23:28:43 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-28 23:28:43 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-28 23:28:43 +0800] [2962259] [INFO] Booting worker with pid: 2962259
+[2026-06-28 23:28:43 +0800] [2962260] [INFO] Booting worker with pid: 2962260
+[2026-06-28 23:28:43 +0800] [2962261] [INFO] Booting worker with pid: 2962261
+[2026-06-28 23:28:43 +0800] [2921489] [INFO] Worker exiting (pid: 2921489)
+[2026-06-28 23:28:43 +0800] [2921508] [INFO] Worker exiting (pid: 2921508)
+[2026-06-28 23:28:43 +0800] [2921510] [INFO] Worker exiting (pid: 2921510)
+[2026-06-28 23:28:43 +0800] [2921509] [INFO] Worker exiting (pid: 2921509)
+[2026-06-28 23:28:43 +0800] [2962262] [INFO] Booting worker with pid: 2962262
+[2026-06-28 23:28:44 +0800] [2921486] [ERROR] Worker (pid:2921508) was sent SIGTERM!
+[2026-06-28 23:28:44 +0800] [2921486] [ERROR] Worker (pid:2921509) was sent SIGTERM!
+[2026-06-28 23:28:44 +0800] [2921486] [ERROR] Worker (pid:2921489) was sent SIGTERM!
+[2026-06-28 23:30:56 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-28 23:30:56 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-28 23:30:56 +0800] [2963481] [INFO] Booting worker with pid: 2963481
+[2026-06-28 23:30:56 +0800] [2963482] [INFO] Booting worker with pid: 2963482
+[2026-06-28 23:30:56 +0800] [2962259] [INFO] Worker exiting (pid: 2962259)
+[2026-06-28 23:30:56 +0800] [2963484] [INFO] Booting worker with pid: 2963484
+[2026-06-28 23:30:56 +0800] [2963483] [INFO] Booting worker with pid: 2963483
+[2026-06-28 23:30:56 +0800] [2962260] [INFO] Worker exiting (pid: 2962260)
+[2026-06-28 23:30:56 +0800] [2962261] [INFO] Worker exiting (pid: 2962261)
+[2026-06-28 23:30:56 +0800] [2962262] [INFO] Worker exiting (pid: 2962262)
+[2026-06-28 23:30:56 +0800] [2921486] [ERROR] Worker (pid:2962262) was sent SIGTERM!
+[2026-06-28 23:30:56 +0800] [2921486] [ERROR] Worker (pid:2962261) was sent SIGTERM!
+[2026-06-28 23:30:56 +0800] [2921486] [ERROR] Worker (pid:2962260) was sent SIGTERM!
+[2026-06-28 23:38:46 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-28 23:38:46 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-28 23:38:46 +0800] [2967703] [INFO] Booting worker with pid: 2967703
+[2026-06-28 23:38:46 +0800] [2967704] [INFO] Booting worker with pid: 2967704
+[2026-06-28 23:38:46 +0800] [2967705] [INFO] Booting worker with pid: 2967705
+[2026-06-28 23:38:46 +0800] [2963481] [INFO] Worker exiting (pid: 2963481)
+[2026-06-28 23:38:46 +0800] [2963484] [INFO] Worker exiting (pid: 2963484)
+[2026-06-28 23:38:46 +0800] [2967706] [INFO] Booting worker with pid: 2967706
+[2026-06-28 23:38:46 +0800] [2963482] [INFO] Worker exiting (pid: 2963482)
+[2026-06-28 23:38:46 +0800] [2963483] [INFO] Worker exiting (pid: 2963483)
+[2026-06-28 23:38:47 +0800] [2921486] [ERROR] Worker (pid:2963481) was sent SIGTERM!
+[2026-06-28 23:38:47 +0800] [2921486] [ERROR] Worker (pid:2963482) was sent SIGTERM!
+[2026-06-28 23:38:47 +0800] [2921486] [ERROR] Worker (pid:2963483) was sent SIGTERM!
+[2026-06-28 23:40:53 +0800] [2967706] [ERROR] Error handling request /api/v1/activities/44/weather
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 135, in handle
+    self.handle_request(listener, req, client, addr)
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 178, in handle_request
+    respiter = self.wsgi(environ, resp.start_response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1476, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/llm/drq50001/backend/activities_routes.py", line 726, in activity_weather
+    city_name = activity.get("city", "").replace("市", "").replace("地区", "").replace("盟", "")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'replace'
+[2026-06-28 23:41:01 +0800] [2967703] [ERROR] Error handling request /api/v1/activities/43/weather
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 135, in handle
+    self.handle_request(listener, req, client, addr)
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 178, in handle_request
+    respiter = self.wsgi(environ, resp.start_response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1476, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/llm/drq50001/backend/activities_routes.py", line 726, in activity_weather
+    city_name = activity.get("city", "").replace("市", "").replace("地区", "").replace("盟", "")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'replace'
+[2026-06-28 23:41:10 +0800] [2967704] [ERROR] Error handling request /api/v1/activities/42/weather
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 135, in handle
+    self.handle_request(listener, req, client, addr)
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 178, in handle_request
+    respiter = self.wsgi(environ, resp.start_response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1476, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/llm/drq50001/backend/activities_routes.py", line 726, in activity_weather
+    city_name = activity.get("city", "").replace("市", "").replace("地区", "").replace("盟", "")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'replace'
+[2026-06-28 23:41:54 +0800] [2967704] [ERROR] Error handling request /api/v1/activities/42/weather
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 135, in handle
+    self.handle_request(listener, req, client, addr)
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 178, in handle_request
+    respiter = self.wsgi(environ, resp.start_response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1476, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/llm/drq50001/backend/activities_routes.py", line 726, in activity_weather
+    city_name = activity.get("city", "").replace("市", "").replace("地区", "").replace("盟", "")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'replace'
+[2026-06-28 23:42:09 +0800] [2967705] [ERROR] Error handling request /api/v1/activities/42/weather
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 135, in handle
+    self.handle_request(listener, req, client, addr)
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 178, in handle_request
+    respiter = self.wsgi(environ, resp.start_response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1476, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/llm/drq50001/backend/activities_routes.py", line 726, in activity_weather
+    city_name = activity.get("city", "").replace("市", "").replace("地区", "").replace("盟", "")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'replace'
+[2026-06-28 23:42:36 +0800] [2967705] [ERROR] Error handling request /api/v1/activities/42/weather
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 135, in handle
+    self.handle_request(listener, req, client, addr)
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 178, in handle_request
+    respiter = self.wsgi(environ, resp.start_response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1476, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/llm/drq50001/backend/activities_routes.py", line 726, in activity_weather
+    city_name = activity.get("city", "").replace("市", "").replace("地区", "").replace("盟", "")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'replace'
+[2026-06-28 23:42:45 +0800] [2967703] [ERROR] Error handling request /api/v1/activities/44/weather
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 135, in handle
+    self.handle_request(listener, req, client, addr)
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 178, in handle_request
+    respiter = self.wsgi(environ, resp.start_response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1476, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask_cors/extension.py", line 194, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/llm/drq50001/backend/activities_routes.py", line 726, in activity_weather
+    city_name = activity.get("city", "").replace("市", "").replace("地区", "").replace("盟", "")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'replace'
+[2026-06-28 23:45:50 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-28 23:45:50 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-28 23:45:50 +0800] [2971704] [INFO] Booting worker with pid: 2971704
+[2026-06-28 23:45:50 +0800] [2971705] [INFO] Booting worker with pid: 2971705
+[2026-06-28 23:45:50 +0800] [2971706] [INFO] Booting worker with pid: 2971706
+[2026-06-28 23:45:50 +0800] [2971707] [INFO] Booting worker with pid: 2971707
+[2026-06-28 23:45:50 +0800] [2967703] [INFO] Worker exiting (pid: 2967703)
+[2026-06-28 23:45:50 +0800] [2967704] [INFO] Worker exiting (pid: 2967704)
+[2026-06-28 23:45:50 +0800] [2967705] [INFO] Worker exiting (pid: 2967705)
+[2026-06-28 23:45:50 +0800] [2967706] [INFO] Worker exiting (pid: 2967706)
+[2026-06-28 23:45:50 +0800] [2921486] [ERROR] Worker (pid:2967705) was sent SIGTERM!
+[2026-06-28 23:45:50 +0800] [2921486] [ERROR] Worker (pid:2967704) was sent SIGTERM!
+[2026-06-28 23:45:50 +0800] [2921486] [ERROR] Worker (pid:2967706) was sent SIGTERM!
+[2026-06-28 23:51:26 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-28 23:51:26 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-28 23:51:26 +0800] [2974846] [INFO] Booting worker with pid: 2974846
+[2026-06-28 23:51:26 +0800] [2974847] [INFO] Booting worker with pid: 2974847
+[2026-06-28 23:51:26 +0800] [2971705] [INFO] Worker exiting (pid: 2971705)
+[2026-06-28 23:51:26 +0800] [2974848] [INFO] Booting worker with pid: 2974848
+[2026-06-28 23:51:26 +0800] [2971704] [INFO] Worker exiting (pid: 2971704)
+[2026-06-28 23:51:26 +0800] [2974849] [INFO] Booting worker with pid: 2974849
+[2026-06-28 23:51:26 +0800] [2971707] [INFO] Worker exiting (pid: 2971707)
+[2026-06-28 23:51:26 +0800] [2971706] [INFO] Worker exiting (pid: 2971706)
+[2026-06-28 23:51:26 +0800] [2921486] [ERROR] Worker (pid:2971707) was sent SIGTERM!
+[2026-06-28 23:51:26 +0800] [2921486] [ERROR] Worker (pid:2971704) was sent SIGTERM!
+[2026-06-28 23:51:26 +0800] [2921486] [ERROR] Worker (pid:2971705) was sent SIGTERM!
+[2026-06-28 23:55:28 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-28 23:55:28 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-28 23:55:28 +0800] [2977235] [INFO] Booting worker with pid: 2977235
+[2026-06-28 23:55:28 +0800] [2977236] [INFO] Booting worker with pid: 2977236
+[2026-06-28 23:55:28 +0800] [2977237] [INFO] Booting worker with pid: 2977237
+[2026-06-28 23:55:28 +0800] [2977238] [INFO] Booting worker with pid: 2977238
+[2026-06-28 23:55:28 +0800] [2974846] [INFO] Worker exiting (pid: 2974846)
+[2026-06-28 23:55:28 +0800] [2974847] [INFO] Worker exiting (pid: 2974847)
+[2026-06-28 23:55:28 +0800] [2974848] [INFO] Worker exiting (pid: 2974848)
+[2026-06-28 23:55:28 +0800] [2974849] [INFO] Worker exiting (pid: 2974849)
+[2026-06-28 23:55:28 +0800] [2921486] [ERROR] Worker (pid:2974848) was sent SIGTERM!
+[2026-06-28 23:55:28 +0800] [2921486] [ERROR] Worker (pid:2974849) was sent SIGTERM!
+[2026-06-28 23:55:28 +0800] [2921486] [ERROR] Worker (pid:2974846) was sent SIGTERM!
+[2026-06-28 23:58:22 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-28 23:58:22 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-28 23:58:22 +0800] [2978885] [INFO] Booting worker with pid: 2978885
+[2026-06-28 23:58:22 +0800] [2978886] [INFO] Booting worker with pid: 2978886
+[2026-06-28 23:58:22 +0800] [2978887] [INFO] Booting worker with pid: 2978887
+[2026-06-28 23:58:22 +0800] [2977235] [INFO] Worker exiting (pid: 2977235)
+[2026-06-28 23:58:22 +0800] [2977238] [INFO] Worker exiting (pid: 2977238)
+[2026-06-28 23:58:22 +0800] [2978888] [INFO] Booting worker with pid: 2978888
+[2026-06-28 23:58:22 +0800] [2977237] [INFO] Worker exiting (pid: 2977237)
+[2026-06-28 23:58:22 +0800] [2977236] [INFO] Worker exiting (pid: 2977236)
+[2026-06-28 23:58:22 +0800] [2921486] [ERROR] Worker (pid:2977236) was sent SIGTERM!
+[2026-06-28 23:58:22 +0800] [2921486] [ERROR] Worker (pid:2977237) was sent SIGTERM!
+[2026-06-28 23:58:22 +0800] [2921486] [ERROR] Worker (pid:2977238) was sent SIGTERM!
+[2026-06-29 00:07:54 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-29 00:07:54 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-29 00:07:54 +0800] [2983976] [INFO] Booting worker with pid: 2983976
+[2026-06-29 00:07:54 +0800] [2983977] [INFO] Booting worker with pid: 2983977
+[2026-06-29 00:07:54 +0800] [2978888] [INFO] Worker exiting (pid: 2978888)
+[2026-06-29 00:07:54 +0800] [2983978] [INFO] Booting worker with pid: 2983978
+[2026-06-29 00:07:54 +0800] [2978886] [INFO] Worker exiting (pid: 2978886)
+[2026-06-29 00:07:54 +0800] [2983979] [INFO] Booting worker with pid: 2983979
+[2026-06-29 00:07:54 +0800] [2978887] [INFO] Worker exiting (pid: 2978887)
+[2026-06-29 00:07:54 +0800] [2978885] [INFO] Worker exiting (pid: 2978885)
+[2026-06-29 00:07:54 +0800] [2921486] [ERROR] Worker (pid:2978887) was sent SIGTERM!
+[2026-06-29 00:07:54 +0800] [2921486] [ERROR] Worker (pid:2978886) was sent SIGTERM!
+[2026-06-29 00:11:02 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-29 00:11:02 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-29 00:11:03 +0800] [2985872] [INFO] Booting worker with pid: 2985872
+[2026-06-29 00:11:03 +0800] [2985873] [INFO] Booting worker with pid: 2985873
+[2026-06-29 00:11:03 +0800] [2985874] [INFO] Booting worker with pid: 2985874
+[2026-06-29 00:11:03 +0800] [2983976] [INFO] Worker exiting (pid: 2983976)
+[2026-06-29 00:11:03 +0800] [2983979] [INFO] Worker exiting (pid: 2983979)
+[2026-06-29 00:11:03 +0800] [2983977] [INFO] Worker exiting (pid: 2983977)
+[2026-06-29 00:11:03 +0800] [2985875] [INFO] Booting worker with pid: 2985875
+[2026-06-29 00:11:03 +0800] [2983978] [INFO] Worker exiting (pid: 2983978)
+[2026-06-29 00:11:03 +0800] [2921486] [ERROR] Worker (pid:2983976) was sent SIGTERM!
+[2026-06-29 00:11:03 +0800] [2921486] [ERROR] Worker (pid:2983977) was sent SIGTERM!
+[2026-06-29 00:11:03 +0800] [2921486] [ERROR] Worker (pid:2983978) was sent SIGTERM!
+[2026-06-29 00:21:07 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-29 00:21:07 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-29 00:21:07 +0800] [2991390] [INFO] Booting worker with pid: 2991390
+[2026-06-29 00:21:07 +0800] [2991391] [INFO] Booting worker with pid: 2991391
+[2026-06-29 00:21:07 +0800] [2991392] [INFO] Booting worker with pid: 2991392
+[2026-06-29 00:21:07 +0800] [2985875] [INFO] Worker exiting (pid: 2985875)
+[2026-06-29 00:21:07 +0800] [2985874] [INFO] Worker exiting (pid: 2985874)
+[2026-06-29 00:21:07 +0800] [2991393] [INFO] Booting worker with pid: 2991393
+[2026-06-29 00:21:07 +0800] [2985872] [INFO] Worker exiting (pid: 2985872)
+[2026-06-29 00:21:07 +0800] [2985873] [INFO] Worker exiting (pid: 2985873)
+[2026-06-29 00:21:07 +0800] [2921486] [ERROR] Worker (pid:2985873) was sent SIGTERM!
+[2026-06-29 00:21:07 +0800] [2921486] [ERROR] Worker (pid:2985874) was sent SIGTERM!
+[2026-06-29 00:21:07 +0800] [2921486] [ERROR] Worker (pid:2985872) was sent SIGTERM!
+[2026-06-29 00:27:38 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-29 00:27:38 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-29 00:27:38 +0800] [2995153] [INFO] Booting worker with pid: 2995153
+[2026-06-29 00:27:38 +0800] [2995154] [INFO] Booting worker with pid: 2995154
+[2026-06-29 00:27:38 +0800] [2991391] [INFO] Worker exiting (pid: 2991391)
+[2026-06-29 00:27:38 +0800] [2995155] [INFO] Booting worker with pid: 2995155
+[2026-06-29 00:27:38 +0800] [2991392] [INFO] Worker exiting (pid: 2991392)
+[2026-06-29 00:27:38 +0800] [2995156] [INFO] Booting worker with pid: 2995156
+[2026-06-29 00:27:38 +0800] [2991390] [INFO] Worker exiting (pid: 2991390)
+[2026-06-29 00:27:38 +0800] [2991393] [INFO] Worker exiting (pid: 2991393)
+[2026-06-29 00:27:39 +0800] [2921486] [ERROR] Worker (pid:2991390) was sent SIGTERM!
+[2026-06-29 00:27:39 +0800] [2921486] [ERROR] Worker (pid:2991391) was sent SIGTERM!
+[2026-06-29 00:27:39 +0800] [2921486] [ERROR] Worker (pid:2991393) was sent SIGTERM!
+[2026-06-29 00:36:55 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-29 00:36:55 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-29 00:36:55 +0800] [3000245] [INFO] Booting worker with pid: 3000245
+[2026-06-29 00:36:55 +0800] [3000246] [INFO] Booting worker with pid: 3000246
+[2026-06-29 00:36:55 +0800] [3000247] [INFO] Booting worker with pid: 3000247
+[2026-06-29 00:36:55 +0800] [2995154] [INFO] Worker exiting (pid: 2995154)
+[2026-06-29 00:36:55 +0800] [3000248] [INFO] Booting worker with pid: 3000248
+[2026-06-29 00:36:55 +0800] [2995153] [INFO] Worker exiting (pid: 2995153)
+[2026-06-29 00:36:55 +0800] [2995155] [INFO] Worker exiting (pid: 2995155)
+[2026-06-29 00:36:55 +0800] [2995156] [INFO] Worker exiting (pid: 2995156)
+[2026-06-29 00:36:55 +0800] [2921486] [ERROR] Worker (pid:2995155) was sent SIGTERM!
+[2026-06-29 00:36:55 +0800] [2921486] [ERROR] Worker (pid:2995153) was sent SIGTERM!
+[2026-06-29 00:36:55 +0800] [2921486] [ERROR] Worker (pid:2995156) was sent SIGTERM!
+[2026-06-29 00:43:45 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-29 00:43:45 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-29 00:43:45 +0800] [3004010] [INFO] Booting worker with pid: 3004010
+[2026-06-29 00:43:45 +0800] [3004011] [INFO] Booting worker with pid: 3004011
+[2026-06-29 00:43:45 +0800] [3004012] [INFO] Booting worker with pid: 3004012
+[2026-06-29 00:43:45 +0800] [3000245] [INFO] Worker exiting (pid: 3000245)
+[2026-06-29 00:43:45 +0800] [3004013] [INFO] Booting worker with pid: 3004013
+[2026-06-29 00:43:45 +0800] [3000246] [INFO] Worker exiting (pid: 3000246)
+[2026-06-29 00:43:45 +0800] [3000247] [INFO] Worker exiting (pid: 3000247)
+[2026-06-29 00:43:45 +0800] [3000248] [INFO] Worker exiting (pid: 3000248)
+[2026-06-29 00:43:45 +0800] [2921486] [ERROR] Worker (pid:3000245) was sent SIGTERM!
+[2026-06-29 00:43:45 +0800] [2921486] [ERROR] Worker (pid:3000247) was sent SIGTERM!
+[2026-06-29 00:43:45 +0800] [2921486] [ERROR] Worker (pid:3000248) was sent SIGTERM!
+[2026-06-29 00:48:24 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-29 00:48:24 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-29 00:48:24 +0800] [3006400] [INFO] Booting worker with pid: 3006400
+[2026-06-29 00:48:24 +0800] [3006401] [INFO] Booting worker with pid: 3006401
+[2026-06-29 00:48:24 +0800] [3006402] [INFO] Booting worker with pid: 3006402
+[2026-06-29 00:48:24 +0800] [3004013] [INFO] Worker exiting (pid: 3004013)
+[2026-06-29 00:48:24 +0800] [3004012] [INFO] Worker exiting (pid: 3004012)
+[2026-06-29 00:48:24 +0800] [3006403] [INFO] Booting worker with pid: 3006403
+[2026-06-29 00:48:24 +0800] [3004010] [INFO] Worker exiting (pid: 3004010)
+[2026-06-29 00:48:24 +0800] [3004011] [INFO] Worker exiting (pid: 3004011)
+[2026-06-29 00:48:24 +0800] [2921486] [ERROR] Worker (pid:3004013) was sent SIGTERM!
+[2026-06-29 00:48:24 +0800] [2921486] [ERROR] Worker (pid:3004011) was sent SIGTERM!
+[2026-06-29 00:48:24 +0800] [2921486] [ERROR] Worker (pid:3004010) was sent SIGTERM!
+[2026-06-29 00:48:54 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-29 00:48:54 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-29 00:48:54 +0800] [3006805] [INFO] Booting worker with pid: 3006805
+[2026-06-29 00:48:54 +0800] [3006806] [INFO] Booting worker with pid: 3006806
+[2026-06-29 00:48:54 +0800] [3006807] [INFO] Booting worker with pid: 3006807
+[2026-06-29 00:48:54 +0800] [3006403] [INFO] Worker exiting (pid: 3006403)
+[2026-06-29 00:48:54 +0800] [3006401] [INFO] Worker exiting (pid: 3006401)
+[2026-06-29 00:48:54 +0800] [3006402] [INFO] Worker exiting (pid: 3006402)
+[2026-06-29 00:48:54 +0800] [3006400] [INFO] Worker exiting (pid: 3006400)
+[2026-06-29 00:48:54 +0800] [3006808] [INFO] Booting worker with pid: 3006808
+[2026-06-29 00:48:54 +0800] [2921486] [ERROR] Worker (pid:3006400) was sent SIGTERM!
+[2026-06-29 00:48:54 +0800] [2921486] [ERROR] Worker (pid:3006402) was sent SIGTERM!
+[2026-06-29 00:48:54 +0800] [2921486] [ERROR] Worker (pid:3006401) was sent SIGTERM!
+[2026-06-29 00:51:22 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-29 00:51:22 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-29 00:51:22 +0800] [3008063] [INFO] Booting worker with pid: 3008063
+[2026-06-29 00:51:22 +0800] [3008064] [INFO] Booting worker with pid: 3008064
+[2026-06-29 00:51:22 +0800] [3008065] [INFO] Booting worker with pid: 3008065
+[2026-06-29 00:51:22 +0800] [3008066] [INFO] Booting worker with pid: 3008066
+[2026-06-29 00:51:22 +0800] [3006805] [INFO] Worker exiting (pid: 3006805)
+[2026-06-29 00:51:22 +0800] [3006806] [INFO] Worker exiting (pid: 3006806)
+[2026-06-29 00:51:22 +0800] [3006807] [INFO] Worker exiting (pid: 3006807)
+[2026-06-29 00:51:22 +0800] [3006808] [INFO] Worker exiting (pid: 3006808)
+[2026-06-29 00:51:23 +0800] [2921486] [ERROR] Worker (pid:3006807) was sent SIGTERM!
+[2026-06-29 00:51:23 +0800] [2921486] [ERROR] Worker (pid:3006808) was sent SIGTERM!
+[2026-06-29 00:51:32 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-29 00:51:32 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-29 00:51:32 +0800] [3008130] [INFO] Booting worker with pid: 3008130
+[2026-06-29 00:51:32 +0800] [3008131] [INFO] Booting worker with pid: 3008131
+[2026-06-29 00:51:32 +0800] [3008132] [INFO] Booting worker with pid: 3008132
+[2026-06-29 00:51:32 +0800] [3008065] [INFO] Worker exiting (pid: 3008065)
+[2026-06-29 00:51:32 +0800] [3008133] [INFO] Booting worker with pid: 3008133
+[2026-06-29 00:51:32 +0800] [3008064] [INFO] Worker exiting (pid: 3008064)
+[2026-06-29 00:51:32 +0800] [3008063] [INFO] Worker exiting (pid: 3008063)
+[2026-06-29 00:51:32 +0800] [3008066] [INFO] Worker exiting (pid: 3008066)
+[2026-06-29 00:51:32 +0800] [2921486] [ERROR] Worker (pid:3008063) was sent SIGTERM!
+[2026-06-29 00:51:32 +0800] [2921486] [ERROR] Worker (pid:3008066) was sent SIGTERM!
+[2026-06-29 00:51:50 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-29 00:51:50 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-29 00:51:50 +0800] [3008438] [INFO] Booting worker with pid: 3008438
+[2026-06-29 00:51:50 +0800] [3008439] [INFO] Booting worker with pid: 3008439
+[2026-06-29 00:51:50 +0800] [3008443] [INFO] Booting worker with pid: 3008443
+[2026-06-29 00:51:50 +0800] [3008440] [INFO] Booting worker with pid: 3008440
+[2026-06-29 00:51:50 +0800] [3008130] [INFO] Worker exiting (pid: 3008130)
+[2026-06-29 00:51:50 +0800] [3008133] [INFO] Worker exiting (pid: 3008133)
+[2026-06-29 00:51:50 +0800] [3008132] [INFO] Worker exiting (pid: 3008132)
+[2026-06-29 00:51:50 +0800] [3008131] [INFO] Worker exiting (pid: 3008131)
+[2026-06-29 00:51:50 +0800] [2921486] [ERROR] Worker (pid:3008133) was sent SIGTERM!
+[2026-06-29 00:51:50 +0800] [2921486] [ERROR] Worker (pid:3008130) was sent SIGTERM!
+[2026-06-29 00:51:50 +0800] [2921486] [ERROR] Worker (pid:3008131) was sent SIGTERM!
+[2026-06-29 00:51:50 +0800] [2921486] [ERROR] Worker (pid:3008132) was sent SIGTERM!
+[2026-06-29 00:52:23 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-29 00:52:23 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-29 00:52:23 +0800] [3008671] [INFO] Booting worker with pid: 3008671
+[2026-06-29 00:52:23 +0800] [3008673] [INFO] Booting worker with pid: 3008673
+[2026-06-29 00:52:23 +0800] [3008672] [INFO] Booting worker with pid: 3008672
+[2026-06-29 00:52:23 +0800] [3008438] [INFO] Worker exiting (pid: 3008438)
+[2026-06-29 00:52:23 +0800] [3008439] [INFO] Worker exiting (pid: 3008439)
+[2026-06-29 00:52:23 +0800] [3008440] [INFO] Worker exiting (pid: 3008440)
+[2026-06-29 00:52:23 +0800] [3008443] [INFO] Worker exiting (pid: 3008443)
+[2026-06-29 00:52:23 +0800] [3008674] [INFO] Booting worker with pid: 3008674
+[2026-06-29 00:52:23 +0800] [2921486] [ERROR] Worker (pid:3008438) was sent SIGTERM!
+[2026-06-29 00:52:23 +0800] [2921486] [ERROR] Worker (pid:3008439) was sent SIGTERM!
+[2026-06-29 00:52:24 +0800] [2921486] [ERROR] Worker (pid:3008440) was sent SIGTERM!
+[2026-06-29 00:52:41 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-29 00:52:41 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-29 00:52:41 +0800] [3008945] [INFO] Booting worker with pid: 3008945
+[2026-06-29 00:52:41 +0800] [3008946] [INFO] Booting worker with pid: 3008946
+[2026-06-29 00:52:41 +0800] [3008671] [INFO] Worker exiting (pid: 3008671)
+[2026-06-29 00:52:41 +0800] [3008672] [INFO] Worker exiting (pid: 3008672)
+[2026-06-29 00:52:41 +0800] [3008947] [INFO] Booting worker with pid: 3008947
+[2026-06-29 00:52:41 +0800] [3008673] [INFO] Worker exiting (pid: 3008673)
+[2026-06-29 00:52:41 +0800] [3008948] [INFO] Booting worker with pid: 3008948
+[2026-06-29 00:52:41 +0800] [3008674] [INFO] Worker exiting (pid: 3008674)
+[2026-06-29 00:52:41 +0800] [2921486] [ERROR] Worker (pid:3008674) was sent SIGTERM!
+[2026-06-29 00:55:11 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-29 00:55:11 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-29 00:55:11 +0800] [3010202] [INFO] Booting worker with pid: 3010202
+[2026-06-29 00:55:11 +0800] [3010203] [INFO] Booting worker with pid: 3010203
+[2026-06-29 00:55:11 +0800] [3010205] [INFO] Booting worker with pid: 3010205
+[2026-06-29 00:55:11 +0800] [3008945] [INFO] Worker exiting (pid: 3008945)
+[2026-06-29 00:55:11 +0800] [3010204] [INFO] Booting worker with pid: 3010204
+[2026-06-29 00:55:11 +0800] [3008948] [INFO] Worker exiting (pid: 3008948)
+[2026-06-29 00:55:11 +0800] [3008946] [INFO] Worker exiting (pid: 3008946)
+[2026-06-29 00:55:11 +0800] [3008947] [INFO] Worker exiting (pid: 3008947)
+[2026-06-29 00:55:11 +0800] [2921486] [ERROR] Worker (pid:3008947) was sent SIGTERM!
+[2026-06-29 00:55:11 +0800] [2921486] [ERROR] Worker (pid:3008946) was sent SIGTERM!
+[2026-06-29 00:55:11 +0800] [2921486] [ERROR] Worker (pid:3008945) was sent SIGTERM!
+[2026-06-29 00:55:40 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-29 00:55:40 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-29 00:55:40 +0800] [3010566] [INFO] Booting worker with pid: 3010566
+[2026-06-29 00:55:40 +0800] [3010567] [INFO] Booting worker with pid: 3010567
+[2026-06-29 00:55:40 +0800] [3010202] [INFO] Worker exiting (pid: 3010202)
+[2026-06-29 00:55:40 +0800] [3010204] [INFO] Worker exiting (pid: 3010204)
+[2026-06-29 00:55:40 +0800] [3010568] [INFO] Booting worker with pid: 3010568
+[2026-06-29 00:55:40 +0800] [3010205] [INFO] Worker exiting (pid: 3010205)
+[2026-06-29 00:55:40 +0800] [3010569] [INFO] Booting worker with pid: 3010569
+[2026-06-29 00:55:40 +0800] [3010203] [INFO] Worker exiting (pid: 3010203)
+[2026-06-29 00:55:40 +0800] [2921486] [ERROR] Worker (pid:3010203) was sent SIGTERM!
+[2026-06-29 00:55:40 +0800] [2921486] [ERROR] Worker (pid:3010205) was sent SIGTERM!
+[2026-06-29 00:59:51 +0800] [2921486] [INFO] Handling signal: hup
+[2026-06-29 00:59:51 +0800] [2921486] [INFO] Hang up: Master
+[2026-06-29 00:59:51 +0800] [3012865] [INFO] Booting worker with pid: 3012865
+[2026-06-29 00:59:51 +0800] [3012866] [INFO] Booting worker with pid: 3012866
+[2026-06-29 00:59:51 +0800] [3012867] [INFO] Booting worker with pid: 3012867
+[2026-06-29 00:59:51 +0800] [3010566] [INFO] Worker exiting (pid: 3010566)
+[2026-06-29 00:59:51 +0800] [3012868] [INFO] Booting worker with pid: 3012868
+[2026-06-29 00:59:51 +0800] [3010567] [INFO] Worker exiting (pid: 3010567)
+[2026-06-29 00:59:51 +0800] [3010568] [INFO] Worker exiting (pid: 3010568)
+[2026-06-29 00:59:51 +0800] [3010569] [INFO] Worker exiting (pid: 3010569)
+[2026-06-29 00:59:51 +0800] [2921486] [ERROR] Worker (pid:3010567) was sent SIGTERM!
+[2026-06-29 00:59:51 +0800] [2921486] [ERROR] Worker (pid:3010568) was sent SIGTERM!
+[2026-06-29 00:59:51 +0800] [2921486] [ERROR] Worker (pid:3010569) was sent SIGTERM!
+[2026-06-29 01:02:48 +0800] [2921486] [INFO] Handling signal: term
+[2026-06-29 01:02:48 +0800] [3012865] [INFO] Worker exiting (pid: 3012865)
+[2026-06-29 01:02:48 +0800] [3012868] [INFO] Worker exiting (pid: 3012868)
+[2026-06-29 01:02:48 +0800] [3012866] [INFO] Worker exiting (pid: 3012866)
+[2026-06-29 01:02:48 +0800] [3012867] [INFO] Worker exiting (pid: 3012867)
+[2026-06-29 01:02:48 +0800] [2921486] [INFO] Shutting down: Master
+[2026-06-29 01:02:53 +0800] [3014666] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:02:53 +0800] [3014666] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:02:53 +0800] [3014666] [ERROR] Retrying in 1 second.
+[2026-06-29 01:02:54 +0800] [3014666] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:02:54 +0800] [3014666] [ERROR] Retrying in 1 second.
+[2026-06-29 01:02:55 +0800] [3014666] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:02:55 +0800] [3014666] [ERROR] Retrying in 1 second.
+[2026-06-29 01:02:56 +0800] [3014666] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:02:56 +0800] [3014666] [ERROR] Retrying in 1 second.
+[2026-06-29 01:02:57 +0800] [3014666] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:02:57 +0800] [3014666] [ERROR] Retrying in 1 second.
+[2026-06-29 01:02:58 +0800] [3014666] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:03:04 +0800] [3014753] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:03:04 +0800] [3014753] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:04 +0800] [3014753] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:05 +0800] [3014753] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:05 +0800] [3014753] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:06 +0800] [3014753] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:06 +0800] [3014753] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:07 +0800] [3014753] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:07 +0800] [3014753] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:08 +0800] [3014753] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:08 +0800] [3014753] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:09 +0800] [3014753] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:03:14 +0800] [3014799] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:03:14 +0800] [3014799] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:14 +0800] [3014799] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:15 +0800] [3014799] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:15 +0800] [3014799] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:16 +0800] [3014799] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:16 +0800] [3014799] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:17 +0800] [3014799] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:17 +0800] [3014799] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:18 +0800] [3014799] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:18 +0800] [3014799] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:19 +0800] [3014799] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:03:24 +0800] [3014899] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:03:24 +0800] [3014899] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:24 +0800] [3014899] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:25 +0800] [3014899] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:25 +0800] [3014899] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:26 +0800] [3014899] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:26 +0800] [3014899] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:27 +0800] [3014899] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:27 +0800] [3014899] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:28 +0800] [3014899] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:28 +0800] [3014899] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:29 +0800] [3014899] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:03:34 +0800] [3014963] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:03:34 +0800] [3014963] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:34 +0800] [3014963] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:35 +0800] [3014963] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:35 +0800] [3014963] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:36 +0800] [3014963] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:36 +0800] [3014963] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:37 +0800] [3014963] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:37 +0800] [3014963] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:38 +0800] [3014963] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:38 +0800] [3014963] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:39 +0800] [3014963] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:03:44 +0800] [3015181] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:03:44 +0800] [3015181] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:44 +0800] [3015181] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:45 +0800] [3015181] [INFO] Listening at: http://0.0.0.0:50001 (3015181)
+[2026-06-29 01:03:45 +0800] [3015181] [INFO] Using worker: sync
+[2026-06-29 01:03:46 +0800] [3015203] [INFO] Booting worker with pid: 3015203
+[2026-06-29 01:03:46 +0800] [3015219] [INFO] Booting worker with pid: 3015219
+[2026-06-29 01:03:46 +0800] [3015229] [INFO] Booting worker with pid: 3015229
+[2026-06-29 01:03:46 +0800] [3015239] [INFO] Booting worker with pid: 3015239
+[2026-06-29 01:03:46 +0800] [3015181] [INFO] Handling signal: term
+[2026-06-29 01:03:46 +0800] [3015203] [INFO] Worker exiting (pid: 3015203)
+[2026-06-29 01:03:46 +0800] [3015219] [INFO] Worker exiting (pid: 3015219)
+[2026-06-29 01:03:46 +0800] [3015239] [INFO] Worker exiting (pid: 3015239)
+[2026-06-29 01:03:46 +0800] [3015229] [INFO] Worker exiting (pid: 3015229)
+[2026-06-29 01:03:46 +0800] [3015181] [INFO] Shutting down: Master
+[2026-06-29 01:03:51 +0800] [3015396] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:03:51 +0800] [3015396] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:51 +0800] [3015396] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:52 +0800] [3015396] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:52 +0800] [3015396] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:53 +0800] [3015396] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:53 +0800] [3015396] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:54 +0800] [3015396] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:54 +0800] [3015396] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:55 +0800] [3015396] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:03:55 +0800] [3015396] [ERROR] Retrying in 1 second.
+[2026-06-29 01:03:56 +0800] [3015396] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:04:02 +0800] [3015481] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:04:02 +0800] [3015481] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:02 +0800] [3015481] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:03 +0800] [3015481] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:03 +0800] [3015481] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:04 +0800] [3015481] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:04 +0800] [3015481] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:05 +0800] [3015481] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:05 +0800] [3015481] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:06 +0800] [3015481] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:06 +0800] [3015481] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:07 +0800] [3015481] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:04:12 +0800] [3015548] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:04:12 +0800] [3015548] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:12 +0800] [3015548] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:13 +0800] [3015548] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:13 +0800] [3015548] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:14 +0800] [3015548] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:14 +0800] [3015548] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:15 +0800] [3015548] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:15 +0800] [3015548] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:16 +0800] [3015548] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:16 +0800] [3015548] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:17 +0800] [3015548] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:04:22 +0800] [3015617] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:04:22 +0800] [3015617] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:22 +0800] [3015617] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:23 +0800] [3015617] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:23 +0800] [3015617] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:24 +0800] [3015617] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:24 +0800] [3015617] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:25 +0800] [3015617] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:25 +0800] [3015617] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:26 +0800] [3015617] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:26 +0800] [3015617] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:27 +0800] [3015617] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:04:32 +0800] [3015670] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:04:32 +0800] [3015670] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:32 +0800] [3015670] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:33 +0800] [3015670] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:33 +0800] [3015670] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:34 +0800] [3015670] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:34 +0800] [3015670] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:35 +0800] [3015670] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:35 +0800] [3015670] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:36 +0800] [3015670] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:36 +0800] [3015670] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:37 +0800] [3015670] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:04:43 +0800] [3015878] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:04:43 +0800] [3015878] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:43 +0800] [3015878] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:44 +0800] [3015878] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:44 +0800] [3015878] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:45 +0800] [3015878] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:45 +0800] [3015878] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:46 +0800] [3015878] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:46 +0800] [3015878] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:47 +0800] [3015878] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:47 +0800] [3015878] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:48 +0800] [3015878] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:04:53 +0800] [3015966] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:04:53 +0800] [3015966] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:53 +0800] [3015966] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:54 +0800] [3015966] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:54 +0800] [3015966] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:55 +0800] [3015966] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:55 +0800] [3015966] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:56 +0800] [3015966] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:56 +0800] [3015966] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:57 +0800] [3015966] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:04:57 +0800] [3015966] [ERROR] Retrying in 1 second.
+[2026-06-29 01:04:58 +0800] [3015966] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:05:03 +0800] [3016055] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:05:03 +0800] [3016055] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:03 +0800] [3016055] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:04 +0800] [3016055] [INFO] Listening at: http://0.0.0.0:50001 (3016055)
+[2026-06-29 01:05:04 +0800] [3016055] [INFO] Using worker: sync
+[2026-06-29 01:05:04 +0800] [3016197] [INFO] Booting worker with pid: 3016197
+[2026-06-29 01:05:04 +0800] [3016199] [INFO] Booting worker with pid: 3016199
+[2026-06-29 01:05:04 +0800] [3016200] [INFO] Booting worker with pid: 3016200
+[2026-06-29 01:05:04 +0800] [3016203] [INFO] Booting worker with pid: 3016203
+[2026-06-29 01:05:04 +0800] [3016055] [INFO] Handling signal: term
+[2026-06-29 01:05:04 +0800] [3016199] [INFO] Worker exiting (pid: 3016199)
+[2026-06-29 01:05:04 +0800] [3016200] [INFO] Worker exiting (pid: 3016200)
+[2026-06-29 01:05:04 +0800] [3016197] [INFO] Worker exiting (pid: 3016197)
+[2026-06-29 01:05:05 +0800] [3016203] [INFO] Worker exiting (pid: 3016203)
+[2026-06-29 01:05:05 +0800] [3016055] [INFO] Shutting down: Master
+[2026-06-29 01:05:10 +0800] [3016246] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:05:10 +0800] [3016246] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:10 +0800] [3016246] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:11 +0800] [3016246] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:11 +0800] [3016246] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:12 +0800] [3016246] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:12 +0800] [3016246] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:13 +0800] [3016246] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:13 +0800] [3016246] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:14 +0800] [3016246] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:14 +0800] [3016246] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:15 +0800] [3016246] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:05:20 +0800] [3016316] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:05:20 +0800] [3016316] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:20 +0800] [3016316] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:21 +0800] [3016316] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:21 +0800] [3016316] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:22 +0800] [3016316] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:22 +0800] [3016316] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:23 +0800] [3016316] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:23 +0800] [3016316] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:24 +0800] [3016316] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:24 +0800] [3016316] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:25 +0800] [3016316] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:05:31 +0800] [3016400] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:05:31 +0800] [3016400] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:31 +0800] [3016400] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:32 +0800] [3016400] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:32 +0800] [3016400] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:33 +0800] [3016400] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:33 +0800] [3016400] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:34 +0800] [3016400] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:34 +0800] [3016400] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:35 +0800] [3016400] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:35 +0800] [3016400] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:36 +0800] [3016400] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:05:41 +0800] [3016624] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:05:41 +0800] [3016624] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:41 +0800] [3016624] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:42 +0800] [3016624] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:42 +0800] [3016624] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:43 +0800] [3016624] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:43 +0800] [3016624] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:44 +0800] [3016624] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:44 +0800] [3016624] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:45 +0800] [3016624] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:45 +0800] [3016624] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:46 +0800] [3016624] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:05:51 +0800] [3016691] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:05:51 +0800] [3016691] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:51 +0800] [3016691] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:52 +0800] [3016691] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:52 +0800] [3016691] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:53 +0800] [3016691] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:53 +0800] [3016691] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:54 +0800] [3016691] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:54 +0800] [3016691] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:55 +0800] [3016691] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:05:55 +0800] [3016691] [ERROR] Retrying in 1 second.
+[2026-06-29 01:05:56 +0800] [3016691] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:06:01 +0800] [3016781] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:06:01 +0800] [3016781] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:01 +0800] [3016781] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:02 +0800] [3016781] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:02 +0800] [3016781] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:03 +0800] [3016781] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:03 +0800] [3016781] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:04 +0800] [3016781] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:04 +0800] [3016781] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:05 +0800] [3016781] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:05 +0800] [3016781] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:06 +0800] [3016781] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:06:12 +0800] [3016878] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:06:12 +0800] [3016878] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:12 +0800] [3016878] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:13 +0800] [3016878] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:13 +0800] [3016878] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:14 +0800] [3016878] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:14 +0800] [3016878] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:15 +0800] [3016878] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:15 +0800] [3016878] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:16 +0800] [3016878] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:16 +0800] [3016878] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:17 +0800] [3016878] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:06:22 +0800] [3016927] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:06:22 +0800] [3016927] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:22 +0800] [3016927] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:23 +0800] [3016927] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:23 +0800] [3016927] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:24 +0800] [3016927] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:24 +0800] [3016927] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:25 +0800] [3016927] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:25 +0800] [3016927] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:26 +0800] [3016927] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:26 +0800] [3016927] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:27 +0800] [3016927] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:06:32 +0800] [3017012] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:06:32 +0800] [3017012] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:32 +0800] [3017012] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:33 +0800] [3017012] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:33 +0800] [3017012] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:34 +0800] [3017012] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:34 +0800] [3017012] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:35 +0800] [3017012] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:35 +0800] [3017012] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:36 +0800] [3017012] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:36 +0800] [3017012] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:37 +0800] [3017012] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:06:42 +0800] [3017239] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:06:42 +0800] [3017239] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:42 +0800] [3017239] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:43 +0800] [3017239] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:43 +0800] [3017239] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:44 +0800] [3017239] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:44 +0800] [3017239] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:45 +0800] [3017239] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:45 +0800] [3017239] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:46 +0800] [3017239] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:46 +0800] [3017239] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:47 +0800] [3017239] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:06:52 +0800] [3017319] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:06:52 +0800] [3017319] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:52 +0800] [3017319] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:53 +0800] [3017319] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:53 +0800] [3017319] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:54 +0800] [3017319] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:54 +0800] [3017319] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:55 +0800] [3017319] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:55 +0800] [3017319] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:56 +0800] [3017319] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:06:56 +0800] [3017319] [ERROR] Retrying in 1 second.
+[2026-06-29 01:06:57 +0800] [3017319] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:07:03 +0800] [3017564] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:07:03 +0800] [3017564] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:03 +0800] [3017564] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:04 +0800] [3017564] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:04 +0800] [3017564] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:05 +0800] [3017564] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:05 +0800] [3017564] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:06 +0800] [3017564] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:06 +0800] [3017564] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:07 +0800] [3017564] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:07 +0800] [3017564] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:08 +0800] [3017564] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:07:13 +0800] [3017642] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:07:13 +0800] [3017642] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:13 +0800] [3017642] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:14 +0800] [3017642] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:14 +0800] [3017642] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:15 +0800] [3017642] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:15 +0800] [3017642] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:16 +0800] [3017642] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:16 +0800] [3017642] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:17 +0800] [3017642] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:17 +0800] [3017642] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:18 +0800] [3017642] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:07:23 +0800] [3017683] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:07:23 +0800] [3017683] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:23 +0800] [3017683] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:24 +0800] [3017683] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:24 +0800] [3017683] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:25 +0800] [3017683] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:25 +0800] [3017683] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:26 +0800] [3017683] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:26 +0800] [3017683] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:27 +0800] [3017683] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:27 +0800] [3017683] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:28 +0800] [3017683] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:07:34 +0800] [3017752] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:07:34 +0800] [3017752] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:34 +0800] [3017752] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:35 +0800] [3017752] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:35 +0800] [3017752] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:36 +0800] [3017752] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:36 +0800] [3017752] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:37 +0800] [3017752] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:37 +0800] [3017752] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:38 +0800] [3017752] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:38 +0800] [3017752] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:39 +0800] [3017752] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:07:44 +0800] [3017960] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:07:44 +0800] [3017960] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:44 +0800] [3017960] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:45 +0800] [3017960] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:45 +0800] [3017960] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:46 +0800] [3017960] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:46 +0800] [3017960] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:47 +0800] [3017960] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:47 +0800] [3017960] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:48 +0800] [3017960] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:48 +0800] [3017960] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:49 +0800] [3017960] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:07:54 +0800] [3018045] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:07:54 +0800] [3018045] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:54 +0800] [3018045] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:55 +0800] [3018045] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:55 +0800] [3018045] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:56 +0800] [3018045] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:56 +0800] [3018045] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:57 +0800] [3018045] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:57 +0800] [3018045] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:58 +0800] [3018045] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:07:58 +0800] [3018045] [ERROR] Retrying in 1 second.
+[2026-06-29 01:07:59 +0800] [3018045] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:08:04 +0800] [3018108] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:08:04 +0800] [3018108] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:04 +0800] [3018108] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:05 +0800] [3018108] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:05 +0800] [3018108] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:06 +0800] [3018108] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:06 +0800] [3018108] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:07 +0800] [3018108] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:07 +0800] [3018108] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:08 +0800] [3018108] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:08 +0800] [3018108] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:09 +0800] [3018108] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:08:15 +0800] [3018162] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:08:15 +0800] [3018162] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:15 +0800] [3018162] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:16 +0800] [3018162] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:16 +0800] [3018162] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:17 +0800] [3018162] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:17 +0800] [3018162] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:18 +0800] [3018162] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:18 +0800] [3018162] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:19 +0800] [3018162] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:19 +0800] [3018162] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:20 +0800] [3018162] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:08:25 +0800] [3018379] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:08:25 +0800] [3018379] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:25 +0800] [3018379] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:26 +0800] [3018379] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:26 +0800] [3018379] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:27 +0800] [3018379] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:27 +0800] [3018379] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:28 +0800] [3018379] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:28 +0800] [3018379] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:29 +0800] [3018379] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:29 +0800] [3018379] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:30 +0800] [3018379] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:08:35 +0800] [3018433] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:08:35 +0800] [3018433] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:35 +0800] [3018433] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:36 +0800] [3018433] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:36 +0800] [3018433] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:37 +0800] [3018433] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:37 +0800] [3018433] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:38 +0800] [3018433] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:38 +0800] [3018433] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:39 +0800] [3018433] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:39 +0800] [3018433] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:40 +0800] [3018433] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:08:45 +0800] [3018656] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:08:45 +0800] [3018656] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:45 +0800] [3018656] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:46 +0800] [3018656] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:46 +0800] [3018656] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:47 +0800] [3018656] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:47 +0800] [3018656] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:48 +0800] [3018656] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:48 +0800] [3018656] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:49 +0800] [3018656] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:49 +0800] [3018656] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:50 +0800] [3018656] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:08:56 +0800] [3018762] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:08:56 +0800] [3018762] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:56 +0800] [3018762] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:57 +0800] [3018762] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:57 +0800] [3018762] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:58 +0800] [3018762] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:08:58 +0800] [3018762] [ERROR] Retrying in 1 second.
+[2026-06-29 01:08:59 +0800] [3018762] [INFO] Listening at: http://0.0.0.0:50001 (3018762)
+[2026-06-29 01:08:59 +0800] [3018762] [INFO] Using worker: sync
+[2026-06-29 01:08:59 +0800] [3018860] [INFO] Booting worker with pid: 3018860
+[2026-06-29 01:08:59 +0800] [3018877] [INFO] Booting worker with pid: 3018877
+[2026-06-29 01:08:59 +0800] [3018879] [INFO] Booting worker with pid: 3018879
+[2026-06-29 01:08:59 +0800] [3018884] [INFO] Booting worker with pid: 3018884
+[2026-06-29 01:08:59 +0800] [3018762] [INFO] Handling signal: term
+[2026-06-29 01:08:59 +0800] [3018884] [INFO] Worker exiting (pid: 3018884)
+[2026-06-29 01:08:59 +0800] [3018860] [INFO] Worker exiting (pid: 3018860)
+[2026-06-29 01:08:59 +0800] [3018879] [INFO] Worker exiting (pid: 3018879)
+[2026-06-29 01:08:59 +0800] [3018877] [INFO] Worker exiting (pid: 3018877)
+[2026-06-29 01:08:59 +0800] [3018762] [INFO] Shutting down: Master
+[2026-06-29 01:09:05 +0800] [3019018] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:09:05 +0800] [3019018] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:05 +0800] [3019018] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:06 +0800] [3019018] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:06 +0800] [3019018] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:07 +0800] [3019018] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:07 +0800] [3019018] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:08 +0800] [3019018] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:08 +0800] [3019018] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:09 +0800] [3019018] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:09 +0800] [3019018] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:10 +0800] [3019018] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:09:15 +0800] [3019073] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:09:15 +0800] [3019073] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:15 +0800] [3019073] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:16 +0800] [3019073] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:16 +0800] [3019073] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:17 +0800] [3019073] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:17 +0800] [3019073] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:18 +0800] [3019073] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:18 +0800] [3019073] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:19 +0800] [3019073] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:19 +0800] [3019073] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:20 +0800] [3019073] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:09:25 +0800] [3019141] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:09:25 +0800] [3019141] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:25 +0800] [3019141] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:26 +0800] [3019141] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:26 +0800] [3019141] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:27 +0800] [3019141] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:27 +0800] [3019141] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:28 +0800] [3019141] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:28 +0800] [3019141] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:29 +0800] [3019141] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:29 +0800] [3019141] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:30 +0800] [3019141] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:09:35 +0800] [3019192] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:09:35 +0800] [3019192] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:35 +0800] [3019192] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:36 +0800] [3019192] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:36 +0800] [3019192] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:37 +0800] [3019192] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:37 +0800] [3019192] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:38 +0800] [3019192] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:38 +0800] [3019192] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:39 +0800] [3019192] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:39 +0800] [3019192] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:40 +0800] [3019192] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:09:46 +0800] [3019400] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:09:46 +0800] [3019400] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:46 +0800] [3019400] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:47 +0800] [3019400] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:47 +0800] [3019400] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:48 +0800] [3019400] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:48 +0800] [3019400] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:49 +0800] [3019400] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:49 +0800] [3019400] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:50 +0800] [3019400] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:50 +0800] [3019400] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:51 +0800] [3019400] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:09:56 +0800] [3019487] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:09:56 +0800] [3019487] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:56 +0800] [3019487] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:57 +0800] [3019487] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:57 +0800] [3019487] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:58 +0800] [3019487] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:58 +0800] [3019487] [ERROR] Retrying in 1 second.
+[2026-06-29 01:09:59 +0800] [3019487] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:09:59 +0800] [3019487] [ERROR] Retrying in 1 second.
+[2026-06-29 01:10:00 +0800] [3019487] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:10:00 +0800] [3019487] [ERROR] Retrying in 1 second.
+[2026-06-29 01:10:01 +0800] [3019487] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:10:06 +0800] [3019555] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:10:06 +0800] [3019555] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:10:06 +0800] [3019555] [ERROR] Retrying in 1 second.
+[2026-06-29 01:10:07 +0800] [3019555] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:10:07 +0800] [3019555] [ERROR] Retrying in 1 second.
+[2026-06-29 01:10:08 +0800] [3019555] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:10:08 +0800] [3019555] [ERROR] Retrying in 1 second.
+[2026-06-29 01:10:09 +0800] [3019555] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:10:09 +0800] [3019555] [ERROR] Retrying in 1 second.
+[2026-06-29 01:10:10 +0800] [3019555] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:10:10 +0800] [3019555] [ERROR] Retrying in 1 second.
+[2026-06-29 01:10:11 +0800] [3019555] [ERROR] Can't connect to ('0.0.0.0', 50001)
+[2026-06-29 01:10:16 +0800] [3019615] [INFO] Starting gunicorn 22.0.0
+[2026-06-29 01:10:16 +0800] [3019615] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:10:16 +0800] [3019615] [ERROR] Retrying in 1 second.
+[2026-06-29 01:10:17 +0800] [3019615] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:10:17 +0800] [3019615] [ERROR] Retrying in 1 second.
+[2026-06-29 01:10:18 +0800] [3019615] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:10:18 +0800] [3019615] [ERROR] Retrying in 1 second.
+[2026-06-29 01:10:19 +0800] [3019615] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:10:19 +0800] [3019615] [ERROR] Retrying in 1 second.
+[2026-06-29 01:10:20 +0800] [3019615] [ERROR] Connection in use: ('0.0.0.0', 50001)
+[2026-06-29 01:10:20 +0800] [3019615] [ERROR] Retrying in 1 second.
+[2026-06-29 01:10:21 +0800] [3019615] [ERROR] Can't connect to ('0.0.0.0', 50001)

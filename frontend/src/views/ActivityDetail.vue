@@ -70,14 +70,19 @@
       </div>
 
       <!-- Action Buttons -->
-      <div class="detail-actions">
+      <div class="detail-actions" v-if="activity.status !== 'closed' && activity.status_text !== '已结束' && activity.status_text !== '已结束' && activity.status_text !== '已解散'">
         <button v-if="canSignup && !hasSignedUp && !activity.is_captain" class="btn btn-primary btn-block" @click="handleSignup">立即报名</button>
         <button v-if="hasSignedUp && !activity.is_captain" class="btn btn-outline btn-block" @click="handleCancel">取消报名</button>
-        <button v-if="activity.is_captain && activity.status === 'open'" class="btn btn-success btn-block" @click="handleComplete" style="background:#52C41A;color:#fff">完成活动</button>
+        <button v-if="activity.is_captain && activity.status === 'open'" class="btn btn-block" :style="isEnded ? {background:'#52C41A',color:'#fff'} : {background:'#ccc',color:'#999'}" @click="isEnded ? handleComplete() : null" :disabled="!isEnded">完成活动{{ !isEnded ? ' (需等活动结束)' : '' }}</button>
         <button v-if="activity.is_captain && activity.status === 'open'" class="btn btn-outline btn-block" @click="handleDisband">解散活动</button>
         <button v-if="!activity.is_captain" class="btn btn-outline btn-sm" @click="handleFavorite" style="margin-top:8px">
           {{ activity.is_favorited ? '❤️ 已收藏' : '🤍 收藏' }}
         </button>
+      </div>
+
+      <!-- Closed Label -->
+      <div v-if="activity.status_text === '已结束' || activity.status_text === '已结束' || activity.status_text === '已解散'" style="padding:16px;text-align:center;color:#999;font-size:14px">
+        <div class="closed-badge">{{ activity.status_text }}</div>
       </div>
 
       <!-- Reviews -->
@@ -113,6 +118,10 @@ const albums = ref([])
 const reviews = ref([])
 
 const canSignup = computed(() => activity.value?.status === 'open')
+const isEnded = computed(() => {
+  if (!activity.value?.end_time) return false
+  return new Date(activity.value.end_time) < new Date()
+})
 const hasSignedUp = computed(() => activity.value?.signup_status)
 const isLoggedIn = computed(() => auth.isLoggedIn)
 
@@ -313,4 +322,5 @@ onMounted(() => {
   font-size: 13px;
   color: var(--text-secondary);
 }
+.closed-badge { margin: 12px 16px; padding: 12px 0; text-align: center; background: #e0e0e0; color: #888; border-radius: 12px; font-size: 14px; font-weight: 600; }
 </style>

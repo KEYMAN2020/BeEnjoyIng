@@ -36,6 +36,8 @@
           <div v-for="act in myActivities" :key="act.id" class="act-item-v3" @click="$router.push('/activity/' + act.id)">
             <div class="act-title-v3">{{ act.title }}</div>
             <div class="act-meta-v3">📅 {{ (act.start_time || '').slice(0, 10) }} | 📍 {{ act.city }} | 👥 {{ act.current_participants }}/{{ act.max_participants }}</div>
+            
+            <div v-if="act.status_text" style="font-size:11px;margin-top:4px" :style="{color: act.status_text === '已结束' ? '#999' : '#52C41A'}">{{ act.status_text }}</div>
             <span class="act-tag-v3" :class="act.is_captain || act.is_creator ? 'tag-created-v3' : 'tag-joined-v3'">{{ act.is_captain || act.is_creator ? '我创建的' : '我报名的' }}</span>
           </div>
         </div>
