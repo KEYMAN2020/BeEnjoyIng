@@ -7,6 +7,14 @@
     <div v-if="loading" class="empty-state">加载中...</div>
     <div v-else class="edit-form-v3">
       <h3>编辑资料</h3>
+      <div class="edit-avatar-row" @click="triggerUpload">
+        <div class="edit-avatar-preview">
+          <img v-if="avatarPreview" :src="avatarPreview" />
+          <span v-else>{{ (form.nickname || "?")[0] }}</span>
+        </div>
+        <div class="edit-avatar-hint">点击更换头像</div>
+        <input type="file" ref="fileInput" accept="image/*" style="display:none" @change="handleFile" />
+      </div>
 
       <div class="edit-field">
         <label>昵称</label>
@@ -78,11 +86,32 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { usersAPI } from '@/api'
+import api, { usersAPI } from '@/api'
 
 const router = useRouter()
 const loading = ref(true)
 const saving = ref(false)
+const fileInput = ref(null)
+const avatarPreview = ref(null)
+
+function triggerUpload() {
+  fileInput.value?.click()
+}
+
+async function handleFile(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  const fd = new FormData()
+  fd.append("file", file)
+  fd.append("subdir", "avatars")
+  try {
+    const res = await api.post("/upload", fd, { headers: { "Content-Type": "multipart/form-data" } })
+    if (res.data.code === 0) {
+      avatarPreview.value = res.data.data.url
+    }
+  } catch (e) { alert("上传失败") }
+}
+
 const form = reactive({
   nickname: '',
   gender: 'male',
@@ -108,7 +137,8 @@ async function saveProfile() {
       bio: form.bio.trim(),
       ghost_mode: form.ghost_mode === 1,
       allow_private_msg: form.allow_private_msg === 1,
-      allow_profile_view: form.allow_profile_view === 1
+      allow_profile_view: form.allow_profile_view === 1,
+      ...(avatarPreview.value ? { avatar_url: avatarPreview.value } : {})
     })
     if (res.data.code === 0) {
       alert('保存成功')
@@ -127,6 +157,7 @@ onMounted(async () => {
       const data = res.data.data.user || res.data.data || {}
       const p = data.profile || {}
       form.nickname = data.nickname || ''
+      avatarPreview.value = data.avatar_url || null
       form.gender = p.gender || 'male'
       form.birth_year = p.birth_year || null
       form.city = p.city || ''
@@ -156,5 +187,11 @@ onMounted(async () => {
 .btn-save { background: #FF6B35; color: #fff; font-weight: 600; }
 .btn-save:disabled { opacity: 0.6; }
 .btn-cancel { background: #f5f5f5; color: #666; }
+.edit-avatar-row { display: flex; flex-direction: column; align-items: center; padding: 16px 0; cursor: pointer; }
+.edit-avatar-preview { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #FF6B35, #FFB74D); color: #fff; font-size: 32px; font-weight: 700; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.edit-avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+.edit-avatar-hint { font-size: 12px; color: #999; margin-top: 6px; }
+.edit-avatar-row .edit-avatar-preview { border: 3px solid #FF6B35; }
+
 .empty-state { text-align: center; color: #999; padding: 60px 20px; font-size: 14px; }
 </style>

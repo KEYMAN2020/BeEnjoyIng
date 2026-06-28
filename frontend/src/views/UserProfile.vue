@@ -68,7 +68,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usersAPI } from '@/api'
 
@@ -82,25 +82,47 @@ const stats = ref(null)
 const genderMap = { male: '男', female: '女', other: '保密' }
 const tagColors = ['#FF6B35', '#52c41a', '#1890ff', '#722ed1', '#eb2f96', '#13c2c2']
 
-function goEdit() {
-  router.push('/profile/edit')
-}
-
-onMounted(async () => {
+async function loadUserData() {
+  loading.value = true
   try {
     const profileId = route.params.id
-    const [profileRes, statsRes] = await Promise.all([
-      usersAPI.publicProfile(profileId),
-      usersAPI.userStats(profileId)
-    ])
+    // Get current user ID from token
+    let myId = null
+    try {
+      const t = localStorage.getItem("token")
+      if (t) myId = JSON.parse(atob(t.split(".")[1])).user_id
+    } catch (e) {}
+    const isMe = myId && String(myId) === String(profileId)
+    
+    // If viewing own profile, use /users/me for full data
+    const profileRes = isMe 
+      ? await usersAPI.me()
+      : await usersAPI.publicProfile(profileId)
+    const statsRes = await usersAPI.userStats(profileId)
+    
     if (profileRes.data.code === 0) {
-      const u = profileRes.data.data.user || profileRes.data.data || {}
+      const u = isMe
+        ? (profileRes.data.data.user || profileRes.data.data || {})
+        : (profileRes.data.data.user || profileRes.data.data || {})
       user.value = u
       profileInfo.value = u.profile || {}
     }
     if (statsRes.data.code === 0) stats.value = statsRes.data.data
   } catch (e) {}
   loading.value = false
+}
+
+function goEdit() {
+  router.push('/profile/edit')
+}
+
+// 关键修复：监听路由变化，从编辑页返回时重新拉取数据
+watch(() => route.fullPath, () => {
+  loadUserData()
+})
+
+onMounted(() => {
+  loadUserData()
 })
 </script>
 
@@ -132,15 +154,15 @@ onMounted(async () => {
 .pf-val { color: #2D2D2D; text-align: right; max-width: 60%; }
 .pf-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; max-width: 60%; }
 .pf-tag { display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: 12px; color: #fff; }
-.pf-divider { padding: 0 16px; margin: 0 16px 12px; }
+.pf-divider { padding: 0 16px; margin: 12px 16px 0; }
 .pf-divider::after { content: ''; display: block; height: 1px; background: #f0f0f0; }
 
-.pf-stats-card { margin: 0 16px 12px; background: #fff; border-radius: 14px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+.pf-stats-card { margin: 12px 16px; background: #fff; border-radius: 14px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
 .pf-stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; text-align: center; }
 .pf-stat-val { font-size: 22px; font-weight: 700; color: #FF6B35; }
 .pf-stat-val.sm { font-size: 13px; }
 .pf-stat-lbl { font-size: 11px; color: #999; margin-top: 2px; }
 
-.pf-bio { margin: 0 16px 12px; background: #fff; border-radius: 14px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.04); font-size: 14px; color: #666; line-height: 1.6; }
+.pf-bio { margin: 12px 16px; background: #fff; border-radius: 14px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.04); font-size: 14px; color: #666; line-height: 1.6; }
 .empty-state { text-align: center; color: #999; padding: 60px 20px; font-size: 14px; }
 </style>

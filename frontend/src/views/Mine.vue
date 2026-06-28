@@ -126,7 +126,7 @@ const changingPwd = ref(false)
 const pwdError = ref('')
 const pwdForm = ref({ old: '', newPwd: '', confirm: '' })
 
-let currentUserId = 4
+let currentUserId = null
 
 function goProfile() {
   router.push('/profile/' + currentUserId)
@@ -185,7 +185,7 @@ onMounted(async () => {
       try { currentUserId = JSON.parse(atob(token.split('.')[1])).user_id } catch (e) {}
     }
     const res = await usersAPI.me()
-    if (res.data.code === 0) user.value = res.data.data.user || res.data.data || {}
+    if (res.data.code === 0) { user.value = res.data.data.user || res.data.data || {}; if (user.value.user_id) currentUserId = user.value.user_id }
   } catch (e) {}
 })
 </script>
