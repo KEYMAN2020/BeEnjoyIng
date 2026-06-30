@@ -26,7 +26,7 @@
     <!-- Sub page: Activities -->
     <template v-if="subPage === 'activities'">
       <div class="sub-back-v3">
-        <button @click="subPage = ''">← 返回</button>
+        <button @click="goBack()">← 返回</button>
         <span>我的活动</span>
       </div>
       <div class="sub-card-v3">
@@ -47,7 +47,7 @@
     <!-- Sub page: Favorites -->
     <template v-else-if="subPage === 'favorites'">
       <div class="sub-back-v3">
-        <button @click="subPage = ''">← 返回</button>
+        <button @click="goBack()">← 返回</button>
         <span>我的收藏</span>
       </div>
       <div class="sub-card-v3">
@@ -123,6 +123,7 @@ const subPage = ref('')
 const myActivities = ref([])
 const myFavorites = ref([])
 const loadingSub = ref(false)
+function goBack() { subPage.value = ''; router.replace({ query: {} }) }
 const showChangePwd = ref(false)
 const changingPwd = ref(false)
 const pwdError = ref('')
@@ -140,6 +141,7 @@ function onAvatarError(e) {
 
 async function openSub(page) {
   subPage.value = page
+  router.replace({ query: { tab: page } })
   loadingSub.value = true
   try {
     if (page === 'activities') {
@@ -181,6 +183,8 @@ function logout() {
 }
 
 onMounted(async () => {
+  const tab = router.currentRoute.value.query.tab
+  if (tab) await openSub(tab)
   try {
     const token = localStorage.getItem('token')
     if (token) {

@@ -154,7 +154,8 @@ async function loadPendingRequests() {
     const res = await usersAPI.pendingFriendRequests()
     if (res.data.code === 0) {
       pendingRequests.value = res.data.data.items || []
-      pendingCount.value = pendingRequests.value.length
+      const lastSeen = parseInt(localStorage.getItem('last_seen_requests') || '0')
+      pendingCount.value = Math.max(0, pendingRequests.value.length - lastSeen)
     }
   } catch (e) {
     console.error('获取好友请求失败', e)

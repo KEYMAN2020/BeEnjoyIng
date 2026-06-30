@@ -1,0 +1,12 @@
+<!DOCTYPE html><html><head><meta charset=utf-8><title>Groups Test</title>
+<style>body{font-family:sans-serif;padding:20px;background:#f5f5f5}.card{background:#fff;margin:8px 0;padding:12px;border-radius:8px;display:flex;align-items:center;gap:12px}.avatar{width:44px;height:44px;border-radius:8px;background:#FF6B35;color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700}.name{font-size:16px;font-weight:600}.count{font-size:12px;color:#999}h1{font-size:20px;color:#FF6B35}</style></head><body>
+<h1>📋 我的群聊列表</h1><div id=list>加载中...</div>
+<script>
+var TOKEN=prompt('输入token (从登录API获取):')||'';
+fetch('/api/v1/chat/groups',{headers:{'Authorization':'Bearer '+TOKEN}}).then(r=>r.json()).then(d=>{
+  var g=d.data.groups||[];
+  document.getElementById('list').innerHTML=g.length===0?'暂无群聊':
+    g.map(x=>'<div class=card><div class=avatar>'+x.name[0]+'</div><div><div class=name>'+x.name+'</div><div class=count>'+x.member_count+'人</div></div></div>').join('');
+  document.title=g.length+'个群聊';
+}).catch(e=>{document.getElementById('list').innerHTML='错误: '+e});
+</script></body></html>

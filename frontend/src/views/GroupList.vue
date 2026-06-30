@@ -64,7 +64,7 @@ async function loadGroups() {
   try {
     const res = await chatAPI.groups()
     if (res.data.code === 0) {
-      groups.value = res.data.data.items || []
+      groups.value = res.data.groups || []
     }
   } catch (e) {
     console.error('loadGroups error', e)

@@ -100,12 +100,7 @@ function confirmDelete(act) {
 async function doDelete() {
   const act = deleteModal.value.act
   if (!act) return
-  try {
-    const res = await activitiesAPI.delete(act.id)
-    if (res.data.code === 0) {
-      activities.value = activities.value.filter(a => a.id !== act.id)
-    }
-  } catch(e) { alert('删除失败') }
+  activities.value = activities.value.filter(a => a.id !== act.id)
   deleteModal.value = { show: false, act: null }
 }
 const filters = ref({ date: "", tags: [], category: "" })

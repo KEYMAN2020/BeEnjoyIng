@@ -1,0 +1,17 @@
+<!DOCTYPE html><html><head><meta charset=utf-8><title>群聊测试</title>
+<style>body{font-family:PingFang SC,sans-serif;padding:16px;background:#f5f5f5;margin:0}
+.card{background:#fff;margin:8px 0;padding:14px;border-radius:10px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.avatar{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#FF6B35,#FFB74D);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0}
+.name{font-size:16px;font-weight:600;color:#333}.count{font-size:12px;color:#999;margin-top:2px}
+h1{font-size:20px;color:#FF6B35;margin:0 0 12px}</style></head><body>
+<h1>📋 群聊列表</h1><div id=list>加载中...</div>
+<script>
+var TOKEN='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo2LCJyb2xlIjoidXNlciIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3ODI4Mjc1ODEsImV4cCI6MTc4MjgyOTM4MX0.OjVrAA6OPoiczX0NEN71xGXTgotQX3AHtsQWdbBYwXI';
+fetch('/api/v1/chat/groups',{headers:{'Authorization':'Bearer '+TOKEN}}).then(function(r){return r.json()}).then(function(d){
+  var g=d.data.groups||[];
+  var html=g.length===0?'<div style=text-align:center;padding:60px;color:#999>暂无群聊</div>':
+    g.map(function(x){return '<div class=card><div class=avatar>'+x.name[0]+'</div><div><div class=name>'+x.name+'</div><div class=count>'+x.member_count+'人</div></div></div>'}).join('');
+  document.getElementById('list').innerHTML=html;
+  document.title=g.length+' 个群聊';
+}).catch(function(e){document.getElementById('list').innerHTML='错误: '+e.message});
+</script></body></html>

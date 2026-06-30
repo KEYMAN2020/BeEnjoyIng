@@ -75,7 +75,10 @@
         <button v-if="hasSignedUp && !activity.is_captain" class="btn btn-outline btn-block" @click="handleCancel">取消报名</button>
         <button v-if="activity.is_captain && activity.status === 'open'" class="btn btn-block" :style="isEnded ? {background:'#52C41A',color:'#fff'} : {background:'#ccc',color:'#999'}" @click="isEnded ? handleComplete() : null" :disabled="!isEnded">完成活动{{ !isEnded ? ' (需等活动结束)' : '' }}</button>
         <button v-if="activity.is_captain && activity.status === 'open'" class="btn btn-outline btn-block" @click="handleDisband">解散活动</button>
-        <button v-if="!activity.is_captain" class="btn btn-outline btn-sm" @click="handleFavorite" style="margin-top:8px">
+      </div>
+
+      <div style="padding: 0 16px; text-align: center;">
+        <button class="btn btn-outline btn-sm" @click="handleFavorite" style="margin-top:8px">
           {{ activity.is_favorited ? '❤️ 已收藏' : '🤍 收藏' }}
         </button>
       </div>
