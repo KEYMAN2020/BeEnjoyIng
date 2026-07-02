@@ -147,11 +147,11 @@ function onMsgClick(item) {
 async function loadData() {
   try {
     const [gr, pr] = await Promise.all([
-      chatAPI.groupMessages().catch(() => ({ data: { code: -1, data: { items: [] } } })),
-      chatAPI.privateMessages().catch(() => ({ data: { code: -1, data: { items: [] } } }))
+      chatAPI.groups().catch(() => ({ data: { code: -1, data: { items: [] } } })),
+      usersAPI.messages().catch(() => ({ data: { code: -1, data: { items: [] } } }))
     ])
-    if (gr.data.code === 0) groups.value = gr.data.data.items || []
-    if (pr.data.code === 0) privates.value = pr.data.data.items || []
+    if (gr.code === 0) groups.value = gr.data.groups || []
+    if (pr.code === 0) privates.value = pr.data.items || []
   } catch (e) {}
   loading.value = false
 }
@@ -160,7 +160,7 @@ async function loadPendingRequests() {
   try {
     const res = await usersAPI.pendingFriendRequests()
     if (res.data.code === 0) {
-      pendingCount.value = (res.data.data.items || []).length
+      pendingCount.value = (res.data.items || []).length
     }
   } catch (e) {}
 }

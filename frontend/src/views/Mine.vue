@@ -26,7 +26,7 @@
     <!-- Sub page: Activities -->
     <template v-if="subPage === 'activities'">
       <div class="sub-back-v3">
-        <button @click="subPage = ''">← 返回</button>
+        <button @click="goBack()">← 返回</button>
         <span>我的活动</span>
       </div>
       <div class="sub-card-v3">
@@ -36,6 +36,8 @@
           <div v-for="act in myActivities" :key="act.id" class="act-item-v3" @click="$router.push('/activity/' + act.id)">
             <div class="act-title-v3">{{ act.title }}</div>
             <div class="act-meta-v3">📅 {{ (act.start_time || '').slice(0, 10) }} | 📍 {{ act.city }} | 👥 {{ act.current_participants }}/{{ act.max_participants }}</div>
+            
+            <div v-if="act.status_text" style="font-size:11px;margin-top:4px" :style="{color: act.status_text === '已结束' ? '#999' : '#52C41A'}">{{ act.status_text }}</div>
             <span class="act-tag-v3" :class="act.is_captain || act.is_creator ? 'tag-created-v3' : 'tag-joined-v3'">{{ act.is_captain || act.is_creator ? '我创建的' : '我报名的' }}</span>
           </div>
         </div>
@@ -45,7 +47,7 @@
     <!-- Sub page: Favorites -->
     <template v-else-if="subPage === 'favorites'">
       <div class="sub-back-v3">
-        <button @click="subPage = ''">← 返回</button>
+        <button @click="goBack()">← 返回</button>
         <span>我的收藏</span>
       </div>
       <div class="sub-card-v3">
@@ -121,12 +123,13 @@ const subPage = ref('')
 const myActivities = ref([])
 const myFavorites = ref([])
 const loadingSub = ref(false)
+function goBack() { subPage.value = ''; router.replace({ query: {} }) }
 const showChangePwd = ref(false)
 const changingPwd = ref(false)
 const pwdError = ref('')
 const pwdForm = ref({ old: '', newPwd: '', confirm: '' })
 
-let currentUserId = 4
+let currentUserId = null
 
 function goProfile() {
   router.push('/profile/' + currentUserId)
@@ -138,6 +141,7 @@ function onAvatarError(e) {
 
 async function openSub(page) {
   subPage.value = page
+  router.replace({ query: { tab: page } })
   loadingSub.value = true
   try {
     if (page === 'activities') {
@@ -179,13 +183,15 @@ function logout() {
 }
 
 onMounted(async () => {
+  const tab = router.currentRoute.value.query.tab
+  if (tab) await openSub(tab)
   try {
     const token = localStorage.getItem('token')
     if (token) {
       try { currentUserId = JSON.parse(atob(token.split('.')[1])).user_id } catch (e) {}
     }
     const res = await usersAPI.me()
-    if (res.data.code === 0) user.value = res.data.data.user || res.data.data || {}
+    if (res.data.code === 0) { user.value = res.data.data.user || res.data.data || {}; if (user.value.user_id) currentUserId = user.value.user_id }
   } catch (e) {}
 })
 </script>

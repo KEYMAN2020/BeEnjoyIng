@@ -395,10 +395,10 @@ def send_friend_request():
     if not target:
         return error("用户不存在", 404)
 
-    # 检查是否已存在好友关系
+    # 检查是否已存在好友关系（含已删除的记录）
     existing = execute_query_one(
         "SELECT id, status FROM user_friends "
-        "WHERE user_id = %s AND friend_id = %s AND deleted_at IS NULL",
+        "WHERE user_id = %s AND friend_id = %s",
         (user_id, target_user_id),
     )
     if existing:
@@ -406,6 +406,9 @@ def send_friend_request():
             return error("已是好友", 409)
         if existing["status"] == "pending":
             return error("已发送过好友申请", 409)
+        # deleted — 物理删除旧记录以释放唯一键
+        if existing["status"] == "deleted" or existing.get("deleted_at"):
+            execute_update("DELETE FROM user_friends WHERE id = %s", (existing["id"],))
 
     execute_insert(
         "INSERT INTO user_friends (user_id, friend_id, source, status, created_at, updated_at) "

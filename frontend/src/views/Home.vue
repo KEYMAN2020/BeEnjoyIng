@@ -35,7 +35,8 @@
       </div>
 
       <div v-else>
-        <div v-for="act in activities" :key="act.id" class="activity-card" @click="$router.push(`/activity/${act.id}`)">
+        <div v-for="act in activities" :key="act.id" class="activity-card" @click="$router.push(`/activity/${act.id}`)" style="position:relative">
+          <button v-if="act.status_text === '已结束'" class="card-delete-btn" @click.stop="confirmDelete(act)" title="删除">🗑️</button>
           <div class="card-header">
             <div class="card-title">{{ act.title }}</div>
             <div class="card-meta">
@@ -58,6 +59,18 @@
       </div>
     </div>
     <div class="page-bottom-padding"></div>
+
+    <!-- Delete Modal -->
+    <div v-if="deleteModal.show" class="del-overlay">
+      <div class="del-card">
+        <div class="del-title">确认删除</div>
+        <div class="del-msg">确定要删除此活动吗？</div>
+        <div class="del-btns">
+          <button class="del-cancel" @click="deleteModal.show = false">取消</button>
+          <button class="del-ok" @click="doDelete">确认删除</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -74,6 +87,22 @@ const categories = ref([])
 const availableTags = ref([])
 const page = ref(1)
 const hasMore = ref(false)
+const showDeleteDialog = ref(false)
+const deleting = ref(false)
+const deletingAct = ref(null)
+
+const deleteModal = ref({ show: false, act: null })
+
+function confirmDelete(act) {
+  deleteModal.value = { show: true, act }
+}
+
+async function doDelete() {
+  const act = deleteModal.value.act
+  if (!act) return
+  activities.value = activities.value.filter(a => a.id !== act.id)
+  deleteModal.value = { show: false, act: null }
+}
 const filters = ref({ date: "", tags: [], category: "" })
 
 async function fetchActivities(reset = true) {
@@ -145,4 +174,11 @@ onMounted(async () => {
 .tag-list { display: flex; flex-wrap: wrap; gap: 8px; }
 .tag-list .tag { background: var(--bg); padding: 6px 14px; border-radius: 14px; font-size: 14px; cursor: pointer; transition: all 0.2s; }
 .tag-list .tag.active { background: var(--primary-light); color: #fff; }
+.del-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.5); z-index: 99999; display: flex; align-items: center; justify-content: center; }
+.del-card { background: #fff; border-radius: 16px; width: 300px; padding: 24px; box-shadow: 0 8px 32px rgba(0,0,0,.2); }
+.del-title { text-align: center; font-size: 18px; font-weight: 700; color: #333; margin-bottom: 12px; }
+.del-msg { text-align: center; color: #666; font-size: 14px; margin-bottom: 20px; }
+.del-btns { display: flex; gap: 12px; }
+.del-cancel { flex: 1; padding: 12px; background: #f5f5f5; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; color: #666; }
+.del-ok { flex: 1; padding: 12px; background: #ff4d4f; color: #fff; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; font-weight: 600; }
 </style>

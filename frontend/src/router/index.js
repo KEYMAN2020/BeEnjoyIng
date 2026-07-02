@@ -9,6 +9,7 @@ const routes = [
   { path: "/chat/private/:id", name: "PrivateChat", component: () => import("@/views/PrivateChat.vue"), meta: { requiresAuth: true } },
   { path: "/groups", name: "GroupList", component: () => import("@/views/GroupList.vue"), meta: { requiresAuth: true } },
   { path: "/contacts", name: "Contacts", component: () => import("@/views/Contacts.vue"), meta: { requiresAuth: true } },
+  { path: "/contacts/requests", name: "FriendRequests", component: () => import("@/views/FriendRequests.vue"), meta: { requiresAuth: true } },
   { path: "/mine", name: "Mine", component: () => import("@/views/Mine.vue"), meta: { requiresAuth: true } },
   { path: "/activity/:id", name: "ActivityDetail", component: () => import("@/views/ActivityDetail.vue") },
   { path: "/activity/:id/signups", name: "ActivitySignups", component: () => import("@/views/ActivitySignups.vue"), meta: { requiresAuth: true } },
