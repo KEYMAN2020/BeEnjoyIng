@@ -1220,6 +1220,23 @@ def cancel_signup(activity_id):
         ip_address=_get_ip(),
     )
 
+    # 退出活动群聊（取消报名时同步离开群聊）
+    try:
+        g = execute_query_one(
+            "SELECT id FROM chat_groups WHERE activity_id = %s AND status = 'active' LIMIT 1",
+            (activity_id,),
+        )
+        if g:
+            execute_update(
+                "DELETE FROM chat_group_members WHERE group_id = %s AND user_id = %s",
+                (g["id"], user_id),
+            )
+            execute_update(
+                "UPDATE chat_groups SET member_count = GREATEST(member_count - 1, 0), updated_at = NOW() WHERE id = %s",
+                (g["id"],),
+            )
+    except Exception:
+        pass
     return success(None, "已取消报名")
 
 

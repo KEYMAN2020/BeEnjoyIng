@@ -34,8 +34,6 @@ class Config:
     MAX_CONTENT_LENGTH = 10 * 1024 * 1024
     ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "gif", "webp", "mp3", "wav", "ogg", "amr"}
 
-    # 高德地图 Web API
-    AMAP_KEY = os.getenv("AMAP_KEY", "")
 
     # Swagger
     SWAGGER = {
@@ -81,3 +79,10 @@ config_map = {
 }
 
 active_config = config_map.get(os.getenv("FLASK_ENV", "development"), DevelopmentConfig)
+
+
+
+# ── 高德地图 Web 服务 ──────────────────
+AMAP_KEY = "4cae03e0ef24554110c6055673d122e0"
+AMAP_POI_SEARCH_URL = "https://restapi.amap.com/v3/assistant/inputtips"
+AMAP_GEOCODE_URL = "https://restapi.amap.com/v3/geocode/geo"
