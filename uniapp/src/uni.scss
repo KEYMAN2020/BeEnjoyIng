@@ -1,0 +1,35 @@
+/* ── 银发活力 全局样式 (uni-app) ── */
+page { background: #F5F2EE; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 34rpx; color: #1A1A1A; line-height: 1.65; }
+
+/* Flex */
+.flex-center { display: flex; align-items: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-col { display: flex; flex-direction: column; }
+.flex-1 { flex: 1; }
+
+/* 按钮 */
+.btn { display: inline-flex; align-items: center; justify-content: center; padding: 24rpx 48rpx; border-radius: 24rpx; font-size: 32rpx; font-weight: 600; }
+.btn-primary { background: linear-gradient(135deg, #FF6B35, #E55A2B); color: #fff; box-shadow: 0 8rpx 28rpx rgba(255,107,53,0.35); }
+.btn-block { width: 100%; }
+.btn-sm { padding: 16rpx 32rpx; font-size: 28rpx; border-radius: 20rpx; }
+.btn-outline { border: 3rpx solid #E8E2DA; color: #555; background: #fff; }
+.btn-danger { background: linear-gradient(135deg, #FF4D4F, #C62828); color: #fff; }
+.btn-success { background: linear-gradient(135deg, #52C41A, #43A047); color: #fff; }
+
+/* 卡片 */
+.card { background: #fff; border-radius: 32rpx; padding: 36rpx; margin: 20rpx 24rpx; box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.07); }
+
+/* 表单 */
+.form-group { margin-bottom: 40rpx; }
+.form-group label { display: block; font-size: 32rpx; font-weight: 600; margin-bottom: 16rpx; color: #555; }
+.form-input { width: 100%; border: 3rpx solid #E8E2DA; border-radius: 24rpx; padding: 26rpx 32rpx; font-size: 34rpx; background: #fff; color: #1A1A1A; }
+.form-input:focus { border-color: #FF6B35; }
+
+/* 加载 */
+.loading { display: flex; justify-content: center; padding: 100rpx 0; }
+.spinner { width: 76rpx; height: 76rpx; border: 7rpx solid #E8E2DA; border-top-color: #FF6B35; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 空状态 */
+.empty-state { text-align: center; padding: 100rpx 40rpx; color: #888; }
+.empty-state .icon { font-size: 112rpx; display: block; margin-bottom: 28rpx; }
