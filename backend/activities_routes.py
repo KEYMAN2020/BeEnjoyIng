@@ -47,6 +47,25 @@ def _try_get_current_user():
 
 def _activity_to_dict(a: dict) -> dict:
     """活动信息转字典"""
+    status_map = {
+        "open": {"text": "进行中", "color": "green"},
+        "ended": {"text": "已结束", "color": "gray"},
+        "disbanded": {"text": "已解散", "color": "red"},
+        "expired": {"text": "已过期", "color": "orange"},
+        "closed": {"text": "已结束", "color": "gray"},
+    }
+    from datetime import datetime
+    st = a["status"]
+    # Check if end_time has passed
+    end_str = a.get("end_time")
+    if end_str and st in ("approved", "open", "pending"):
+        try:
+            end_dt = end_str if isinstance(end_str, datetime) else datetime.fromisoformat(str(end_str).replace("Z","+00:00"))
+            if end_dt < datetime.now(end_dt.tzinfo) if end_dt.tzinfo else end_dt < datetime.now():
+                st = "ended"
+        except: pass
+    sinfo = status_map.get(st, {"text": st, "color": "gray"})
+
     return {
         "id": a["id"],
         "captain_id": a["captain_id"],
@@ -72,6 +91,15 @@ def _activity_to_dict(a: dict) -> dict:
         "age_min": a.get("age_min"),
         "age_max": a.get("age_max"),
         "status": a["status"],
+        "status_text": sinfo["text"],
+        "status_color": sinfo["color"],
+        "captain": {
+            "id": a["captain_id"],
+            "nickname": a.get("captain_nickname", ""),
+            "avatar_url": a.get("captain_avatar_url", ""),
+            "phone": a.get("captain_phone", ""),
+        } if a.get("captain_nickname") is not None else None,
+        "is_captain": a.get("is_captain", 0) == 1,
         "reject_reason": a.get("reject_reason"),
         "created_at": a["created_at"].isoformat() if hasattr(a["created_at"], "isoformat") else a["created_at"],
     }
@@ -181,9 +209,14 @@ def list_activities():
     total = execute_query_one(count_sql, params)["total"]
 
     offset = (page - 1) * per_page
-    sql = f"""SELECT a.* FROM activities a
+    sql = f"""SELECT a.*,
+                       u.nickname AS captain_nickname,
+                       u.avatar_url AS captain_avatar_url,
+                       u.phone AS captain_phone
+                FROM activities a
+                LEFT JOIN users u ON u.id = a.captain_id
               WHERE {where}
-              ORDER BY a.start_time ASC
+              ORDER BY CASE WHEN a.end_time > NOW() AND a.status NOT IN ('ended','closed','disbanded') THEN 0 ELSE 1 END, CASE WHEN a.end_time > NOW() THEN a.start_time END ASC, a.end_time DESC
               LIMIT %s OFFSET %s"""
     rows = execute_query(sql, params + [per_page, offset])
 
@@ -208,7 +241,7 @@ def create_activity():
 
     # 请求: {title, description, cover_image, category_id, location_name, location_address,
     #        location_lat, location_lng, city, district, start_time, end_time,
-    #        signup_deadline, max_participants, min_participants, price, safety_level,
+    #        signup_deadline, max_participants, min_participants, current_participants, price, safety_level,
     #        age_min, age_max, has_waitlist, tags}
     """
     data = request.get_json(silent=True) or {}
@@ -240,9 +273,9 @@ def create_activity():
            (captain_id, category_id, title, description, cover_image,
             location_name, location_address, location_lat, location_lng,
             city, district, start_time, end_time, signup_deadline,
-            max_participants, min_participants, price, safety_level,
+            max_participants, min_participants, current_participants, price, safety_level,
             age_min, age_max, has_waitlist, status, created_at, updated_at)
-           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                    %s, %s, %s, %s, %s, %s, %s, 'open', NOW(), NOW())""",
         (
             user_id, category_id, title, data.get("description", ""),
@@ -251,7 +284,7 @@ def create_activity():
             data.get("location_lat"), data.get("location_lng"),
             data.get("city", ""), data.get("district", ""),
             data["start_time"], data["end_time"], data.get("signup_deadline"),
-            data["max_participants"], data.get("min_participants", 1),
+            data["max_participants"], data.get("min_participants", 1), 1,
             data.get("price", 0), data.get("safety_level", "green"),
             data.get("age_min"), data.get("age_max"),
             data.get("has_waitlist", 0),
@@ -393,11 +426,16 @@ def my_activities():
         total = execute_query_one(count_sql, params)["total"]
 
         offset = (page - 1) * per_page
-        sql = f"""SELECT a.* FROM activities a
+        sql = f"""SELECT a.*, u.nickname AS captain_nickname,
+                       u.avatar_url AS captain_avatar_url,
+                       u.phone AS captain_phone,
+                       CASE WHEN a.captain_id = %s THEN 1 ELSE 0 END AS is_captain
+                  FROM activities a
+                  LEFT JOIN users u ON u.id = a.captain_id
                   WHERE {where}
                   ORDER BY a.created_at DESC
                   LIMIT %s OFFSET %s"""
-        rows = execute_query(sql, params + [per_page, offset])
+        rows = execute_query(sql, params + [user_id, per_page, offset])
     elif act_type == "participant":
         conditions = ["s.user_id = %s", "s.deleted_at IS NULL", "a.deleted_at IS NULL", "s.status != 'cancelled'"]
         params = [user_id]
@@ -414,13 +452,18 @@ def my_activities():
         total = execute_query_one(count_sql, params)["total"]
 
         offset = (page - 1) * per_page
-        sql = f"""SELECT a.*, s.status AS signup_status, s.signed_up_at
+        sql = f"""SELECT a.*, u.nickname AS captain_nickname,
+                       u.avatar_url AS captain_avatar_url,
+                       u.phone AS captain_phone,
+                       s.status AS signup_status, s.signed_up_at,
+                       CASE WHEN a.captain_id = %s THEN 1 ELSE 0 END AS is_captain
                   FROM activity_signups s
                   JOIN activities a ON a.id = s.activity_id
+                  LEFT JOIN users u ON u.id = a.captain_id
                   WHERE {where}
-                  ORDER BY CASE WHEN a.status = 'open' THEN 0 ELSE 1 END, a.start_time ASC
+                  ORDER BY CASE WHEN a.end_time > NOW() AND a.status NOT IN ('ended','closed','disbanded') THEN 0 ELSE 1 END, CASE WHEN a.end_time > NOW() THEN a.start_time END ASC, a.end_time DESC
                   LIMIT %s OFFSET %s"""
-        rows = execute_query(sql, params + [per_page, offset])
+        rows = execute_query(sql, params + [user_id, per_page, offset])
     else:
         # type=all: 我创建的 + 我报名的（去重）
         params = [user_id, user_id, per_page, (page - 1) * per_page]
@@ -433,7 +476,10 @@ def my_activities():
         ) AS t"""
         total = execute_query_one(count_sql, params[:2])["total"]
 
-        sql = """SELECT a.*,
+        sql = f"""SELECT a.*, u.nickname AS captain_nickname,
+                           u.avatar_url AS captain_avatar_url,
+                           u.phone AS captain_phone,
+                           CASE WHEN a.captain_id = %s THEN 1 ELSE 0 END AS is_captain,
                         (SELECT s.status FROM activity_signups s
                          WHERE s.activity_id = a.id AND s.user_id = %s AND s.deleted_at IS NULL ORDER BY s.id DESC LIMIT 1) AS signup_status
                  FROM (
@@ -444,9 +490,10 @@ def my_activities():
                      WHERE s.user_id = %s AND s.deleted_at IS NULL AND a.deleted_at IS NULL AND s.status != 'cancelled'
                  ) AS t
                  JOIN activities a ON a.id = t.id
-                 ORDER BY CASE WHEN a.status = 'open' THEN 0 ELSE 1 END, a.start_time ASC
+                  LEFT JOIN users u ON u.id = a.captain_id
+                 ORDER BY CASE WHEN a.end_time > NOW() AND a.status NOT IN ('ended','closed','disbanded') THEN 0 ELSE 1 END, CASE WHEN a.end_time > NOW() THEN a.start_time END ASC, a.end_time DESC
                  LIMIT %s OFFSET %s"""
-        rows = execute_query(sql, [user_id, user_id, user_id, per_page, (page - 1) * per_page])
+        rows = execute_query(sql, [user_id, user_id, user_id, user_id, per_page, (page - 1) * per_page])
 
     return success({
         "activities": [_activity_to_dict(r) for r in rows],
@@ -499,7 +546,7 @@ def nearby_activities():
     offset = (page - 1) * per_page
     sql = f"""SELECT a.* FROM activities a
               WHERE {where}
-              ORDER BY a.start_time ASC
+              ORDER BY CASE WHEN a.end_time > NOW() AND a.status NOT IN ('ended','closed','disbanded') THEN 0 ELSE 1 END, CASE WHEN a.end_time > NOW() THEN a.start_time END ASC, a.end_time DESC
               LIMIT %s OFFSET %s"""
     rows = execute_query(sql, params + [per_page, offset])
 
@@ -581,9 +628,13 @@ def get_activity(activity_id):
             (user_id, activity_id),
         )
         result["is_favorited"] = bool(fav)
+        result["is_captain"] = (user_id == activity["captain_id"])
+        result["signup_status"] = signup["status"] if signup else None
     else:
         result["my_status"] = None
         result["is_favorited"] = False
+        result["is_captain"] = False
+        result["signup_status"] = None
 
     # 距离计算（请求传 lat / lng）
     try:
@@ -1169,6 +1220,23 @@ def cancel_signup(activity_id):
         ip_address=_get_ip(),
     )
 
+    # 退出活动群聊（取消报名时同步离开群聊）
+    try:
+        group_info = execute_query_one(
+            "SELECT id FROM chat_groups WHERE activity_id = %s AND status = 'active' LIMIT 1",
+            (activity_id,),
+        )
+        if group_info:
+            execute_update(
+                "DELETE FROM chat_group_members WHERE group_id = %s AND user_id = %s",
+                (group_info["id"], user_id),
+            )
+            execute_update(
+                "UPDATE chat_groups SET member_count = GREATEST(member_count - 1, 0), updated_at = NOW() WHERE id = %s",
+                (group_info["id"],),
+            )
+    except Exception:
+        pass
     return success(None, "已取消报名")
 
 
@@ -1668,7 +1736,7 @@ def submit_activity_report(activity_id):
         """INSERT INTO activity_reports
            (activity_id, captain_id, actual_count, abnormal_count, abnormal_details,
             photos, weather_condition, notes, submitted_at, created_at, updated_at)
-           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW(), NOW())""",
+           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW(), NOW())""",
         (
             activity_id, user_id,
             data.get("actual_count", 0),

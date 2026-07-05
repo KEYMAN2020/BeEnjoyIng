@@ -4,7 +4,7 @@
 """
 
 import os
-from flask import Flask, jsonify, send_from_directory, request, make_response
+from flask import Flask, jsonify, send_from_directory, request, make_response, redirect
 from flask_cors import CORS
 from flasgger import Swagger
 
@@ -69,6 +69,8 @@ from payment_routes import payment_bp
 app.register_blueprint(payment_bp, url_prefix="/api/v1/payment")
 
 from health_routes import health_bp
+from geo_routes import geo_bp
+app.register_blueprint(geo_bp, url_prefix="/api/v1/geo")
 app.register_blueprint(health_bp, url_prefix="/api/v1/health")
 
 from notification_routes import notification_bp
@@ -189,6 +191,26 @@ def frontend_index():
     return jsonify({"message": "前端未构建"}), 200
 
 
+@app.route("/app/assets/<path:filename>")
+@app.route("/phone")
+def phone_preview():
+    preview_path = os.path.join(FRONTEND_DIST, "phone_preview.html")
+    if os.path.isfile(preview_path):
+        with open(preview_path, encoding="utf-8") as f:
+            resp = make_response(f.read(), 200)
+            resp.headers["Content-Type"] = "text/html; charset=utf-8"
+            return resp
+    return jsonify({"error": "not found"}), 404
+
+def frontend_app_assets(filename):
+    asset_path = os.path.join(FRONTEND_DIST, "assets", filename)
+    if os.path.isfile(asset_path):
+        with open(asset_path, encoding="utf-8") as f:
+            content = f.read()
+        ct = "text/css; charset=utf-8" if filename.endswith(".css") else "application/javascript; charset=utf-8"
+        return content, 200, {"Content-Type": ct, "Cache-Control": "public, max-age=31536000"}
+    return jsonify({"error": "not found"}), 404
+
 @app.route("/assets/<path:filename>")
 def frontend_assets(filename):
     """前端静态资源"""
@@ -201,10 +223,44 @@ def frontend_assets(filename):
     return jsonify({"error": "not found"}), 404
 
 
-@app.route("/<path:path>")
+
+#DISABLED: 
+#DISABLED: # ── 旧路由兼容重定向（Vue → React 迁移）──────────────
+#DISABLED: @app.route("/messages")
+#DISABLED: @app.route("/messages/<path:subpath>")
+#DISABLED: def redirect_messages(subpath=""):
+#DISABLED:     target = "/chat" + ("/" + subpath if subpath else "")
+#DISABLED:     return redirect(target, 302)
+#DISABLED: 
+@app.route("/payment-records")
+def redirect_payment_records():
+    return redirect("/payment", 302)
+
+@app.route("/create-activity")
+def redirect_create_activity():
+    return redirect("/activity/new", 302)
+@app.route("/<path:path>", methods=["GET"])
 def frontend_spa_fallback(path):
     """SPA 路由回退 — 非 API 路径返回 index.html"""
+        # /app/ 及子路径返回 SPA（供手机壳iframe使用）
+    if (path == "app" or path.startswith("app/")) and not path.startswith("app/assets/"):
+        spa_path = os.path.join(FRONTEND_DIST, "index_spa.html")
+        if os.path.isfile(spa_path):
+            with open(spa_path, encoding="utf-8") as f:
+                resp = make_response(f.read(), 200)
+                resp.headers["Content-Type"] = "text/html; charset=utf-8"
+                return resp
+    
     if path.startswith("api/") or path.startswith("apidocs/") or path.startswith("uploads/"):
+        return jsonify({"error": "not found"}), 404
+    # index_spa.html 及所有子路径都是独立SPA，不被外壳包裹
+    if path == "index_spa.html" or path.startswith("index_spa.html/"):
+        app_path = os.path.join(FRONTEND_DIST, "index_spa.html")
+        if os.path.isfile(app_path):
+            with open(app_path, encoding="utf-8") as f:
+                resp = make_response(f.read(), 200)
+                resp.headers["Content-Type"] = "text/html; charset=utf-8"
+                return resp
         return jsonify({"error": "not found"}), 404
     index_path = os.path.join(FRONTEND_DIST, "index.html")
     if os.path.isfile(index_path):
