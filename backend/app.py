@@ -192,6 +192,16 @@ def frontend_index():
 
 
 @app.route("/app/assets/<path:filename>")
+def frontend_app_assets(filename):
+    asset_path = os.path.join(FRONTEND_DIST, "assets", filename)
+    if os.path.isfile(asset_path):
+        with open(asset_path, encoding="utf-8") as f:
+            content = f.read()
+        ct = "text/css; charset=utf-8" if filename.endswith(".css") else "application/javascript; charset=utf-8"
+        return content, 200, {"Content-Type": ct, "Cache-Control": "public, max-age=31536000"}
+    return jsonify({"error": "not found"}), 404
+
+
 @app.route("/phone")
 def phone_preview():
     preview_path = os.path.join(FRONTEND_DIST, "phone_preview.html")
@@ -200,15 +210,6 @@ def phone_preview():
             resp = make_response(f.read(), 200)
             resp.headers["Content-Type"] = "text/html; charset=utf-8"
             return resp
-    return jsonify({"error": "not found"}), 404
-
-def frontend_app_assets(filename):
-    asset_path = os.path.join(FRONTEND_DIST, "assets", filename)
-    if os.path.isfile(asset_path):
-        with open(asset_path, encoding="utf-8") as f:
-            content = f.read()
-        ct = "text/css; charset=utf-8" if filename.endswith(".css") else "application/javascript; charset=utf-8"
-        return content, 200, {"Content-Type": ct, "Cache-Control": "public, max-age=31536000"}
     return jsonify({"error": "not found"}), 404
 
 @app.route("/assets/<path:filename>")
