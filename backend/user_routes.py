@@ -641,6 +641,7 @@ def list_messages():
             "msg_type": msg["msg_type"],
             "content": msg["content"],
             "is_read": bool(msg["is_read"]),
+            "is_unread": msg["sender_id"] != user_id and not bool(msg["is_read"]),
             "created_at": str(msg["created_at"]) if msg.get("created_at") else None,
         })
 
@@ -682,6 +683,51 @@ def send_message():
 
     log_operation(user_id, "SEND_MESSAGE", "user_private_messages", msg_id, f"to={receiver_id}", _get_ip())
     return success({"message_id": msg_id}, "消息已发送")
+
+
+# ── #13.5 GET /api/v1/users/messages/with/<other_id> ──
+@users_bp.get("/messages/with/<int:other_id>")
+@require_auth
+def get_messages_with(other_id):
+    """获取与指定用户的私信历史（读取时自动标记已读）
+    ---
+    tags:
+      - 用户
+    """
+    user_id = g.current_user["user_id"]
+    other = execute_query_one(
+        "SELECT id, nickname, avatar_url FROM users WHERE id = %s AND deleted_at IS NULL",
+        (other_id,)
+    )
+    if not other:
+        return error("用户不存在", 404)
+
+    msgs = execute_query(
+        "SELECT id, sender_id, receiver_id, content, created_at "
+        "FROM user_private_messages "
+        "WHERE deleted_at IS NULL "
+        "  AND ((sender_id = %s AND receiver_id = %s) "
+        "       OR (sender_id = %s AND receiver_id = %s)) "
+        "ORDER BY created_at ASC "
+        "LIMIT 200",
+        (user_id, other_id, other_id, user_id)
+    )
+
+    # 标记收到的新消息为已读
+    execute_update(
+        "UPDATE user_private_messages SET is_read = 1 "
+        "WHERE sender_id = %s AND receiver_id = %s AND is_read = 0",
+        (other_id, user_id),
+    )
+
+    return success({
+        "messages": msgs,
+        "other_user": {
+            "user_id": other["id"],
+            "nickname": other["nickname"],
+            "avatar_url": other.get("avatar_url")
+        }
+    })
 
 
 # ── #14 POST /api/v1/users/<user_id>/report ────────────

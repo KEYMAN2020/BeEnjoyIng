@@ -55,6 +55,30 @@ def my_groups():
         ORDER BY last_message_at DESC
     """, (user_id,))
 
+    # 批量查询每个群的成员头像（最多9人，按入群时间排序）
+    group_ids = [r["id"] for r in rows]
+    members_map = {}
+    if group_ids:
+        placeholders = ",".join(["%s"] * len(group_ids))
+        member_rows = execute_query(
+            f"SELECT gmc.group_id, u.id AS user_id, u.nickname, u.avatar_url, gmc.joined_at "
+            f"FROM chat_group_members gmc "
+            f"JOIN users u ON u.id = gmc.user_id "
+            f"WHERE gmc.group_id IN ({placeholders}) AND gmc.deleted_at IS NULL "
+            f"ORDER BY gmc.group_id, gmc.joined_at ASC",
+            group_ids,
+        )
+        for mr in member_rows:
+            gid = mr["group_id"]
+            if gid not in members_map:
+                members_map[gid] = []
+            if len(members_map[gid]) < 9:
+                members_map[gid].append({
+                    "user_id": mr["user_id"],
+                    "nickname": mr["nickname"],
+                    "avatar_url": mr.get("avatar_url", ""),
+                })
+
     return success({
         "groups": [{
             "id": r["id"], "name": r["name"], "avatar": r.get("avatar", ""),
@@ -62,6 +86,7 @@ def my_groups():
             "is_muted": bool(r["is_muted"]), "last_message": r.get("last_message", ""),
             "last_message_at": r["last_message_at"].isoformat() if r.get("last_message_at") and hasattr(r["last_message_at"], "isoformat") else r.get("last_message_at"),
             "unread_count": r["unread_count"],
+            "members": members_map.get(r["id"], []),
         } for r in rows]
     })
 
@@ -171,7 +196,7 @@ def get_messages(group_id):
         sql = """SELECT m.*, u.nickname, u.avatar_url FROM chat_messages m JOIN users u ON u.id = m.sender_id WHERE m.group_id = %s ORDER BY m.created_at DESC LIMIT %s"""
         params = [group_id, limit]
 
-    rows = execute_query(sql, params)
+    rows = list(execute_query(sql, params))
     rows.reverse()
 
     return success({

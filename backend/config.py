@@ -79,3 +79,8 @@ config_map = {
 }
 
 active_config = config_map.get(os.getenv("FLASK_ENV", "development"), DevelopmentConfig)
+
+# 高德地图 Web 服务（模块级，兼容各路由模块引用）
+AMAP_KEY = os.getenv("AMAP_KEY", "4cae03e0ef24554110c6055673d122e0")
+AMAP_POI_SEARCH_URL = "https://restapi.amap.com/v3/assistant/inputtips"
+AMAP_GEOCODE_URL = "https://restapi.amap.com/v3/geocode/geo"
