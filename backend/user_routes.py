@@ -49,11 +49,25 @@ def _public_user(user: dict, profile: dict | None = None) -> dict:
     return data
 
 
+def _get_real_activity_count(user_id):
+    """动态计算用户的活动数量（创建 + 报名，去重）"""
+    result = execute_query(
+        "SELECT COUNT(DISTINCT a.id) as cnt "
+        "FROM activities a "
+        "LEFT JOIN activity_signups s ON s.activity_id = a.id AND s.user_id = %s AND s.deleted_at IS NULL AND s.status IN ('registered', 'attended') "
+        "WHERE a.deleted_at IS NULL AND (a.captain_id = %s OR s.id IS NOT NULL)",
+        (user_id, user_id),
+    )
+    return result[0]["cnt"] if result else 0
+
+
 def _full_user(user: dict, profile: dict | None = None, stats: dict | None = None) -> dict:
     """完整用户信息"""
     data = {
         "user_id": user["id"],
         "phone": user["phone"],
+        "vitality_score": stats["vitality"] if stats else 0,
+        "flower_score": 0,
         "nickname": user["nickname"],
         "avatar_url": user.get("avatar_url", ""),
         "role": user["role"],
@@ -79,7 +93,7 @@ def _full_user(user: dict, profile: dict | None = None, stats: dict | None = Non
     if stats:
         data["stats"] = {
             "vitality": stats["vitality"],
-            "activity_count": stats["activity_count"],
+            "activity_count": _get_real_activity_count(user["id"]),
             "activity_streak": stats["activity_streak"],
             "friends_count": stats["friends_count"],
             "last_active_at": str(stats["last_active_at"]) if stats.get("last_active_at") else None,
@@ -295,7 +309,7 @@ def get_user_stats(user_id):
         "user": _safe_user(user),
         "stats": {
             "vitality": stats["vitality"],
-            "activity_count": stats["activity_count"],
+            "activity_count": _get_real_activity_count(user["id"]),
             "activity_streak": stats["activity_streak"],
             "friends_count": stats["friends_count"],
             "last_active_at": str(stats["last_active_at"]) if stats.get("last_active_at") else None,
@@ -368,6 +382,31 @@ def upload_avatar():
 # ═══════════════════════════════════════════════════════
 # 好友管理
 # ═══════════════════════════════════════════════════════
+
+# ── #7.5 GET /api/v1/users/friends/requests/pending ──@users_bp.get("/friends/requests/pending")@require_authdef list_pending_friend_requests():    user_id = g.current_user["user_id"]    rows = execute_query(        "SELECT uf.id, uf.user_id as from_user_id, u.nickname as from_nickname, u.avatar_url, uf.source, uf.created_at "        "FROM user_friends uf JOIN users u ON u.id = uf.user_id "        "WHERE uf.friend_id = %s AND uf.status = "pending" AND uf.deleted_at IS NULL AND u.deleted_at IS NULL "        "ORDER BY uf.created_at DESC",        (user_id,),    )    items = []    for r in (rows or []):        items.append({            "request_id": r["id"],            "from_user_id": r["from_user_id"],            "from_nickname": r["from_nickname"],            "avatar_url": r.get("avatar_url", ""),            "source": r["source"],            "created_at": str(r["created_at"]) if r.get("created_at") else None,        })    return success({"items": items, "total": len(items)})
+# ── #7.5 GET /api/v1/users/friends/requests/pending ──
+@users_bp.get("/friends/requests/pending")
+@require_auth
+def list_pending_friend_requests():
+    user_id = g.current_user["user_id"]
+    rows = execute_query(
+        "SELECT uf.id, uf.user_id as from_user_id, u.nickname as from_nickname, u.avatar_url, uf.source, uf.created_at "
+        "FROM user_friends uf JOIN users u ON u.id = uf.user_id "
+        "WHERE uf.friend_id = %s AND uf.status = 'pending' AND uf.deleted_at IS NULL AND u.deleted_at IS NULL "
+        "ORDER BY uf.created_at DESC",
+        (user_id,),
+    )
+    items = []
+    for r in (rows or []):
+        items.append({
+            "request_id": r["id"],
+            "from_user_id": r["from_user_id"],
+            "from_nickname": r["from_nickname"],
+            "avatar_url": r.get("avatar_url", ""),
+            "source": r["source"],
+            "created_at": str(r["created_at"]) if r.get("created_at") else None,
+        })
+    return success({"items": items, "total": len(items)})
 
 # ── #8 POST /api/v1/users/friends/request ──────────────
 @users_bp.post("/friends/request")
