@@ -1,7 +1,6 @@
 {
   "name": "银发活力",
-  "appid": "__UNI__BEE344A",
-  "description": "银发活力 - 中老年社交活动平台",
+  "appid": "",
   "versionName": "1.0.0",
   "versionCode": "100",
   "mp-weixin": {
@@ -12,9 +11,6 @@
       "postcss": true
     },
     "usingComponents": true,
-    "requiredPrivateInfos": [
-      "getLocation"
-    ],
     "permission": {
       "scope.userLocation": {
         "desc": "获取位置推荐附近活动"

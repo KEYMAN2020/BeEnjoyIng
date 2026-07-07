@@ -191,7 +191,7 @@ def list_activities():
         conditions.append("a.status = %s")
         params.append(status)
     else:
-        conditions.append("a.status = 'open'")  # 默认只看开启中
+        conditions.append("a.status IN ('open', 'ended')")  # 默认看开启中和已结束
     if start_date:
         conditions.append("a.start_time >= %s")
         params.append(start_date)
@@ -276,7 +276,7 @@ def create_activity():
             max_participants, min_participants, current_participants, price, safety_level,
             age_min, age_max, has_waitlist, status, created_at, updated_at)
            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                   %s, %s, %s, %s, %s, %s, %s, %s, 'open', NOW(), NOW())""",
+                   %s, %s, %s, %s, %s, %s, %s, 'open', NOW(), NOW())""",
         (
             user_id, category_id, title, data.get("description", ""),
             data.get("cover_image", ""),
@@ -992,6 +992,32 @@ def complete_activity(activity_id):
         (activity_id,),
     )
 
+    # 发放活力值：参与队员 +50
+    signups = execute_query(
+        "SELECT user_id FROM activity_signups WHERE activity_id = %s AND status IN ('registered', 'attended') AND deleted_at IS NULL AND vitality_awarded = 0",
+        (activity_id,),
+    )
+    vitality_reward = Config.ACTIVITY_VITALITY_REWARD
+    for signup in signups:
+        execute_update(
+            "UPDATE user_stats SET vitality = COALESCE(vitality, 0) + %s, updated_at = NOW() WHERE user_id = %s",
+            (vitality_reward, signup['user_id']),
+        )
+    execute_update(
+        "UPDATE activity_signups SET vitality_awarded = 1, updated_at = NOW() WHERE activity_id = %s AND status IN ('registered', 'attended') AND deleted_at IS NULL AND vitality_awarded = 0",
+        (activity_id,),
+    )
+
+    # 队长也获得活力值
+    execute_update(
+        "UPDATE user_stats SET vitality = COALESCE(vitality, 0) + %s, updated_at = NOW() WHERE user_id = %s",
+        (vitality_reward, activity["captain_id"]),
+    )
+    execute_update(
+        "UPDATE activities SET captain_vitality_awarded = 1 WHERE id = %s",
+        (activity_id,),
+    )
+
     # 通知创建者
     try:
         execute_insert(
@@ -1222,18 +1248,18 @@ def cancel_signup(activity_id):
 
     # 退出活动群聊（取消报名时同步离开群聊）
     try:
-        g = execute_query_one(
+        group_info = execute_query_one(
             "SELECT id FROM chat_groups WHERE activity_id = %s AND status = 'active' LIMIT 1",
             (activity_id,),
         )
-        if g:
+        if group_info:
             execute_update(
                 "DELETE FROM chat_group_members WHERE group_id = %s AND user_id = %s",
-                (g["id"], user_id),
+                (group_info["id"], user_id),
             )
             execute_update(
                 "UPDATE chat_groups SET member_count = GREATEST(member_count - 1, 0), updated_at = NOW() WHERE id = %s",
-                (g["id"],),
+                (group_info["id"],),
             )
     except Exception:
         pass

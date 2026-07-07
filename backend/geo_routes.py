@@ -6,7 +6,10 @@ import requests
 from flask import Blueprint, request
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from config import AMAP_KEY, AMAP_POI_SEARCH_URL, AMAP_GEOCODE_URL
+import config
+AMAP_KEY = config.AMAP_KEY
+AMAP_POI_SEARCH_URL = config.AMAP_POI_SEARCH_URL
+AMAP_GEOCODE_URL = config.AMAP_GEOCODE_URL
 
 geo_bp = Blueprint("geo", __name__, url_prefix="/api/v1/geo")
 

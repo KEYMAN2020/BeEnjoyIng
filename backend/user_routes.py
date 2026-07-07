@@ -25,7 +25,7 @@ def _safe_user(user: dict) -> dict:
         "user_id": user["id"],
         "nickname": user["nickname"],
         "avatar_url": user.get("avatar_url", ""),
-        "role": user.get("role", "user"),
+        "role": user["role"],
     }
 
 
@@ -49,14 +49,28 @@ def _public_user(user: dict, profile: dict | None = None) -> dict:
     return data
 
 
+def _get_real_activity_count(user_id):
+    """动态计算用户的活动数量（创建 + 报名，去重）"""
+    result = execute_query(
+        "SELECT COUNT(DISTINCT a.id) as cnt "
+        "FROM activities a "
+        "LEFT JOIN activity_signups s ON s.activity_id = a.id AND s.user_id = %s AND s.deleted_at IS NULL AND s.status IN ('registered', 'attended') "
+        "WHERE a.deleted_at IS NULL AND (a.captain_id = %s OR s.id IS NOT NULL)",
+        (user_id, user_id),
+    )
+    return result[0]["cnt"] if result else 0
+
+
 def _full_user(user: dict, profile: dict | None = None, stats: dict | None = None) -> dict:
     """完整用户信息"""
     data = {
         "user_id": user["id"],
         "phone": user["phone"],
+        "vitality_score": stats["vitality"] if stats else 0,
+        "flower_score": 0,
         "nickname": user["nickname"],
         "avatar_url": user.get("avatar_url", ""),
-        "role": user.get("role", "user"),
+        "role": user["role"],
         "is_banned": bool(user["is_banned"]),
         "created_at": str(user["created_at"]) if user.get("created_at") else None,
     }
@@ -79,7 +93,7 @@ def _full_user(user: dict, profile: dict | None = None, stats: dict | None = Non
     if stats:
         data["stats"] = {
             "vitality": stats["vitality"],
-            "activity_count": stats["activity_count"],
+            "activity_count": _get_real_activity_count(user["id"]),
             "activity_streak": stats["activity_streak"],
             "friends_count": stats["friends_count"],
             "last_active_at": str(stats["last_active_at"]) if stats.get("last_active_at") else None,
@@ -295,7 +309,7 @@ def get_user_stats(user_id):
         "user": _safe_user(user),
         "stats": {
             "vitality": stats["vitality"],
-            "activity_count": stats["activity_count"],
+            "activity_count": _get_real_activity_count(user["id"]),
             "activity_streak": stats["activity_streak"],
             "friends_count": stats["friends_count"],
             "last_active_at": str(stats["last_active_at"]) if stats.get("last_active_at") else None,
@@ -369,6 +383,31 @@ def upload_avatar():
 # 好友管理
 # ═══════════════════════════════════════════════════════
 
+# ── #7.5 GET /api/v1/users/friends/requests/pending ──@users_bp.get("/friends/requests/pending")@require_authdef list_pending_friend_requests():    user_id = g.current_user["user_id"]    rows = execute_query(        "SELECT uf.id, uf.user_id as from_user_id, u.nickname as from_nickname, u.avatar_url, uf.source, uf.created_at "        "FROM user_friends uf JOIN users u ON u.id = uf.user_id "        "WHERE uf.friend_id = %s AND uf.status = "pending" AND uf.deleted_at IS NULL AND u.deleted_at IS NULL "        "ORDER BY uf.created_at DESC",        (user_id,),    )    items = []    for r in (rows or []):        items.append({            "request_id": r["id"],            "from_user_id": r["from_user_id"],            "from_nickname": r["from_nickname"],            "avatar_url": r.get("avatar_url", ""),            "source": r["source"],            "created_at": str(r["created_at"]) if r.get("created_at") else None,        })    return success({"items": items, "total": len(items)})
+# ── #7.5 GET /api/v1/users/friends/requests/pending ──
+@users_bp.get("/friends/requests/pending")
+@require_auth
+def list_pending_friend_requests():
+    user_id = g.current_user["user_id"]
+    rows = execute_query(
+        "SELECT uf.id, uf.user_id as from_user_id, u.nickname as from_nickname, u.avatar_url, uf.source, uf.created_at "
+        "FROM user_friends uf JOIN users u ON u.id = uf.user_id "
+        "WHERE uf.friend_id = %s AND uf.status = 'pending' AND uf.deleted_at IS NULL AND u.deleted_at IS NULL "
+        "ORDER BY uf.created_at DESC",
+        (user_id,),
+    )
+    items = []
+    for r in (rows or []):
+        items.append({
+            "request_id": r["id"],
+            "from_user_id": r["from_user_id"],
+            "from_nickname": r["from_nickname"],
+            "avatar_url": r.get("avatar_url", ""),
+            "source": r["source"],
+            "created_at": str(r["created_at"]) if r.get("created_at") else None,
+        })
+    return success({"items": items, "total": len(items)})
+
 # ── #8 POST /api/v1/users/friends/request ──────────────
 @users_bp.post("/friends/request")
 @require_auth
@@ -395,10 +434,10 @@ def send_friend_request():
     if not target:
         return error("用户不存在", 404)
 
-    # 检查是否已存在好友关系（含已删除的记录）
+    # 检查是否已存在好友关系
     existing = execute_query_one(
         "SELECT id, status FROM user_friends "
-        "WHERE user_id = %s AND friend_id = %s",
+        "WHERE user_id = %s AND friend_id = %s AND deleted_at IS NULL",
         (user_id, target_user_id),
     )
     if existing:
@@ -406,9 +445,6 @@ def send_friend_request():
             return error("已是好友", 409)
         if existing["status"] == "pending":
             return error("已发送过好友申请", 409)
-        # deleted — 物理删除旧记录以释放唯一键
-        if existing["status"] == "deleted" or existing.get("deleted_at"):
-            execute_update("DELETE FROM user_friends WHERE id = %s", (existing["id"],))
 
     execute_insert(
         "INSERT INTO user_friends (user_id, friend_id, source, status, created_at, updated_at) "
@@ -482,37 +518,6 @@ def handle_friend_request(request_id):
 
     log_operation(user_id, f"FRIEND_{action.upper()}", "user_friends", request_id, msg, _get_ip())
     return success(None, msg)
-
-
-# ── #10.5 GET /api/v1/users/friends/requests/pending ──
-@users_bp.get("/friends/requests/pending")
-@require_auth
-def list_pending_friend_requests():
-    """获取发给我的待处理好友请求
-    ---
-    tags:
-      - 用户
-    """
-    user_id = g.current_user["user_id"]
-    requests = execute_query(
-        "SELECT uf.id AS request_id, uf.user_id, u.nickname, u.avatar_url, uf.source, uf.created_at "
-        "FROM user_friends uf "
-        "JOIN users u ON u.id = uf.user_id "
-        "WHERE uf.friend_id = %s AND uf.status = 'pending' AND uf.deleted_at IS NULL AND u.deleted_at IS NULL "
-        "ORDER BY uf.created_at DESC",
-        (user_id,),
-    )
-    items = []
-    for r in requests:
-        items.append({
-            "request_id": r["request_id"],
-            "user_id": r["user_id"],
-            "nickname": r["nickname"],
-            "avatar_url": r.get("avatar_url", ""),
-            "source": r["source"],
-            "created_at": str(r["created_at"]) if r.get("created_at") else None,
-        })
-    return success({"items": items})
 
 
 # ── #10 GET /api/v1/users/friends ──────────────────────
@@ -636,7 +641,6 @@ def list_messages():
             "msg_type": msg["msg_type"],
             "content": msg["content"],
             "is_read": bool(msg["is_read"]),
-            "is_unread": msg["sender_id"] != user_id and not bool(msg["is_read"]),
             "created_at": str(msg["created_at"]) if msg.get("created_at") else None,
         })
 
@@ -679,52 +683,6 @@ def send_message():
     log_operation(user_id, "SEND_MESSAGE", "user_private_messages", msg_id, f"to={receiver_id}", _get_ip())
     return success({"message_id": msg_id}, "消息已发送")
 
-
-
-# ── #13.5 GET /api/v1/users/messages/with/<other_id> ──
-@users_bp.get("/messages/with/<int:other_id>")
-@require_auth
-def get_messages_with(other_id):
-    """获取与指定用户的私信历史
-    ---
-    tags:
-      - 用户
-    """
-    user_id = g.current_user["user_id"]
-    # Verify other user exists
-    other = execute_query_one(
-        "SELECT id, nickname, avatar_url FROM users WHERE id = %s AND deleted_at IS NULL",
-        (other_id,)
-    )
-    if not other:
-        return error("用户不存在", 404)
-
-    sql = (
-        "SELECT id, sender_id, receiver_id, content, created_at "
-        "FROM user_private_messages "
-        "WHERE deleted_at IS NULL "
-        "  AND ((sender_id = %s AND receiver_id = %s) "
-        "       OR (sender_id = %s AND receiver_id = %s)) "
-        "ORDER BY created_at ASC "
-        "LIMIT 200"
-    )
-    msgs = execute_query(sql, (user_id, other_id, other_id, user_id))
-
-    # 标记收到的新消息为已读
-    execute_update(
-        "UPDATE user_private_messages SET is_read = 1 "
-        "WHERE sender_id = %s AND receiver_id = %s AND is_read = 0",
-        (other_id, user_id),
-    )
-
-    return success({
-        "messages": msgs,
-        "other_user": {
-            "user_id": other["id"],
-            "nickname": other["nickname"],
-            "avatar_url": other.get("avatar_url")
-        }
-    })
 
 # ── #14 POST /api/v1/users/<user_id>/report ────────────
 @users_bp.post("/<int:target_id>/report")

@@ -3,23 +3,33 @@
     <router-view />
     <nav class="bottom-nav" v-if="showNav">
       <router-link to="/">
-        <span class="nav-icon">🏠</span>
+        <span class="nav-icon">
+          <svg width="26" height="26" viewBox="0 0 26 26"><path fill="currentColor" d="M3 10l10-7 10 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        </span>
         <span class="nav-label">发现</span>
       </router-link>
       <router-link to="/messages">
-        <span class="nav-icon">💬</span>
+        <span class="nav-icon">
+          <svg width="26" height="26" viewBox="0 0 26 26"><path fill="currentColor" d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </span>
         <span class="nav-label">消息</span>
       </router-link>
       <router-link to="/create" class="nav-create">
-        <span class="nav-icon-create">➕</span>
+        <span class="nav-icon-create">
+          <svg width="24" height="24" viewBox="0 0 24 24"><path fill="#fff" d="M12 2v20M2 12h20" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+        </span>
         <span class="nav-label">发起</span>
       </router-link>
       <router-link to="/contacts">
-        <span class="nav-icon">📋</span>
+        <span class="nav-icon">
+          <svg width="26" height="26" viewBox="0 0 26 26"><circle fill="currentColor" cx="9" cy="8" r="3"/><circle fill="currentColor" cx="17" cy="9" r="3"/><path fill="currentColor" d="M1 22c0-4.4 3.6-8 8-8 4.4 0 8 3.6 8 8"/></svg>
+        </span>
         <span class="nav-label">通讯录</span>
       </router-link>
       <router-link to="/mine">
-        <span class="nav-icon">👤</span>
+        <span class="nav-icon">
+          <svg width="26" height="26" viewBox="0 0 26 26"><circle fill="currentColor" cx="13" cy="9" r="4"/><ellipse fill="currentColor" cx="13" cy="22" rx="9" ry="5"/></svg>
+        </span>
         <span class="nav-label">我的</span>
       </router-link>
     </nav>
@@ -44,7 +54,7 @@ const showNav = computed(() => {
   position: fixed;
   bottom: 0; left: 0; right: 0;
   background: #fff;
-  border-top: 1.5px solid #E8E2DA;
+  border-top: 1.5px solid #E8E8E8;
   display: flex;
   justify-content: space-around;
   align-items: stretch;
@@ -68,7 +78,7 @@ const showNav = computed(() => {
 }
 
 .bottom-nav a.router-link-active {
-  color: #FF6B35;
+  color: #06D6A0;
 }
 
 .nav-icon {
@@ -95,16 +105,22 @@ const showNav = computed(() => {
   justify-content: center;
   width: 46px;
   height: 46px;
-  background: linear-gradient(135deg, #FF6B35, #E55A2B);
+  background: linear-gradient(135deg, #06D6A0, #0096C7);
   border-radius: 50%;
   color: #fff;
   font-size: 24px;
   margin-top: -14px;
-  box-shadow: 0 4px 16px rgba(255,107,53,0.45);
+  box-shadow: 0 4px 16px rgba(6,214,160,0.45);
   transition: transform 0.15s;
 }
 
 .nav-create:active .nav-icon-create {
   transform: scale(0.92);
 }
+
+</style>
+
+<style>
+/* ═══ 非 scoped 全局样式 ═══ */
+input:focus, textarea:focus, select:focus, button:focus { outline: none !important; box-shadow: none !important; }
 </style>

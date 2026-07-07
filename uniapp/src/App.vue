@@ -1,7 +1,4 @@
-<script setup>
-import { onLaunch } from '@dcloudio/uni-app'
-onLaunch(() => { console.log('银发活力 App Launch') })
+<script>
+export default { onLaunch(){console.log('App Launch')}, onShow(){}, onHide(){} }
 </script>
-<style>
-@import './uni.scss';
-</style>
+<style>@import './uni.scss';</style>

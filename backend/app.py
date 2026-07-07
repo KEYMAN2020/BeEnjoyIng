@@ -201,6 +201,17 @@ def frontend_app_assets(filename):
         return content, 200, {"Content-Type": ct, "Cache-Control": "public, max-age=31536000"}
     return jsonify({"error": "not found"}), 404
 
+
+@app.route("/phone")
+def phone_preview():
+    preview_path = os.path.join(FRONTEND_DIST, "phone_preview.html")
+    if os.path.isfile(preview_path):
+        with open(preview_path, encoding="utf-8") as f:
+            resp = make_response(f.read(), 200)
+            resp.headers["Content-Type"] = "text/html; charset=utf-8"
+            return resp
+    return jsonify({"error": "not found"}), 404
+
 @app.route("/assets/<path:filename>")
 def frontend_assets(filename):
     """前端静态资源"""

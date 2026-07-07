@@ -1,272 +1,180 @@
 <template>
-  <div class="wx-contacts">
-    <!-- 顶部导航 -->
-    <div class="wx-navbar">
-      <span class="wx-title">通讯录</span>
-      <span class="wx-nav-right" @click="$router.push('/search?type=add')">＋</span>
-    </div>
-
-    <!-- 搜索栏 -->
-    <div class="wx-search-bar">
-      <div class="wx-search-inner">
-        <span class="wx-search-icon">&#128269;</span>
-        <input
-          v-model="keyword"
-          class="wx-search-input"
-          placeholder="搜索"
-        />
+  <div class="contacts-page">
+    <!-- ═══ Teal Header ═══ -->
+    <div class="c-header">
+      <div class="c-header-row">
+        <span class="c-back" @click="$router.back()">←</span>
+        <span class="c-title">通讯录</span>
+        <span class="c-add" @click="$router.push('/search?type=add')">＋</span>
       </div>
     </div>
 
-    <!-- 功能入口 -->
-    <div class="wx-func-list">
-      <div class="wx-func-item" @click="$router.push('/contacts/requests')">
-        <div class="wx-func-avatar wx-func-avatar--newfriend">
-          <span>&#128075;</span>
-        </div>
-        <div class="wx-func-info">
-          <span class="wx-func-name">新的朋友</span>
-        </div>
-        <span v-if="pendingCount" class="wx-badge">{{ pendingCount }}</span>
-      </div>
-      <div class="wx-func-item" @click="$router.push('/groups')">
-        <div class="wx-func-avatar wx-func-avatar--group">
-          <span>&#128101;</span>
-        </div>
-        <div class="wx-func-info">
-          <span class="wx-func-name">群聊</span>
-        </div>
-      </div>
-      <div class="wx-func-item" @click="$router.push('/contacts/labels')">
-        <div class="wx-func-avatar wx-func-avatar--label">
-          <span>&#128204;</span>
-        </div>
-        <div class="wx-func-info">
-          <span class="wx-func-name">标签</span>
-        </div>
+    <!-- ═══ Search Bar ═══ -->
+    <div class="c-search">
+      <div class="c-search-inner">
+        <span class="c-search-icon">🔍</span>
+        <input v-model="keyword" class="c-search-input" placeholder="搜索" />
       </div>
     </div>
 
-    <!-- 好友列表 -->
-    <div class="wx-friend-list">
-      <div v-if="loadingFriends" class="wx-loading">加载中...</div>
-      <div v-else-if="friends.length === 0 && !keyword.trim()" class="wx-empty">
-        <p>还没有好友，去搜索添加吧</p>
+    <!-- ═══ Function Entries (white card) ═══ -->
+    <div class="c-card">
+      <div class="c-item" @click="$router.push('/contacts/requests')">
+        <div class="c-avatar c-avatar--red"><span>👋</span></div>
+        <span class="c-name">新的朋友</span>
+        <span v-if="pendingCount" class="c-badge">{{ pendingCount }}</span>
+        <span class="c-arrow">›</span>
       </div>
+      <div class="c-item" @click="$router.push('/groups')">
+        <div class="c-avatar c-avatar--green"><span>👥</span></div>
+        <span class="c-name">群聊</span>
+        <span class="c-arrow">›</span>
+      </div>
+      <div class="c-item" @click="$router.push('/contacts/labels')">
+        <div class="c-avatar c-avatar--gold"><span>📌</span></div>
+        <span class="c-name">标签</span>
+        <span class="c-arrow">›</span>
+      </div>
+    </div>
+
+    <!-- ═══ Friend List (white card) ═══ -->
+    <div class="c-card c-card-friends">
+      <div v-if="loadingFriends" class="c-empty">加载中...</div>
+      <div v-else-if="friends.length === 0 && !keyword.trim()" class="c-empty">还没有好友，去搜索添加吧</div>
       <div v-else>
-        <div
-          v-for="(group, idx) in groupedFriends"
-          :key="group.letter"
-        >
-          <div class="wx-letter-header">{{ group.letter }}</div>
-          <div
-            v-for="f in group.members"
-            :key="f.user_id"
-            class="wx-friend-item"
-            @click="$router.push('/profile/' + f.user_id)"
-          >
-            <div class="wx-friend-avatar">
+        <div v-for="(group, idx) in groupedFriends" :key="group.letter">
+          <div class="c-letter">{{ group.letter }}</div>
+          <div v-for="f in group.members" :key="f.user_id" class="c-item" @click="$router.push('/profile/' + f.user_id)">
+            <div class="c-friend-avatar">
               <img v-if="f.avatar_url" :src="f.avatar_url" />
               <span v-else>{{ (f.nickname || '?')[0] }}</span>
             </div>
-            <div class="wx-friend-name">{{ f.nickname }}</div>
+            <span class="c-name">{{ f.nickname }}</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 字母索引条 -->
-    <div class="wx-index-bar" v-if="groupedFriends.length > 0">
-      <span
-        v-for="group in groupedFriends"
-        :key="group.letter"
-        class="wx-index-letter"
-        @click="scrollToLetter(group.letter)"
-      >{{ group.letter }}</span>
+    <!-- ═══ Alphabet Index ═══ -->
+    <div class="c-index" v-if="groupedFriends.length > 0">
+      <span v-for="g in groupedFriends" :key="g.letter" class="c-index-letter" @click="scrollToLetter(g.letter)">{{ g.letter }}</span>
     </div>
+
+    <div style="height:70px"></div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { usersAPI } from '@/api'
+import { pinyin } from 'pinyin-pro'
 
 const keyword = ref('')
 const friends = ref([])
-const pendingRequests = ref([])
 const pendingCount = ref(0)
 const loadingFriends = ref(false)
 
-const myId = computed(() => {
-  const token = localStorage.getItem('token')
-  try { return JSON.parse(atob(token.split('.')[1])).user_id } catch(e) { return null }
-})
+function getInitial(nickname) {
+  if (!nickname) return '#'
+  const first = nickname[0]
+  // Latin letter → use directly
+  if (/[a-zA-Z]/.test(first)) return first.toUpperCase()
+  // Chinese character → get pinyin initial
+  try {
+    const py = pinyin(first, { pattern: 'first', toneType: 'none' })
+    if (py && /[a-zA-Z]/.test(py)) return py.toUpperCase()
+  } catch(e) {}
+  return '#'
+}
 
 const groupedFriends = computed(() => {
   const list = keyword.value.trim() ? filteredFriends.value : friends.value
   const groups = {}
   list.forEach(f => {
-    const letter = (f.nickname || '?')[0].toUpperCase()
-    const key = /[A-Z]/.test(letter) ? letter : '#'
+    const key = getInitial(f.nickname)
     if (!groups[key]) groups[key] = []
     groups[key].push(f)
   })
-  return Object.keys(groups).sort().map(letter => ({
-    letter,
-    members: groups[letter]
-  }))
+  return Object.keys(groups).sort().map(letter => ({ letter, members: groups[letter] }))
 })
 
 const filteredFriends = computed(() => {
   if (!keyword.value.trim()) return friends.value
   const kw = keyword.value.trim().toLowerCase()
-  return friends.value.filter(f =>
-    (f.nickname || '').toLowerCase().includes(kw)
-  )
+  return friends.value.filter(f => (f.nickname || '').toLowerCase().includes(kw))
 })
 
 function scrollToLetter(letter) {
-  const headers = document.querySelectorAll('.wx-letter-header')
-  for (let h of headers) {
-    if (h.textContent.trim() === letter) {
-      h.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      break
-    }
-  }
+  const headers = document.querySelectorAll('.c-letter')
+  for (let h of headers) { if (h.textContent.trim() === letter) { h.scrollIntoView({ behavior: 'smooth', block: 'start' }); break } }
 }
 
 async function loadFriends() {
   loadingFriends.value = true
   try {
     const res = await usersAPI.friends()
-    if (res.data.code === 0) {
-      friends.value = res.data.data.items || []
-    }
-  } catch (e) {
-    console.error('获取好友列表失败', e)
-  } finally {
-    loadingFriends.value = false
-  }
+    if (res.data.code === 0) friends.value = res.data.data.items || []
+  } catch (e) {}
+  loadingFriends.value = false
 }
 
-async function loadPendingRequests() {
+async function loadPending() {
   try {
     const res = await usersAPI.pendingFriendRequests()
-    if (res.data.code === 0) {
-      pendingRequests.value = res.data.data.items || []
-      const lastSeen = parseInt(localStorage.getItem('last_seen_requests') || '0')
-      pendingCount.value = Math.max(0, pendingRequests.value.length - lastSeen)
-    }
-  } catch (e) {
-    console.error('获取好友请求失败', e)
-  }
+    if (res.data.code === 0) pendingCount.value = (res.data.data.items || []).length
+  } catch (e) {}
 }
 
-onMounted(() => {
-  loadFriends()
-  loadPendingRequests()
-})
+onMounted(() => { loadFriends(); loadPending() })
 </script>
 
 <style scoped>
-.wx-contacts { background: #EDEDED; min-height: 100vh; padding-bottom: 60px; }
+.contacts-page { background: #F2F4F5; min-height: 100vh; font-family: 'PingFang SC', sans-serif }
 
-/* === 顶部导航 === */
-.wx-navbar {
-  position: sticky; top: 0; z-index: 100;
-  display: flex; align-items: center; justify-content: center;
-  height: 44px; background: #EDEDED;
-  border-bottom: 0.5px solid #D9D9D9;
-}
-.wx-title { font-size: 17px; font-weight: 600; color: #111; }
-.wx-nav-right {
-  position: absolute; right: 16px; font-size: 22px; color: #07C160;
-  cursor: pointer; font-weight: 300;
-}
+/* ═══ Header ═══ */
+.c-header { background: linear-gradient(180deg, #06D6A0 0%, #0096C7 100%); padding: 12px 0 14px }
+.c-header-row { display: flex; align-items: center; padding: 0 16px }
+.c-back { color: #fff; font-size: 18px; cursor: pointer; width: 36px }
+.c-title { flex: 1; text-align: center; color: #fff; font-size: 17px; font-weight: 600 }
+.c-add { color: #fff; font-size: 22px; cursor: pointer; width: 36px; text-align: right; font-weight: 300 }
 
-/* === 搜索栏 === */
-.wx-search-bar { padding: 6px 12px 6px; background: #EDEDED; }
-.wx-search-inner {
-  display: flex; align-items: center; gap: 4px;
-  background: #fff; border-radius: 8px; height: 32px; padding: 0 10px;
-}
-.wx-search-icon { font-size: 13px; opacity: 0.4; flex-shrink: 0; }
-.wx-search-input {
-  flex: 1; border: none; outline: none; background: transparent;
-  font-size: 13px; color: #111;
-}
-.wx-search-input::placeholder { color: #B0B0B0; }
+/* ═══ Search ═══ */
+.c-search { padding: 8px 16px }
+.c-search-inner { display: flex; align-items: center; gap: 6px; background: #fff; border-radius: 8px; height: 36px; padding: 0 12px; box-shadow: 0 1px 3px rgba(0,0,0,.04) }
+.c-search-icon { font-size: 14px; opacity: .4 }
+.c-search-input { flex: 1; border: none; outline: none; font-size: 14px; color: #333; background: transparent }
+.c-search-input::placeholder { color: #B0B0B0 }
 
-/* === 功能入口 === */
-.wx-func-list { background: #fff; margin-top: 8px; }
-.wx-func-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 10px 16px; cursor: pointer; position: relative;
-}
-.wx-func-item::after {
-  content: ''; position: absolute; left: 60px; right: 0; bottom: 0;
-  height: 0.5px; background: #E5E5E5;
-}
-.wx-func-avatar {
-  width: 40px; height: 40px; border-radius: 6px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; color: #fff; flex-shrink: 0;
-}
-.wx-func-avatar--newfriend { background: #FA5151; }
-.wx-func-avatar--group { background: #07C160; }
-.wx-func-avatar--label { background: #FFC300; }
-.wx-func-info { flex: 1; }
-.wx-func-name { font-size: 15px; color: #111; }
-.wx-badge {
-  background: #FA5151; color: #fff; font-size: 11px;
-  min-width: 18px; height: 18px; border-radius: 9px;
-  display: flex; align-items: center; justify-content: center;
-  padding: 0 5px; font-weight: 600;
-}
+/* ═══ Cards ═══ */
+.c-card { background: #fff; border-radius: 12px; margin: 0 16px 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.04) }
+.c-card-friends { padding-bottom: 0 }
 
-/* === 好友列表 === */
-.wx-friend-list { background: #fff; margin-top: 8px; position: relative; padding-right: 20px; }
-.wx-letter-header {
-  padding: 2px 16px; font-size: 12px; color: #999;
-  background: #F5F5F5; position: sticky; top: 44px; z-index: 10;
-  border-bottom: 0.5px solid #E5E5E5;
-}
-.wx-friend-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 10px 16px; cursor: pointer; position: relative;
-}
-.wx-friend-item::after {
-  content: ''; position: absolute; left: 60px; right: 0; bottom: 0;
-  height: 0.5px; background: #E5E5E5;
-}
-.wx-friend-item:active { background: #F5F5F5; }
-.wx-friend-avatar {
-  width: 40px; height: 40px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; color: #fff; overflow: hidden; flex-shrink: 0;
-  background: linear-gradient(135deg, #FF6B35, #FF8C5A);
-}
-.wx-friend-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.wx-friend-name { flex: 1; font-size: 15px; color: #111; }
+/* ═══ Items ═══ */
+.c-item { display: flex; align-items: center; padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f5f5f5; position: relative }
+.c-item:last-child { border-bottom: none }
+.c-item:active { background: #f9f9f9 }
 
-/* === 字母索引条（微信风格） === */
-.wx-index-bar {
-  position: fixed; right: 2px; top: 90px; bottom: 120px;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: space-around;
-  z-index: 1000; padding: 8px 3px;
-}
-.wx-index-letter {
-  font-size: 12px; line-height: 1.3; color: #07C160;
-  padding: 2px 3px; text-align: center;
-  cursor: pointer; user-select: none;
-  font-weight: 500; min-width: 14px;
-}
-.wx-index-letter:active {
-  color: #fff; background: #07C160; border-radius: 6px;
-}
+/* Function avatars */
+.c-avatar { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #fff; flex-shrink: 0; margin-right: 12px }
+.c-avatar--red { background: #FF6B6B }
+.c-avatar--green { background: #06D6A0 }
+.c-avatar--gold { background: #FFB800 }
+.c-name { flex: 1; font-size: 15px; color: #333 }
+.c-arrow { color: #ccc; font-size: 16px }
+.c-badge { background: #FF6B6B; color: #fff; font-size: 11px; min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 5px; margin-right: 8px; font-weight: 600 }
 
-/* === 空状态 / 加载中 === */
-.wx-loading { text-align: center; padding: 40px 0; color: #999; font-size: 14px; }
-.wx-empty { text-align: center; padding: 60px 0; color: #999; font-size: 15px; }
+/* Friend avatars */
+.c-friend-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #fff; overflow: hidden; flex-shrink: 0; margin-right: 12px; background: linear-gradient(135deg, #06D6A0, #0096C7) }
+.c-friend-avatar img { width: 100%; height: 100%; object-fit: cover }
+
+/* Letter headers */
+.c-letter { padding: 4px 16px; font-size: 12px; color: #999; background: #F5F7F8; border-bottom: 1px solid #f0f0f0; position: sticky; top: 0; z-index: 2 }
+
+/* ═══ Index ═══ */
+.c-index { position: fixed; right: 3px; top: 130px; bottom: 100px; display: flex; flex-direction: column; align-items: center; justify-content: space-around; z-index: 100; padding: 4px 2px }
+.c-index-letter { font-size: 11px; color: #0096C7; padding: 2px 4px; cursor: pointer; user-select: none; min-width: 14px; text-align: center; font-weight: 500 }
+.c-index-letter:active { color: #fff; background: #0096C7; border-radius: 6px }
+
+/* ═══ Empty/Loading ═══ */
+.c-empty { text-align: center; padding: 50px 0; color: #999; font-size: 14px }
 </style>

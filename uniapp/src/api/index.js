@@ -1,81 +1,85 @@
-// ── API 层 (uni.request 替代 axios) ──
-const BASE = 'http://124.220.16.67:5000/api/v1'
+// uni-app API layer
+const B = 'http://124.220.16.67:5000/api/v1'
 
-function request(method, path, data = null) {
+function request(method, path, data) {
   return new Promise((resolve, reject) => {
     const token = uni.getStorageSync('token') || ''
     uni.request({
-      url: BASE + path, method, data,
+      url: B + path, method: method, data: data,
       header: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      success: (res) => {
-        if (res.data.code === 0) resolve(res.data)
-        else reject(new Error(res.data.message || '请求失败'))
+      success: function(res) {
+        if (res.statusCode === 200 && res.data.code === 0) resolve(res.data)
+        else reject(new Error(res.data.message || 'request failed'))
       },
-      fail: (err) => reject(err)
+      fail: reject
     })
   })
 }
 
 export const api = {
-  get: (path) => request('GET', path),
-  post: (path, data) => request('POST', path, data),
-  put: (path, data) => request('PUT', path, data),
-  delete: (path) => request('DELETE', path),
+  get: function(p) { return request('GET', p) },
+  post: function(p, d) { return request('POST', p, d) },
+  put: function(p, d) { return request('PUT', p, d) },
+  delete: function(p) { return request('DELETE', p) },
 }
 
 export const activitiesAPI = {
-  list: (params) => api.get('/activities?' + new URLSearchParams(params).toString()),
-  detail: (id) => api.get('/activities/' + id),
-  create: (data) => api.post('/activities', data),
-  signup: (id) => api.post('/activities/' + id + '/signup'),
-  cancel: (id) => api.post('/activities/' + id + '/cancel'),
-  disband: (id) => api.post('/activities/' + id + '/disband'),
-  complete: (id) => api.post('/activities/' + id + '/complete'),
-  categories: () => api.get('/activities/categories'),
-  my: (params) => api.get('/activities/my?' + new URLSearchParams(params).toString()),
-  signups: (id) => api.get('/activities/' + id + '/signups'),
-}
-
-export const chatAPI = {
-  groups: () => api.get('/chat/groups'),
-  messages: (id, params) => api.get('/chat/groups/' + id + '/messages?' + new URLSearchParams(params).toString()),
-  send: (id, data) => api.post('/chat/groups/' + id + '/messages', data),
-  leave: (id) => api.delete('/chat/groups/' + id + '/leave'),
-}
-
-export const userAPI = {
-  me: () => api.get('/users/me'),
-  update: (data) => api.put('/users/me', data),
-  friends: () => api.get('/users/friends'),
-  deleteFriend: (id) => api.delete('/users/friends/' + id),
-}
-
-export const geoAPI = {
-  search: (keyword, city) => api.get('/geo/search?keyword=' + encodeURIComponent(keyword) + '&city=' + encodeURIComponent(city || '')),
+  list: function(params) { return api.get('/activities?' + new URLSearchParams(params).toString()) },
+  detail: function(id) { return api.get('/activities/' + id) },
+  create: function(data) { return api.post('/activities', data) },
+  signup: function(id) { return api.post('/activities/' + id + '/signup') },
+  cancel: function(id) { return api.post('/activities/' + id + '/cancel') },
+  disband: function(id) { return api.post('/activities/' + id + '/disband') },
+  complete: function(id) { return api.post('/activities/' + id + '/complete') },
+  categories: function() { return api.get('/activities/categories') },
+  my: function(params) { return api.get('/activities/my?' + new URLSearchParams(params).toString()) },
+  signups: function(id) { return api.get('/activities/' + id + '/signups') },
 }
 
 export const authAPI = {
-  login: (data) => api.post('/auth/login', data),
-  register: (data) => api.post('/auth/register', data),
-  sendCode: (phone) => api.post('/auth/send-code', { phone })
+  login: function(data) { return api.post('/auth/login', data) },
+  register: function(data) { return api.post('/auth/register', data) },
+  sendCode: function(phone) { return api.post('/auth/send-code', { phone: phone }) },
+}
+
+export const chatAPI = {
+  groups: function() { return api.get('/chat/groups') },
+  messages: function(id, params) { return api.get('/chat/groups/' + id + '/messages?' + new URLSearchParams(params).toString()) },
+  send: function(id, data) { return api.post('/chat/groups/' + id + '/messages', data) },
+  leave: function(id) { return api.delete('/chat/groups/' + id + '/leave') },
+}
+
+export const userAPI = {
+  me: function() { return api.get('/users/me') },
+  update: function(data) { return api.put('/users/me', data) },
+  uploadAvatar: function(fp) {
+    return new Promise(function(resolve, reject) {
+      uni.uploadFile({
+        url: B + '/users/me/avatar', filePath: fp, name: 'file',
+        header: { 'Authorization': 'Bearer ' + (uni.getStorageSync('token') || '') },
+        success: function(res) { resolve(JSON.parse(res.data)) },
+        fail: reject
+      })
+    })
+  },
+  profile: function(id) { return api.get('/users/' + id) },
+  search: function(k) { return api.get('/users/search?keyword=' + encodeURIComponent(k)) },
+  friends: function() { return api.get('/users/friends') },
+  addFriend: function(id) { return api.post('/users/friends', { friend_id: id }) },
+  deleteFriend: function(id) { return api.delete('/users/friends/' + id) },
 }
 
 export const usersAPI = {
-  me: () => api.get('/users/me'),
-  update: (data) => api.put('/users/me', data),
-  uploadAvatar: (filePath) => new Promise((resolve, reject) => {
-    uni.uploadFile({
-      url: 'http://124.220.16.67:5000/api/v1/users/me/avatar',
-      filePath, name: 'file',
-      header: { 'Authorization': 'Bearer ' + (uni.getStorageSync('token') || '') },
-      success: res => resolve(JSON.parse(res.data)),
-      fail: reject
-    })
-  }),
-  profile: (id) => api.get('/users/' + id),
-  addFriend: (id) => api.post('/users/friends', { friend_id: id }),
-  friends: () => api.get('/users/friends'),
-  deleteFriend: (id) => api.delete('/users/friends/' + id),
-  search: (keyword) => api.get('/users/search?keyword=' + encodeURIComponent(keyword)),
-  locations: () => api.get('/users/locations')
+  messages: function() { return api.get('/users/messages') },
+  pendingFriendRequests: function() { return api.get('/users/friend-requests') },
+  messagesWith: function(id) { return api.get('/users/messages/' + id) },
+  sendMessage: function(id, data) { return api.post('/users/messages/' + id, data) },
+  search: function(k) { return api.get('/users/search?keyword=' + encodeURIComponent(k)) },
+  friends: userAPI.friends,
+  addFriend: userAPI.addFriend,
+  profile: userAPI.profile,
+}
+
+export const geoAPI = {
+  search: function(keyword, city) { return api.get('/geo/search?keyword=' + encodeURIComponent(keyword) + '&city=' + encodeURIComponent(city || '')) },
 }

@@ -1,74 +1,87 @@
 <template>
-  <div class="profile-page-v3">
-    <!-- Back bar -->
-    <div class="pf-back">
-      <button @click="$router.back()">‹</button>
-      <span>用户资料</span>
-      <button class="pf-edit-btn" @click="goEdit">编辑</button>
+  <div class="up-page">
+    <!-- ═══ Teal Header ═══ -->
+    <div class="up-header">
+      <div class="up-header-row">
+        <span class="up-back" @click="$router.back()">←</span>
+        <span class="up-title">用户资料</span>
+        <span v-if="isSelf" class="up-edit" @click="goEdit">编辑</span>
+        <span v-else style="width:36px"></span>
+      </div>
+      <div class="up-avatar-wrap">
+        <div class="up-avatar">
+          <img v-if="user.avatar_url" :src="user.avatar_url" @error="e=>e.target.style.display='none'" />
+          <span v-else>{{ (user.nickname||'?')[0] }}</span>
+        </div>
+        <div class="up-name">{{ user.nickname }}</div>
+        <div class="up-phone">{{ user.phone }}</div>
+      </div>
     </div>
 
-    <div v-if="loading" class="empty-state">加载中...</div>
+    <!-- ═══ Loading ═══ -->
+    <div v-if="loading" class="up-empty">加载中...</div>
+
     <template v-else-if="profileInfo">
-      <!-- Header -->
-      <div class="pf-header">
-        <div class="pf-avatar-lg">
-          <img v-if="user.avatar_url" :src="user.avatar_url" @error="e => e.target.style.display='none'" />
-          <span v-else>{{ (user.nickname || '?')[0] }}</span>
-        </div>
-        <div class="pf-name">{{ user.nickname }}</div>
-        <div class="pf-phone">{{ user.phone }}</div>
+      <!-- ═══ Action Buttons ═══ -->
+      <div class="up-actions">
+        <button class="up-msg-btn" @click="$router.push('/chat/private/' + route.params.id)">💬 发消息</button>
+        <button v-if="!isSelf && isFriend" class="up-del-btn" @click="confirmDelete">🗑️ 删除好友</button>
       </div>
 
-      <!-- 发消息按钮 -->
-      <div class="pf-action-bar">
-        <button class="pf-msg-btn" @click="$router.push('/chat/private/' + route.params.id)">
-          💬 发消息
-        </button>
-      </div>
-
-      <!-- Info Card -->
-      <div class="pf-info-card">
-        <div class="pf-row"><span class="pf-label">性别</span><span class="pf-val">{{ genderMap[profileInfo.gender] || profileInfo.gender || '未设置' }}</span></div>
-        <div class="pf-row"><span class="pf-label">城市</span><span class="pf-val">{{ profileInfo.city || '未设置' }}</span></div>
-        <div class="pf-row" v-if="profileInfo.district"><span class="pf-label">区县</span><span class="pf-val">{{ profileInfo.district }}</span></div>
-        <div class="pf-row"><span class="pf-label">出生年份</span><span class="pf-val">{{ profileInfo.birth_year || '未设置' }}</span></div>
-        <div class="pf-row"><span class="pf-label">真实姓名</span><span class="pf-val">{{ profileInfo.real_name || '未设置' }}</span></div>
-        <div class="pf-row" v-if="profileInfo.interests">
-          <span class="pf-label">兴趣</span>
-          <div class="pf-tags">
-            <span v-for="(tag, i) in profileInfo.interests.split(',')" :key="i" class="pf-tag" :style="{ background: tagColors[i % tagColors.length] }">{{ tag.trim() }}</span>
+      <!-- ═══ Info Card ═══ -->
+      <div class="up-card">
+        <div class="up-row"><span class="up-label">性别</span><span class="up-val">{{ genderMap[profileInfo.gender] || '未设置' }}</span></div>
+        <div class="up-row"><span class="up-label">城市</span><span class="up-val">{{ profileInfo.city || '未设置' }}</span></div>
+        <div class="up-row" v-if="profileInfo.district"><span class="up-label">区县</span><span class="up-val">{{ profileInfo.district }}</span></div>
+        <div class="up-row"><span class="up-label">出生年份</span><span class="up-val">{{ profileInfo.birth_year || '未设置' }}</span></div>
+        <div class="up-row"><span class="up-label">真实姓名</span><span class="up-val">{{ profileInfo.real_name || '未设置' }}</span></div>
+        <div class="up-row" v-if="profileInfo.interests">
+          <span class="up-label">兴趣</span>
+          <div class="up-tags">
+            <span v-for="(tag,i) in profileInfo.interests.split(',')" :key="i" class="up-tag" :style="{background:tagColors[i%6]}">{{ tag.trim() }}</span>
           </div>
         </div>
       </div>
 
-      <!-- Privacy -->
-      <div class="pf-divider"></div>
-      <div class="pf-info-card">
-        <div class="pf-row"><span class="pf-label">隐身模式</span><span class="pf-val">{{ profileInfo.ghost_mode ? '已开启' : '未开启' }}</span></div>
-        <div class="pf-row"><span class="pf-label">允许私信</span><span class="pf-val">{{ profileInfo.allow_private_msg ? '已允许' : '未允许' }}</span></div>
-        <div class="pf-row"><span class="pf-label">允许查看资料</span><span class="pf-val">{{ profileInfo.allow_profile_view ? '已允许' : '未允许' }}</span></div>
+      <!-- ═══ Privacy Card ═══ -->
+      <div class="up-card">
+        <div class="up-row"><span class="up-label">隐身模式</span><span class="up-val">{{ profileInfo.ghost_mode ? '已开启' : '未开启' }}</span></div>
+        <div class="up-row"><span class="up-label">允许私信</span><span class="up-val">{{ profileInfo.allow_private_msg ? '已允许' : '未允许' }}</span></div>
+        <div class="up-row"><span class="up-label">允许查看资料</span><span class="up-val">{{ profileInfo.allow_profile_view ? '已允许' : '未允许' }}</span></div>
       </div>
 
-      <!-- Stats -->
-      <div class="pf-stats-card">
-        <div class="pf-stats-grid">
-          <div><div class="pf-stat-val">{{ stats?.vitality || 0 }}</div><div class="pf-stat-lbl">活力值</div></div>
-          <div><div class="pf-stat-val">{{ stats?.activity_count || 0 }}</div><div class="pf-stat-lbl">活动</div></div>
-          <div><div class="pf-stat-val">{{ stats?.friends_count || 0 }}</div><div class="pf-stat-lbl">好友</div></div>
-          <div><div class="pf-stat-val">{{ stats?.activity_streak || 0 }}</div><div class="pf-stat-lbl">连续天数</div></div>
-          <div><div class="pf-stat-val sm">{{ stats?.last_active_at ? stats.last_active_at.slice(0, 10) : '-' }}</div><div class="pf-stat-lbl">最近活跃</div></div>
-          <div><div class="pf-stat-val sm">{{ user.role || 'user' }}</div><div class="pf-stat-lbl">角色</div></div>
+      <!-- ═══ Stats ═══ -->
+      <div class="up-card up-stats">
+        <div class="up-stat"><div class="up-stat-num">{{ stats?.vitality||0 }}</div><div class="up-stat-lbl">活力值</div></div>
+        <div class="up-stat"><div class="up-stat-num">{{ stats?.activity_count||0 }}</div><div class="up-stat-lbl">活动</div></div>
+        <div class="up-stat"><div class="up-stat-num">{{ stats?.friends_count||0 }}</div><div class="up-stat-lbl">好友</div></div>
+        <div class="up-stat"><div class="up-stat-num sm">{{ stats?.activity_streak||0 }}</div><div class="up-stat-lbl">连续天数</div></div>
+        <div class="up-stat"><div class="up-stat-num sm">{{ stats?.last_active_at ? stats.last_active_at.slice(0,10) : '-' }}</div><div class="up-stat-lbl">最近活跃</div></div>
+        <div class="up-stat"><div class="up-stat-num sm">{{ user.role||'user' }}</div><div class="up-stat-lbl">角色</div></div>
+      </div>
+
+      <!-- ═══ Bio ═══ -->
+      <div class="up-card up-bio" v-if="profileInfo.bio">{{ profileInfo.bio }}</div>
+    </template>
+
+    <!-- ═══ Delete Confirm ═══ -->
+    <div v-if="showDeleteConfirm" class="up-modal-bg" @click.self="showDeleteConfirm=false">
+      <div class="up-modal-box">
+        <p>确定要删除「<b>{{ user.nickname }}</b>」吗？</p>
+        <p style="font-size:12px;color:#999;margin-top:4px">删除后将不再显示对方的消息</p>
+        <div class="up-modal-row">
+          <button class="up-btn-c" @click="showDeleteConfirm=false">取消</button>
+          <button class="up-btn-d" @click="deleteFriend">删除</button>
         </div>
       </div>
+    </div>
 
-      <!-- Bio -->
-      <div class="pf-bio" v-if="profileInfo.bio">{{ profileInfo.bio }}</div>
-    </template>
+    <div style="height:60px"></div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usersAPI } from '@/api'
 
@@ -78,91 +91,103 @@ const loading = ref(true)
 const user = ref({})
 const profileInfo = ref(null)
 const stats = ref(null)
+const showDeleteConfirm = ref(false)
+const isFriend = ref(false)
+const isSelf = ref(false)
 
-const genderMap = { male: '男', female: '女', other: '保密' }
-const tagColors = ['#FF6B35', '#52c41a', '#1890ff', '#722ed1', '#eb2f96', '#13c2c2']
+const genderMap = { male:'男', female:'女', other:'保密' }
+const tagColors = ['#06D6A0','#FFB800','#0096C7','#FF6B6B','#722ED1','#FF85C0']
 
-async function loadUserData() {
-  loading.value = true
+function goEdit() { router.push('/profile/edit') }
+
+async function checkFriendship() {
+  try {
+    const res = await usersAPI.friends()
+    if (res.data?.code === 0) {
+      const targetId = parseInt(route.params.id)
+      const friends = res.data.data.items || []
+      isFriend.value = friends.some(f => f.user_id == targetId || f.friend_id == targetId)
+    }
+  } catch(e) {}
+  try {
+    const ui = localStorage.getItem('user_info')
+    if (ui) { const u = JSON.parse(ui); isSelf.value = u.user_id == route.params.id }
+  } catch(e) {}
+}
+
+function confirmDelete() { showDeleteConfirm.value = true }
+
+async function deleteFriend() {
+  try {
+    const res = await usersAPI.removeFriend(route.params.id)
+    if (res.data?.code === 0) { alert('已删除好友'); showDeleteConfirm.value = false; router.back() }
+    else alert(res.data?.message || '删除失败')
+  } catch(e) { alert('操作失败') }
+}
+
+onMounted(async () => {
+  checkFriendship()
   try {
     const profileId = route.params.id
-    // Get current user ID from token
-    let myId = null
-    try {
-      const t = localStorage.getItem("token")
-      if (t) myId = JSON.parse(atob(t.split(".")[1])).user_id
-    } catch (e) {}
-    const isMe = myId && String(myId) === String(profileId)
-    
-    // If viewing own profile, use /users/me for full data
-    const profileRes = isMe 
-      ? await usersAPI.me()
-      : await usersAPI.publicProfile(profileId)
-    const statsRes = await usersAPI.userStats(profileId)
-    
-    if (profileRes.data.code === 0) {
-      const u = isMe
-        ? (profileRes.data.data.user || profileRes.data.data || {})
-        : (profileRes.data.data.user || profileRes.data.data || {})
-      user.value = u
-      profileInfo.value = u.profile || {}
+    const [profileRes, statsRes] = await Promise.all([usersAPI.publicProfile(profileId), usersAPI.userStats(profileId)])
+    if (profileRes.data?.code === 0) {
+      const u = profileRes.data.data.user || profileRes.data.data || {}
+      user.value = u; profileInfo.value = u.profile || {}
     }
-    if (statsRes.data.code === 0) stats.value = statsRes.data.data
-  } catch (e) {}
+    if (statsRes.data?.code === 0) stats.value = statsRes.data.data
+  } catch(e) {}
   loading.value = false
-}
-
-function goEdit() {
-  router.push('/profile/edit')
-}
-
-// 关键修复：监听路由变化，从编辑页返回时重新拉取数据
-watch(() => route.fullPath, () => {
-  loadUserData()
-})
-
-onMounted(() => {
-  loadUserData()
 })
 </script>
 
 <style scoped>
-.profile-page-v3 { background: #f5f5f5; min-height: 100vh; padding-bottom: 80px; }
-.pf-back { display: flex; align-items: center; padding: 12px 16px; background: #fff; border-bottom: 1px solid #f0f0f0; position: sticky; top: 0; z-index: 10; }
-.pf-back button:first-child { background: none; border: none; color: #FF6B35; font-size: 28px; font-weight: 300; cursor: pointer; padding: 0 8px 0 0; line-height: 1; }
-.pf-back span { flex: 1; text-align: center; font-size: 16px; font-weight: 700; color: #2D2D2D; }
-.pf-edit-btn { border: 1px solid #FF6B35 !important; color: #FF6B35 !important; background: #fff !important; padding: 4px 14px !important; border-radius: 14px !important; font-size: 13px !important; cursor: pointer; margin-left: 8px; }
+.up-page { background: #F2F4F5; min-height: 100vh; font-family: 'PingFang SC', sans-serif }
 
-.pf-header { background: linear-gradient(135deg, #FF6B35, #FF8A50); padding: 30px 20px 40px; text-align: center; border-radius: 0 0 24px 24px; }
-.pf-avatar-lg { width: 80px; height: 80px; border-radius: 50%; background: #fff; color: #FF6B35; font-size: 36px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; overflow: hidden; }
-.pf-avatar-lg img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-.pf-name { color: #fff; font-size: 22px; font-weight: 700; }
-.pf-phone { color: rgba(255,255,255,.7); font-size: 13px; margin-top: 4px; }
+/* Header */
+.up-header { background: linear-gradient(180deg, #06D6A0 0%, #0096C7 100%); padding: 12px 0 24px }
+.up-header-row { display: flex; align-items: center; padding: 0 16px; margin-bottom: 20px }
+.up-back { color: #fff; font-size: 18px; cursor: pointer; width: 36px }
+.up-title { flex: 1; text-align: center; color: #fff; font-size: 17px; font-weight: 600 }
+.up-edit { color: #fff; font-size: 14px; cursor: pointer; width: 36px; text-align: right; border: 1px solid rgba(255,255,255,.5); border-radius: 12px; padding: 2px 10px; width: auto }
+.up-avatar-wrap { text-align: center }
+.up-avatar { width: 72px; height: 72px; border-radius: 50%; background: rgba(255,255,255,.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 32px; color: #fff; overflow: hidden }
+.up-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50% }
+.up-name { color: #fff; font-size: 20px; font-weight: 700 }
+.up-phone { color: rgba(255,255,255,.75); font-size: 13px; margin-top: 4px }
 
-.pf-action-bar { padding: 12px 16px; margin-top: -20px; position: relative; z-index: 5; }
-.pf-msg-btn {
-  width: 100%; padding: 12px 0; background: #07C160; color: #fff;
-  border: none; border-radius: 12px; font-size: 16px; font-weight: 600;
-  cursor: pointer; box-shadow: 0 2px 8px rgba(7,193,96,.3);
-}
-.pf-msg-btn:active { opacity: 0.85; }
+/* Actions */
+.up-actions { padding: 12px 16px }
+.up-msg-btn { width: 100%; padding: 12px; background: #06D6A0; color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(6,214,160,.3) }
+.up-msg-btn:active { opacity: .85 }
+.up-del-btn { width: 100%; padding: 12px; background: #fff; color: #FF6B6B; border: 1px solid #FF6B6B; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px }
 
-.pf-info-card { margin: 12px 16px; background: #fff; border-radius: 14px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
-.pf-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f5f5f5; font-size: 14px; }
-.pf-row:last-child { border-bottom: none; }
-.pf-label { color: #999; }
-.pf-val { color: #2D2D2D; text-align: right; max-width: 60%; }
-.pf-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; max-width: 60%; }
-.pf-tag { display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: 12px; color: #fff; }
-.pf-divider { padding: 0 16px; margin: 12px 16px 0; }
-.pf-divider::after { content: ''; display: block; height: 1px; background: #f0f0f0; }
+/* Cards */
+.up-card { background: #fff; border-radius: 12px; margin: 0 16px 10px; padding: 8px 0; box-shadow: 0 1px 4px rgba(0,0,0,.04); overflow: hidden }
+.up-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f5f5f5; font-size: 14px }
+.up-row:last-child { border-bottom: none }
+.up-label { color: #999; flex-shrink: 0 }
+.up-val { color: #333; text-align: right; max-width: 60% }
+.up-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; max-width: 60% }
+.up-tag { padding: 3px 10px; border-radius: 10px; font-size: 12px; color: #fff }
 
-.pf-stats-card { margin: 12px 16px; background: #fff; border-radius: 14px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-.pf-stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; text-align: center; }
-.pf-stat-val { font-size: 22px; font-weight: 700; color: #FF6B35; }
-.pf-stat-val.sm { font-size: 13px; }
-.pf-stat-lbl { font-size: 11px; color: #999; margin-top: 2px; }
+/* Stats */
+.up-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 4px 0; padding: 16px }
+.up-stat { text-align: center; padding: 8px 4px }
+.up-stat-num { font-size: 22px; font-weight: 700; color: #0096C7 }
+.up-stat-num.sm { font-size: 13px }
+.up-stat-lbl { font-size: 11px; color: #999; margin-top: 2px }
 
-.pf-bio { margin: 12px 16px; background: #fff; border-radius: 14px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.04); font-size: 14px; color: #666; line-height: 1.6; }
-.empty-state { text-align: center; color: #999; padding: 60px 20px; font-size: 14px; }
+/* Bio */
+.up-bio { padding: 16px; font-size: 14px; color: #666; line-height: 1.6 }
+
+/* Modal */
+.up-modal-bg { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.45); z-index: 999; display: flex; align-items: center; justify-content: center }
+.up-modal-box { width: 280px; background: #fff; border-radius: 16px; padding: 24px 20px; text-align: center }
+.up-modal-box p { margin: 0 0 8px; font-size: 15px; color: #333; line-height: 1.5 }
+.up-modal-row { display: flex; gap: 12px; margin-top: 20px }
+.up-btn-c { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 10px; background: #fff; color: #666; font-size: 15px; cursor: pointer }
+.up-btn-d { flex: 1; padding: 10px; border: none; border-radius: 10px; background: #FF6B6B; color: #fff; font-size: 15px; cursor: pointer }
+
+/* Empty */
+.up-empty { text-align: center; padding: 60px; color: #999; font-size: 14px }
 </style>
