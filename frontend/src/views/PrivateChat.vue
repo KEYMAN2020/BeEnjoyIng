@@ -50,12 +50,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { useRoute } from 'vue-router'
 import { usersAPI } from '@/api'
+import { socketService } from '@/socket'
 
 const route = useRoute()
-const router = useRouter()
 const otherId = route.params.id
 const messages = ref([])
 const otherUser = ref(null)
@@ -66,10 +66,15 @@ const msgArea = ref(null)
 const inputEl = ref(null)
 
 function formatTime(d) {
-  if (!d) return ''
-  return d.slice(5, 16) || d
+  if (!d || typeof d !== 'string') return ''
+  try { return d.slice(5, 16) || d } catch (e) { return '' }
 }
 
+function scrollBottom() {
+  if (msgArea.value) msgArea.value.scrollTop = msgArea.value.scrollHeight
+}
+
+/** 加载历史消息 (REST) */
 async function loadMessages() {
   loading.value = true
   try {
@@ -84,31 +89,63 @@ async function loadMessages() {
   loading.value = false
 }
 
-function scrollBottom() {
-  if (msgArea.value) msgArea.value.scrollTop = msgArea.value.scrollHeight
+/** Socket 收到新消息 */
+function onNewMessage(msg) {
+  if (!msg || !msg.sender_id || !msg.receiver_id) return
+  const isFrom = msg.sender_id === parseInt(otherId)
+  const isTo = msg.receiver_id === parseInt(otherId)
+  if (isFrom || isTo) {
+    messages.value.push(msg)
+    // 上限500条
+    if (messages.value.length > 500) messages.value = messages.value.slice(-300)
+    nextTick(() => scrollBottom())
+  }
 }
 
+/** 发送消息 (Socket 优先, REST 兜底) */
 async function sendMsg() {
   const txt = inputText.value.trim()
   if (!txt) return
   inputText.value = ''
-  try {
-    const res = await usersAPI.sendMessage({ receiver_id: parseInt(otherId), content: txt })
-    if (res.data.code === 0) {
-      loadMessages()
-    } else {
-      alert(res.data.message || '发送失败')
-    }
-  } catch (e) { alert('网络错误') }
+
+  const payload = { receiver_id: parseInt(otherId), content: txt }
+
+  // Socket 发送（实时）
+  if (socketService.connected.value) {
+    socketService.sendPrivate(parseInt(otherId), txt)
+  } else {
+    // 降级：REST 发送然后刷新
+    try {
+      const res = await usersAPI.sendMessage(payload)
+      if (res.data.code === 0) {
+        await loadMessages()
+      } else {
+        alert(res.data.message || '发送失败')
+      }
+    } catch (e) { alert('网络错误') }
+  }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // 解析当前用户 ID
   const token = localStorage.getItem('token')
   if (token) {
     try { myId.value = JSON.parse(atob(token.split('.')[1])).user_id } catch (e) {}
   }
-  loadMessages()
+
+  // 加载历史
+  await loadMessages()
+
+  // 加入 Socket 私聊房间（实时接收新消息）
+  socketService.joinPrivate(parseInt(otherId))
+  socketService.onPrivateMessage(onNewMessage)
+
   setTimeout(() => { if (inputEl.value) inputEl.value.focus() }, 300)
+})
+
+onUnmounted(() => {
+  socketService.offPrivateMessage(onNewMessage)
+  socketService.leavePrivate(parseInt(otherId))
 })
 </script>
 

@@ -1,6 +1,6 @@
 """Flask 应用入口 — BeEnjoyIng API
 
-集成：CORS / Swagger / Sentry / 限流 / 结构化日志 / 文件上传 / 增强健康检查
+集成：CORS / Swagger / Sentry / 限流 / 结构化日志 / 文件上传 / 增强健康检查 / Socket.IO 实时通信
 """
 
 import os
@@ -202,6 +202,17 @@ def frontend_app_assets(filename):
     return jsonify({"error": "not found"}), 404
 
 
+@app.route("/app/avatars/<path:filename>")
+def frontend_avatars(filename):
+    """用户头像静态文件（持久化目录，不受前端构建影响）"""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "avatars", filename)
+    if os.path.isfile(path):
+        ct = "image/svg+xml" if filename.endswith(".svg") else "image/png"
+        with open(path, "rb") as f:
+            return f.read(), 200, {"Content-Type": ct, "Cache-Control": "public, max-age=86400"}
+    return jsonify({"error": "not found"}), 404
+
+
 @app.route("/phone")
 def phone_preview():
     preview_path = os.path.join(FRONTEND_DIST, "phone_preview.html")
@@ -244,7 +255,7 @@ def redirect_create_activity():
 def frontend_spa_fallback(path):
     """SPA 路由回退 — 非 API 路径返回 index.html"""
         # /app/ 及子路径返回 SPA（供手机壳iframe使用）
-    if (path == "app" or path.startswith("app/")) and not path.startswith("app/assets/"):
+    if (path == "app" or path.startswith("app/")) and not path.startswith("app/assets/") and not path.startswith("app/avatars/"):
         spa_path = os.path.join(FRONTEND_DIST, "index_spa.html")
         if os.path.isfile(spa_path):
             with open(spa_path, encoding="utf-8") as f:
@@ -327,5 +338,6 @@ def shutdown_db_session(_exception=None):
 
 
 if __name__ == "__main__":
-    log.info("BeEnjoyIng API 启动", env=os.getenv("FLASK_ENV", "development"), port=5000)
-    app.run(host="0.0.0.0", port=5000, debug=Config.DEBUG)
+    from socket_events import socketio
+    log.info("BeEnjoyIng API 启动 (Socket.IO)", env=os.getenv("FLASK_ENV", "development"), port=5000)
+    socketio.run(app, host="0.0.0.0", port=5000, debug=Config.DEBUG)

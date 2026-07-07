@@ -5,13 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "vite build && mv ../backend/backend/frontend_dist/index.html ../backend/backend/frontend_dist/index_spa.html && cp ../backend/backend/phone_shell.html ../backend/backend/frontend_dist/index.html",
+    "build": "vite build && mv ../backend/frontend_dist/index.html ../backend/frontend_dist/index_spa.html && cp ../backend/phone_shell.html ../backend/frontend_dist/index.html",
     "preview": "vite preview"
   },
   "dependencies": {
     "axios": "^1.7.0",
     "pinia": "^2.1.0",
     "pinyin-pro": "^3.28.1",
+    "socket.io-client": "^4.8.3",
     "vue": "^3.4.0",
     "vue-router": "^4.3.0"
   },

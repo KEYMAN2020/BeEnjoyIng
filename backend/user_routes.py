@@ -25,7 +25,7 @@ def _safe_user(user: dict) -> dict:
         "user_id": user["id"],
         "nickname": user["nickname"],
         "avatar_url": user.get("avatar_url", ""),
-        "role": user["role"],
+        "role": user.get("role", "user"),
     }
 
 
@@ -616,9 +616,12 @@ def list_messages():
         (user_id, user_id, user_id),
     )["cnt"]
 
-    # 取每个会话的最新消息
+    # 取每个会话的最新消息 + 未读计数
     conversations = execute_query(
-        "SELECT m.id, m.sender_id, m.receiver_id, m.msg_type, m.content, m.is_read, m.created_at "
+        "SELECT m.id, m.sender_id, m.receiver_id, m.msg_type, m.content, m.is_read, m.created_at, "
+        "  COALESCE((SELECT COUNT(*) FROM user_private_messages pm2 "
+        "    WHERE pm2.sender_id = CASE WHEN m.sender_id = %s THEN m.receiver_id ELSE m.sender_id END "
+        "      AND pm2.receiver_id = %s AND pm2.is_read = 0 AND pm2.deleted_at IS NULL), 0) AS unread_count "
         "FROM user_private_messages m "
         "INNER JOIN ("
         "  SELECT MAX(id) AS max_id FROM user_private_messages "
@@ -626,7 +629,7 @@ def list_messages():
         "  GROUP BY CASE WHEN sender_id = %s THEN receiver_id ELSE sender_id END"
         ") latest ON m.id = latest.max_id "
         "ORDER BY m.created_at DESC LIMIT %s OFFSET %s",
-        (user_id, user_id, user_id, size, offset),
+        (user_id, user_id, user_id, user_id, user_id, size, offset),
     )
 
     items = []
@@ -642,6 +645,7 @@ def list_messages():
             "content": msg["content"],
             "is_read": bool(msg["is_read"]),
             "is_unread": msg["sender_id"] != user_id and not bool(msg["is_read"]),
+            "unread_count": int(msg.get("unread_count", 0)) if msg["sender_id"] != user_id else 0,
             "created_at": str(msg["created_at"]) if msg.get("created_at") else None,
         })
 
@@ -704,12 +708,14 @@ def get_messages_with(other_id):
 
     msgs = execute_query(
         "SELECT id, sender_id, receiver_id, content, created_at "
-        "FROM user_private_messages "
-        "WHERE deleted_at IS NULL "
-        "  AND ((sender_id = %s AND receiver_id = %s) "
-        "       OR (sender_id = %s AND receiver_id = %s)) "
-        "ORDER BY created_at ASC "
-        "LIMIT 200",
+        "FROM ("
+        "  SELECT id, sender_id, receiver_id, content, created_at "
+        "  FROM user_private_messages "
+        "  WHERE deleted_at IS NULL "
+        "    AND ((sender_id = %s AND receiver_id = %s) "
+        "         OR (sender_id = %s AND receiver_id = %s)) "
+        "  ORDER BY created_at DESC LIMIT 200"
+        ") t ORDER BY created_at ASC",
         (user_id, other_id, other_id, user_id)
     )
 

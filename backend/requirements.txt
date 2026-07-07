@@ -8,3 +8,5 @@ flask-cors==4.0.2
 sentry-sdk==2.3.1
 flask-limiter==3.7.0
 marshmallow==3.21.3
+flask-socketio==5.6.1
+eventlet==0.41.0

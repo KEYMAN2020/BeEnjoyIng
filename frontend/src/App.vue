@@ -39,6 +39,7 @@
 <script setup>
 import { computed } from "vue"
 import { useRoute } from "vue-router"
+import { socketService } from "@/socket"
 
 const route = useRoute()
 
@@ -47,6 +48,12 @@ const showNav = computed(() => {
   const topLevelPages = ["Home", "Messages", "Contacts", "Mine"]
   return topLevelPages.includes(route.name)
 })
+
+// 全局建立 Socket 连接（应用启动时）
+const token = localStorage.getItem("token")
+if (token) {
+  socketService.connect()
+}
 </script>
 
 <style scoped>

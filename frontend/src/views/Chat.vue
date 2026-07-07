@@ -112,6 +112,7 @@ import { ref, nextTick, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { chatAPI } from '@/api'
+import { socketService } from '@/socket'
 
 const route = useRoute()
 const auth = useAuthStore()
@@ -125,7 +126,6 @@ const inputMsg = ref('')
 const messagesEl = ref(null)
 const inputEl = ref(null)
 const currentUserId = ref(null)
-let pollTimer = null
 
 const myAvatar = computed(() => auth.user?.avatar_url || auth.user?.avatar || null)
 const myInitial = computed(() => {
@@ -140,12 +140,14 @@ function isMine(msg) {
 function formatTime(dateStr) {
   if (!dateStr) return ''
   const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return ''
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
 function formatTimeFull(dateStr) {
   if (!dateStr) return ''
   const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return ''
   const now = new Date()
   const isToday = d.toDateString() === now.toDateString()
   const yesterday = new Date(now)
@@ -209,24 +211,44 @@ async function loadMessages() {
   }
 }
 
+/** Socket 收到新群消息 */
+function onSocketMessage(msg) {
+  if (!msg || !msg.group_id) return
+  if (msg.group_id !== parseInt(route.params.groupId)) return
+  if (messages.value.some(m => m._tempId === msg.id)) return
+  messages.value.push({ ...msg, _tempId: msg.id })
+  // 上限1000条，防止内存无限增长
+  if (messages.value.length > 1000) messages.value = messages.value.slice(-500)
+  scrollToBottom(true)
+}
+
 async function sendMessage() {
   const text = inputMsg.value.trim()
   if (!text || sending.value) return
   sending.value = true
-  try {
-    const res = await chatAPI.sendMessage(route.params.groupId, { content: text, type: 'text' })
-    if (res.data.code === 0) {
-      inputMsg.value = ''
-      if (inputEl.value) {
-        inputEl.value.style.height = 'auto'
-      }
-      await loadMessages()
-      scrollToBottom(true)
-    }
-  } catch (e) {
-    console.error('sendMessage error', e)
-  } finally {
+
+  if (socketService.connected.value) {
+    // Socket 实时发送
+    const gid = parseInt(route.params.groupId)
+    socketService.sendGroup(gid, text)
+    inputMsg.value = ''
+    if (inputEl.value) inputEl.value.style.height = 'auto'
     sending.value = false
+  } else {
+    // REST 降级
+    try {
+      const res = await chatAPI.sendMessage(route.params.groupId, { content: text, type: 'text' })
+      if (res.data.code === 0) {
+        inputMsg.value = ''
+        if (inputEl.value) inputEl.value.style.height = 'auto'
+        await loadMessages()
+        scrollToBottom(true)
+      }
+    } catch (e) {
+      console.error('sendMessage error', e)
+    } finally {
+      sending.value = false
+    }
   }
 }
 
@@ -239,11 +261,16 @@ onMounted(async () => {
   await loadMessages()
   scrollToBottom()
   readMessages()
-  pollTimer = setInterval(loadMessages, 5000)
+
+  // Socket.IO 实时消息
+  const gid = parseInt(route.params.groupId)
+  socketService.joinGroup(gid)
+  socketService.onGroupMessage(onSocketMessage)
 })
 
 onUnmounted(() => {
-  if (pollTimer) clearInterval(pollTimer)
+  socketService.offGroupMessage(onSocketMessage)
+  socketService.leaveGroup(parseInt(route.params.groupId))
 })
 </script>
 
