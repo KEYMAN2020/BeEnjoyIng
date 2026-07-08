@@ -88,7 +88,7 @@
       <div class="sub-card-v3">
         <div v-if="emergencyContacts.length === 0" class="empty-state">暂无紧急联系人</div>
         <div v-for="(ec, i) in emergencyContacts" :key="i" class="ec-card">
-          <div><b>{{ ec.name }}</b><br/><span style="color:#FF6B35">{{ ec.phone }}</span><br/><span style="color:#999;font-size:12px">{{ ec.relation }}</span></div>
+          <div><b>{{ ec.name }}</b><br/><span style="color:#06D6A0">{{ ec.phone }}</span><br/><span style="color:#999;font-size:12px">{{ ec.relation }}</span></div>
           <button class="ec-del" @click="removeEmergencyContact(i)">删除</button>
         </div>
         <button class="btn-save" @click="showEmergencyForm = true">+ 添加</button>
@@ -269,20 +269,20 @@ onMounted(async () => {
 
 <style scoped>
 .mine-page-v3{background:#f5f5f5;min-height:100vh;padding-bottom:80px}
-.mine-header-v3{background:linear-gradient(135deg,#FF6B35,#FF8A50);padding:30px 20px 40px;text-align:center;border-radius:0 0 24px 24px}
+.mine-header-v3{background:linear-gradient(135deg,#06D6A0,#0096C7);padding:30px 20px 40px;text-align:center;border-radius:0 0 24px 24px}
 .mine-avatar-wrap{width:72px;height:72px;margin:0 auto 12px;position:relative;cursor:pointer}
-.mine-avatar-v3{width:72px;height:72px;border-radius:50%;background:#fff;color:#FF6B35;font-size:32px;font-weight:700;display:flex;align-items:center;justify-content:center;border:3px solid rgba(255,255,255,.5);overflow:hidden;margin:0 auto}
+.mine-avatar-v3{width:72px;height:72px;border-radius:50%;background:#fff;color:#06D6A0;font-size:32px;font-weight:700;display:flex;align-items:center;justify-content:center;border:3px solid rgba(255,255,255,.5);overflow:hidden;margin:0 auto}
 .mine-avatar-v3 img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-.mine-edit-btn-v3{position:absolute;bottom:0;right:-4px;width:26px;height:26px;border-radius:50%;background:#fff;border:2px solid #FF6B35;color:#FF6B35;font-size:12px;display:flex;align-items:center;justify-content:center}
+.mine-edit-btn-v3{position:absolute;bottom:0;right:-4px;width:26px;height:26px;border-radius:50%;background:#fff;border:2px solid #06D6A0;color:#06D6A0;font-size:12px;display:flex;align-items:center;justify-content:center}
 .mine-nickname-v3{color:#fff;font-size:20px;font-weight:700;margin:8px 0 4px}
 .mine-level-v3{display:inline-block;background:rgba(255,255,255,.25);color:#fff;padding:2px 12px;border-radius:10px;font-size:12px}
 .mine-progress-v3{margin:0 20px;background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.08);transform:translateY(-20px)}
 .mp-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.mp-label{font-size:13px;color:#666}.mp-value{font-size:13px;color:#FF6B35;font-weight:600}
+.mp-label{font-size:13px;color:#666}.mp-value{font-size:13px;color:#06D6A0;font-weight:600}
 .mp-bar{height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden}
-.mp-fill{height:100%;background:linear-gradient(90deg,#FF6B35,#FF8A50);border-radius:3px;transition:width .3s}
+.mp-fill{height:100%;background:linear-gradient(90deg,#06D6A0,#0096C7);border-radius:3px;transition:width .3s}
 .mp-flowers{display:flex;align-items:center;justify-content:flex-end;margin-top:6px;font-size:12px;color:#999}
-.mp-flowers span{color:#FF6B35;font-weight:600;margin:0 2px}
+.mp-flowers span{color:#06D6A0;font-weight:600;margin:0 2px}
 .section-wrap-v3{margin:8px 16px}
 .section-title-v3{font-size:12px;color:#999;padding:8px 4px 4px;font-weight:500}
 .section-item-v3{display:flex;align-items:center;padding:13px 16px;background:#fff;cursor:pointer;border-bottom:1px solid #f5f5f5;font-size:14px;color:#2D2D2D;user-select:none}
@@ -295,7 +295,7 @@ onMounted(async () => {
 .logout-btn-v3{display:block;margin:24px auto;background:none;border:1px solid #ff4d4f;color:#ff4d4f;padding:10px 0;width:calc(100% - 32px);border-radius:14px;font-size:15px;cursor:pointer;text-align:center;background:#fff}
 .logout-btn-v3:active{background:#fff5f5}
 .sub-back-v3{display:flex;align-items:center;padding:12px 16px;background:#fff;border-bottom:1px solid #f0f0f0;position:sticky;top:0;z-index:10}
-.sub-back-v3 button{background:none;border:none;color:#FF6B35;font-size:15px;font-weight:600;cursor:pointer;padding:0}
+.sub-back-v3 button{background:none;border:none;color:#06D6A0;font-size:15px;font-weight:600;cursor:pointer;padding:0}
 .sub-back-v3 span{font-size:16px;font-weight:700;color:#2D2D2D;margin-left:8px}
 .sub-card-v3{margin:12px 16px;background:#fff;border-radius:14px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
 .act-item-v3{padding:14px 0;border-bottom:1px solid #f5f5f5;cursor:pointer}
@@ -303,19 +303,19 @@ onMounted(async () => {
 .act-title-v3{font-size:15px;font-weight:600;color:#2D2D2D;margin-bottom:6px}
 .act-meta-v3{font-size:12px;color:#999}
 .act-tag-v3{display:inline-block;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600;margin-top:6px}
-.tag-created-v3{background:#FFF3E0;color:#FF6B35}.tag-joined-v3{background:#E8F5E9;color:#43A047}
+.tag-created-v3{background:#FFF3E0;color:#06D6A0}.tag-joined-v3{background:#E8F5E9;color:#43A047}
 .empty-state{text-align:center;color:#999;padding:60px 20px;font-size:14px}
 .ach-item{display:flex;align-items:center;padding:14px 0;border-bottom:1px solid #f5f5f5}
 .ach-item:last-child{border-bottom:none}.ach-item.ach-done{opacity:.6}
 .ach-icon{font-size:24px;margin-right:12px}.ach-info{flex:1}
 .ach-name{font-size:15px;font-weight:600}.ach-desc{font-size:12px;color:#999;margin-top:2px}
-.ach-progress{font-size:12px;color:#FF6B35;font-weight:600}
+.ach-progress{font-size:12px;color:#06D6A0;font-weight:600}
 .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #f5f5f5;cursor:pointer}
 .toggle-row:last-child{border-bottom:none}.toggle-row span:first-child{font-size:14px;color:#2D2D2D}
 .toggle-sw{width:44px;height:26px;background:#ddd;border-radius:13px;position:relative;transition:background .2s}
 .toggle-sw::after{content:'';position:absolute;width:22px;height:22px;background:#fff;border-radius:50%;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-.toggle-sw.on{background:#FF6B35}.toggle-sw.on::after{left:20px}
-.btn-save{display:block;width:100%;margin-top:16px;padding:12px;background:#FF6B35;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:600;cursor:pointer}
+.toggle-sw.on{background:#06D6A0}.toggle-sw.on::after{left:20px}
+.btn-save{display:block;width:100%;margin-top:16px;padding:12px;background:#06D6A0;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:600;cursor:pointer}
 .ec-card{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #f5f5f5}
 .ec-card:last-child{border-bottom:none}
 .ec-del{background:none;border:1px solid #ff4d4f;color:#ff4d4f;padding:4px 12px;border-radius:8px;font-size:12px;cursor:pointer}
@@ -328,5 +328,5 @@ select{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px;fon
 .modal-error{color:#ff4d4f;font-size:13px;margin-bottom:12px;text-align:center}
 .modal-btns{display:flex;gap:12px}
 .modal-cancel{flex:1;padding:12px;background:#f5f5f5;border:none;border-radius:10px;font-size:14px;cursor:pointer}
-.modal-submit{flex:1;padding:12px;background:#FF6B35;color:#fff;border:none;border-radius:10px;font-size:14px;cursor:pointer;font-weight:600}
+.modal-submit{flex:1;padding:12px;background:#06D6A0;color:#fff;border:none;border-radius:10px;font-size:14px;cursor:pointer;font-weight:600}
 </style>

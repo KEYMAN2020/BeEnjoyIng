@@ -69,8 +69,6 @@ from payment_routes import payment_bp
 app.register_blueprint(payment_bp, url_prefix="/api/v1/payment")
 
 from health_routes import health_bp
-from geo_routes import geo_bp
-app.register_blueprint(geo_bp, url_prefix="/api/v1/geo")
 app.register_blueprint(health_bp, url_prefix="/api/v1/health")
 
 from notification_routes import notification_bp
