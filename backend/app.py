@@ -243,6 +243,8 @@ def frontend_spa_fallback(path):
         # /app/ 及子路径返回 SPA（供手机壳iframe使用）
     if (path == "app" or path.startswith("app/")) and not path.startswith("app/assets/"):
         spa_path = os.path.join(FRONTEND_DIST, "index_spa.html")
+        if not os.path.isfile(spa_path):
+            spa_path = os.path.join(FRONTEND_DIST, "index.html")
         if os.path.isfile(spa_path):
             with open(spa_path, encoding="utf-8") as f:
                 resp = make_response(f.read(), 200)
@@ -254,6 +256,8 @@ def frontend_spa_fallback(path):
     # index_spa.html 及所有子路径都是独立SPA，不被外壳包裹
     if path == "index_spa.html" or path.startswith("index_spa.html/"):
         app_path = os.path.join(FRONTEND_DIST, "index_spa.html")
+        if not os.path.isfile(app_path):
+            app_path = os.path.join(FRONTEND_DIST, "index.html")
         if os.path.isfile(app_path):
             with open(app_path, encoding="utf-8") as f:
                 resp = make_response(f.read(), 200)
