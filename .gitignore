@@ -1,24 +1,6 @@
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-*.egg-info/
+node_modules/
 dist/
-build/
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Environment
+*.pyc
+__pycache__/
 .env
-.env.local
-
-# Uploads
-backend/uploads/
-
-# OS
-.DS_Store
-Thumbs.db
+*.log
