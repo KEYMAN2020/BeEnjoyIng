@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>银发活力 BeEnjoyIng — 手机预览</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  padding: 20px;
+}
+
+/* 手机外壳 */
+.phone-wrapper {
+  position: relative;
+  width: 390px;
+  height: 844px;
+  flex-shrink: 0;
+}
+
+/* 手机边框 */
+.phone-body {
+  position: absolute;
+  inset: -12px;
+  background: #1a1a1a;
+  border-radius: 48px;
+  box-shadow:
+    0 0 0 3px #333,
+    0 20px 60px rgba(0,0,0,0.6),
+    inset 0 0 0 1px rgba(255,255,255,0.05);
+}
+
+/* 屏幕区域 */
+.phone-screen {
+  position: absolute;
+  inset: 0;
+  border-radius: 36px;
+  overflow: hidden;
+  background: #F5F2EE;
+}
+
+/* iframe 填满屏幕 */
+.phone-screen iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* 顶部刘海 */
+.phone-notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 28px;
+  background: #1a1a1a;
+  border-radius: 0 0 18px 18px;
+  z-index: 10;
+}
+
+/* 状态栏时间 */
+.phone-time {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #000;
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 11;
+  font-family: -apple-system, 'Helvetica Neue', sans-serif;
+}
+
+/* 底部横条 */
+.phone-home-bar {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 134px;
+  height: 5px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 100px;
+  z-index: 10;
+}
+
+/* 右侧说明面板 */
+.side-panel {
+  margin-left: 40px;
+  color: #fff;
+  max-width: 280px;
+  display: none;
+}
+@media (min-width: 800px) { .side-panel { display: block; } }
+
+.side-panel h2 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  background: linear-gradient(90deg, #FF6B35, #FF8F5E);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.side-panel .url {
+  font-size: 13px;
+  color: #8899aa;
+  margin-bottom: 20px;
+  word-break: break-all;
+}
+
+.side-panel .info {
+  font-size: 14px;
+  color: #aabbcc;
+  line-height: 1.8;
+}
+
+.side-panel .info .label {
+  color: #8899aa;
+  font-size: 12px;
+}
+
+.side-panel .features {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.side-panel .features span {
+  background: rgba(255,255,255,0.08);
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #ccc;
+}
+
+/* 响应式 */
+@media (max-width: 440px) {
+  .phone-wrapper {
+    width: 100vw;
+    height: 100vh;
+  }
+  .phone-body {
+    border-radius: 0;
+    inset: 0;
+    box-shadow: none;
+  }
+  .phone-screen { border-radius: 0; }
+  .phone-notch, .phone-home-bar { display: none; }
+  .phone-time { top: 8px; }
+  body { padding: 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="phone-wrapper">
+  <div class="phone-body"></div>
+  <div class="phone-screen">
+    <iframe src="/app" id="appFrame"></iframe>
+  </div>
+  <div class="phone-notch"></div>
+  <div class="phone-time" id="phoneTime">9:41</div>
+  <div class="phone-home-bar"></div>
+</div>
+
+<div class="side-panel">
+  <h2>银发活力</h2>
+  <div class="url">BeEnjoyIng v2</div>
+  <div class="info">
+    <span class="label">测试账号</span><br>
+    13800000001 / 123456<br><br>
+    <span class="label">服务器</span><br>
+    124.220.16.67:5000<br>
+  </div>
+  <div class="features">
+    <span>活动发现</span><span>创建活动</span><span>群聊</span>
+    <span>私聊</span><span>通讯录</span><span>个人中心</span>
+    <span>地址搜索</span><span>好友管理</span>
+  </div>
+</div>
+
+<script>
+// 实时更新时间
+(function tick() {
+  const d = new Date();
+  const el = document.getElementById('phoneTime');
+  if (el) el.textContent = d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+  setTimeout(tick, 30000);
+})();
+</script>
+</body>
+</html>
