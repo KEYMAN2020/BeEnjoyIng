@@ -106,24 +106,20 @@
 
     <!-- Main Menu -->
     <template v-else>
-      <div class="section-wrap-v3"><div class="section-title-v3">活动</div>
-        <div class="section-item-v3" @click="openSub('activities')"><span class="si-icon">📋</span><span class="si-text">我的活动</span><span class="si-arrow">›</span></div>
-        <div class="section-item-v3" @click="openSub('favorites')"><span class="si-icon">⭐</span><span class="si-text">我的收藏</span><span class="si-arrow">›</span></div>
-        <div class="section-item-v3" @click="$router.push('/contacts')"><span class="si-icon">👥</span><span class="si-text">我的好友</span><span class="si-arrow">›</span></div>
-        <div class="section-item-v3" @click="showAchievements"><span class="si-icon">🏆</span><span class="si-text">活力成就</span><span class="si-extra">达成 {{ achievements.filter(a=>a.done).length }} 项</span><span class="si-arrow">›</span></div>
+      <div class="m-grid">
+        <div class="m-gitem" @click="openSub('activities')"><div class="m-gicon">📋</div><div class="m-glabel">我的活动</div></div>
+        <div class="m-gitem" @click="openSub('favorites')"><div class="m-gicon">⭐</div><div class="m-glabel">我的收藏</div></div>
+        <div class="m-gitem" @click="$router.push('/contacts')"><div class="m-gicon">👥</div><div class="m-glabel">我的好友</div></div>
+        <div class="m-gitem" @click="showAchievements"><div class="m-gicon">🏆</div><div class="m-glabel">活力成就</div></div>
+        <div class="m-gitem" @click="showEmergency"><div class="m-gicon">🆘</div><div class="m-glabel">紧急联系人</div></div>
+        <div class="m-gitem" @click="showHealth"><div class="m-gicon">💚</div><div class="m-glabel">健康声明</div></div>
+        <div class="m-gitem" @click="toggleFontSize"><div class="m-gicon">🔤</div><div class="m-glabel">字体大小</div></div>
+        <div class="m-gitem" @click="toggleNotify"><div class="m-gicon">🔔</div><div class="m-glabel">消息通知</div></div>
+        <div class="m-gitem" @click="showChangePwd = true"><div class="m-gicon">🔑</div><div class="m-glabel">修改密码</div></div>
+        <div class="m-gitem" @click="goProfile"><div class="m-gicon">👤</div><div class="m-glabel">个人信息</div></div>
+        <div class="m-gitem" @click="showPrivacy"><div class="m-gicon">🔒</div><div class="m-glabel">隐私设置</div></div>
+        <div class="m-gitem" @click="logout"><div class="m-gicon">🚪</div><div class="m-glabel" style="color:#ff4d4f">退出登录</div></div>
       </div>
-      <div class="section-wrap-v3"><div class="section-title-v3">安全</div>
-        <div class="section-item-v3" @click="showEmergency"><span class="si-icon">🆘</span><span class="si-text">紧急联系人</span><span class="si-extra">{{ emergencyContacts.length ? '已设置 '+emergencyContacts.length+' 人' : '未设置' }}</span><span class="si-arrow">›</span></div>
-        <div class="section-item-v3" @click="showHealth"><span class="si-icon">💚</span><span class="si-text">健康声明</span><span class="si-extra">{{ health.id ? '已填写' : '未填写' }}</span><span class="si-arrow">›</span></div>
-      </div>
-      <div class="section-wrap-v3"><div class="section-title-v3">设置</div>
-        <div class="section-item-v3" @click="toggleFontSize"><span class="si-icon">🔤</span><span class="si-text">字体大小</span><span class="si-extra">{{ fontSizeLabels[fontSize] }}</span><span class="si-arrow">›</span></div>
-        <div class="section-item-v3" @click="toggleNotify"><span class="si-icon">🔔</span><span class="si-text">消息通知</span><span class="si-extra">{{ notifyEnabled ? '已开启' : '已关闭' }}</span><span class="si-arrow">›</span></div>
-        <div class="section-item-v3" @click="showChangePwd = true"><span class="si-icon">🔑</span><span class="si-text">修改密码</span><span class="si-arrow">›</span></div>
-        <div class="section-item-v3" @click="goProfile"><span class="si-icon">👤</span><span class="si-text">个人信息</span><span class="si-arrow">›</span></div>
-        <div class="section-item-v3" @click="showPrivacy"><span class="si-icon">🔒</span><span class="si-text">隐私设置</span><span class="si-arrow">›</span></div>
-      </div>
-      <button class="logout-btn-v3" @click="logout">退出登录</button>
     </template>
 
     <!-- Password Modal -->
@@ -283,17 +279,13 @@ onMounted(async () => {
 .mp-fill{height:100%;background:linear-gradient(90deg,#06D6A0,#0096C7);border-radius:3px;transition:width .3s}
 .mp-flowers{display:flex;align-items:center;justify-content:flex-end;margin-top:6px;font-size:12px;color:#999}
 .mp-flowers span{color:#06D6A0;font-weight:600;margin:0 2px}
-.section-wrap-v3{margin:8px 16px}
-.section-title-v3{font-size:12px;color:#999;padding:8px 4px 4px;font-weight:500}
-.section-item-v3{display:flex;align-items:center;padding:13px 16px;background:#fff;cursor:pointer;border-bottom:1px solid #f5f5f5;font-size:14px;color:#2D2D2D;user-select:none}
-.section-item-v3:active{background:#f9f9f9}
-.section-item-v3:first-child{border-radius:14px 14px 0 0}
-.section-item-v3:last-child{border-radius:0 0 14px 14px;border-bottom:none}
-.section-item-v3:only-child{border-radius:14px}
-.si-icon{width:28px;text-align:center;margin-right:12px;font-size:18px}
-.si-text{flex:1}.si-extra{color:#999;font-size:12px;margin-right:8px}.si-arrow{color:#ccc;font-size:14px}
-.logout-btn-v3{display:block;margin:24px auto;background:none;border:1px solid #ff4d4f;color:#ff4d4f;padding:10px 0;width:calc(100% - 32px);border-radius:14px;font-size:15px;cursor:pointer;text-align:center;background:#fff}
-.logout-btn-v3:active{background:#fff5f5}
+
+/* 3×4 Grid */
+.m-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 12px 16px }
+.m-gitem { background: #fff; border-radius: 14px; padding: 18px 8px; text-align: center; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.04); transition: transform .1s }
+.m-gitem:active { transform: scale(.96); background: #f9f9f9 }
+.m-gicon { font-size: 32px; margin-bottom: 8px }
+.m-glabel { font-size: 13px; color: #333; font-weight: 500; line-height: 1.3 }
 .sub-back-v3{display:flex;align-items:center;padding:12px 16px;background:#fff;border-bottom:1px solid #f0f0f0;position:sticky;top:0;z-index:10}
 .sub-back-v3 button{background:none;border:none;color:#06D6A0;font-size:15px;font-weight:600;cursor:pointer;padding:0}
 .sub-back-v3 span{font-size:16px;font-weight:700;color:#2D2D2D;margin-left:8px}
