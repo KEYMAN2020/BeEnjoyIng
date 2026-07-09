@@ -156,7 +156,7 @@ onMounted(async () => {
 .home-page { background: #F2F4F5; min-height: 100vh; font-family: 'PingFang SC', sans-serif }
 
 /* Header */
-.h-header { background: linear-gradient(180deg, #06D6A0 0%, #0096C7 100%); padding: 72px 0 40px }
+.h-header { background: linear-gradient(180deg, #06D6A0 0%, #0096C7 100%); padding: 48px 0 28px }
 .h-header-row { display: flex; align-items: center; padding: 0 16px }
 .h-title { flex: 1; color: #fff; font-size: 18px; font-weight: 700 }
 .h-filter-btn { background: rgba(255,255,255,.25); border: 1px solid rgba(255,255,255,.4); color: #fff; padding: 6px 14px; border-radius: 16px; font-size: 14px; cursor: pointer }

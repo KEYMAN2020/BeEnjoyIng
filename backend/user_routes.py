@@ -25,7 +25,7 @@ def _safe_user(user: dict) -> dict:
         "user_id": user["id"],
         "nickname": user["nickname"],
         "avatar_url": user.get("avatar_url", ""),
-        "role": user["role"],
+        "role": user.get("role", "user"),
     }
 
 
@@ -49,11 +49,25 @@ def _public_user(user: dict, profile: dict | None = None) -> dict:
     return data
 
 
+def _get_real_activity_count(user_id):
+    """动态计算用户的活动数量（创建 + 报名，去重）"""
+    result = execute_query(
+        "SELECT COUNT(DISTINCT a.id) as cnt "
+        "FROM activities a "
+        "LEFT JOIN activity_signups s ON s.activity_id = a.id AND s.user_id = %s AND s.deleted_at IS NULL AND s.status IN ('registered', 'attended') "
+        "WHERE a.deleted_at IS NULL AND (a.captain_id = %s OR s.id IS NOT NULL)",
+        (user_id, user_id),
+    )
+    return result[0]["cnt"] if result else 0
+
+
 def _full_user(user: dict, profile: dict | None = None, stats: dict | None = None) -> dict:
     """完整用户信息"""
     data = {
         "user_id": user["id"],
         "phone": user["phone"],
+        "vitality_score": stats["vitality"] if stats else 0,
+        "flower_score": 0,
         "nickname": user["nickname"],
         "avatar_url": user.get("avatar_url", ""),
         "role": user["role"],
@@ -79,7 +93,7 @@ def _full_user(user: dict, profile: dict | None = None, stats: dict | None = Non
     if stats:
         data["stats"] = {
             "vitality": stats["vitality"],
-            "activity_count": stats["activity_count"],
+            "activity_count": _get_real_activity_count(user["id"]),
             "activity_streak": stats["activity_streak"],
             "friends_count": stats["friends_count"],
             "last_active_at": str(stats["last_active_at"]) if stats.get("last_active_at") else None,
@@ -295,7 +309,7 @@ def get_user_stats(user_id):
         "user": _safe_user(user),
         "stats": {
             "vitality": stats["vitality"],
-            "activity_count": stats["activity_count"],
+            "activity_count": _get_real_activity_count(user["id"]),
             "activity_streak": stats["activity_streak"],
             "friends_count": stats["friends_count"],
             "last_active_at": str(stats["last_active_at"]) if stats.get("last_active_at") else None,
@@ -415,6 +429,27 @@ def send_friend_request():
 
     log_operation(user_id, "FRIEND_REQUEST", "user_friends", target_user_id, message, _get_ip())
     return success(None, "好友申请已发送")
+
+
+# ── #8.5 GET /api/v1/users/friends/requests/pending ──
+@users_bp.get("/friends/requests/pending")
+@require_auth
+def list_pending_friend_requests():
+    """获取待处理的好友申请列表"""
+    user_id = g.current_user["user_id"]
+    rows = execute_query(
+        "SELECT uf.id, uf.user_id as from_user_id, u.nickname as from_nickname, u.avatar_url, uf.source, uf.created_at "
+        "FROM user_friends uf JOIN users u ON u.id = uf.user_id "
+        "WHERE uf.friend_id = %s AND uf.status = 'pending' AND uf.deleted_at IS NULL AND u.deleted_at IS NULL "
+        "ORDER BY uf.created_at DESC",
+        (user_id,),
+    )
+    items = [{
+        "request_id": r["id"], "from_user_id": r["from_user_id"],
+        "from_nickname": r["from_nickname"], "avatar_url": r.get("avatar_url", ""),
+        "source": r["source"], "created_at": str(r["created_at"]) if r.get("created_at") else None,
+    } for r in (rows or [])]
+    return success({"items": items, "total": len(items)})
 
 
 # ── #9 PUT /api/v1/users/friends/request/<request_id> ──
@@ -645,6 +680,34 @@ def send_message():
     return success({"message_id": msg_id}, "消息已发送")
 
 
+# ── #13.5 GET /api/v1/users/messages/with/<user_id> ────
+@users_bp.get("/messages/with/<int:target_id>")
+@require_auth
+def get_messages_with_user(target_id):
+    """获取与指定用户的私聊消息历史
+    ---
+    tags:
+      - 用户
+    """
+    user_id = g.current_user["user_id"]
+    other = execute_query_one(
+        "SELECT id, nickname, avatar_url FROM users WHERE id = %s AND deleted_at IS NULL",
+        (target_id,),
+    )
+    if not other:
+        return error("用户不存在", 404)
+
+    msgs = execute_query(
+        """SELECT id, sender_id, receiver_id, msg_type, content, created_at, is_read
+           FROM user_private_messages
+           WHERE ((sender_id = %s AND receiver_id = %s) OR (sender_id = %s AND receiver_id = %s))
+           AND deleted_at IS NULL
+           ORDER BY created_at ASC LIMIT 200""",
+        (user_id, target_id, target_id, user_id),
+    )
+    return success({"messages": msgs or [], "other_user": {"user_id": other["id"], "nickname": other["nickname"], "avatar_url": other["avatar_url"]}})
+
+
 # ── #14 POST /api/v1/users/<user_id>/report ────────────
 @users_bp.post("/<int:target_id>/report")
 @require_auth
@@ -680,3 +743,43 @@ def report_user(target_id):
     )
 
     return success(None, "举报已提交")
+
+
+# ═══════════════════════════════════════════════════════
+# 成就统计
+# ═══════════════════════════════════════════════════════
+@users_bp.route("/me/achievements", methods=["GET"])
+@require_auth
+def get_my_achievements():
+    """获取当前用户的成就统计"""
+    from datetime import datetime, timedelta
+    user_id = g.current_user["user_id"]
+    now = datetime.now()
+    week_ago = now - timedelta(days=7)
+
+    total_signups = execute_query_one(
+        "SELECT COUNT(*) AS cnt FROM activity_signups WHERE user_id = %s AND status IN ('registered','attended') AND deleted_at IS NULL",
+        (user_id,),
+    )["cnt"]
+    week_signups = execute_query_one(
+        "SELECT COUNT(*) AS cnt FROM activity_signups WHERE user_id = %s AND status IN ('registered','attended') AND signed_up_at >= %s AND deleted_at IS NULL",
+        (user_id, week_ago),
+    )["cnt"]
+    has_rated = execute_query_one(
+        "SELECT COUNT(*) AS cnt FROM activity_ratings WHERE user_id = %s",
+        (user_id,),
+    )["cnt"] > 0
+    has_created = execute_query_one(
+        "SELECT COUNT(*) AS cnt FROM activities WHERE captain_id = %s AND deleted_at IS NULL",
+        (user_id,),
+    )["cnt"] > 0
+
+    achievements = [
+        {"key":"first_join","name":"初出茅庐","desc":"报名第1个活动","current":min(total_signups,1),"target":1,"done":total_signups>=1},
+        {"key":"five_joins","name":"活跃分子","desc":"报名5个活动","current":min(total_signups,5),"target":5,"done":total_signups>=5},
+        {"key":"ten_joins","name":"社交达人","desc":"报名10个活动","current":min(total_signups,10),"target":10,"done":total_signups>=10},
+        {"key":"week_warrior","name":"周游达人","desc":"一周内参加3场","current":min(week_signups,3),"target":3,"done":week_signups>=3},
+        {"key":"first_rate","name":"好评初体验","desc":"完成首次评价","current":1 if has_rated else 0,"target":1,"done":has_rated},
+        {"key":"create_first","name":"发起者","desc":"创建第1个活动","current":1 if has_created else 0,"target":1,"done":has_created},
+    ]
+    return success({"achievements": achievements, "total_signups": total_signups})

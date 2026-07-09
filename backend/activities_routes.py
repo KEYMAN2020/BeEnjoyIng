@@ -191,7 +191,7 @@ def list_activities():
         conditions.append("a.status = %s")
         params.append(status)
     else:
-        conditions.append("a.status = 'open'")  # 默认只看开启中
+        conditions.append("a.status IN ('open', 'ended')")  # 默认看开启中和已结束
     if start_date:
         conditions.append("a.start_time >= %s")
         params.append(start_date)
@@ -681,6 +681,7 @@ def search_places():
     import requests as req
     try:
         params = {
+            "key": Config.AMAP_KEY,
             "keywords": keyword,
             "datatype": "all",
             "city": city or "",
@@ -989,6 +990,60 @@ def complete_activity(activity_id):
         "UPDATE activities SET status = 'ended', updated_at = NOW() WHERE id = %s",
         (activity_id,),
     )
+
+    # 活力值奖励：给所有参与队员（含队长）
+    vitality_reward = Config.ACTIVITY_VITALITY_REWARD
+    captain_id = activity["captain_id"]
+
+    # 获取所有已报名/已签到的队员（未发过活力值的）
+    signups = execute_query(
+        "SELECT user_id, status FROM activity_signups WHERE activity_id = %s AND status IN ('registered','attended') AND vitality_awarded = 0 AND deleted_at IS NULL",
+        (activity_id,),
+    )
+    awarded_count = 0
+    for s in (signups or []):
+        try:
+            execute_update(
+                "INSERT INTO user_stats (user_id, vitality, updated_at) VALUES (%s, %s, NOW()) ON DUPLICATE KEY UPDATE vitality = vitality + %s, updated_at = NOW()",
+                (s["user_id"], vitality_reward, vitality_reward),
+            )
+            execute_update(
+                "UPDATE activity_signups SET vitality_awarded = 1, updated_at = NOW() WHERE activity_id = %s AND user_id = %s",
+                (activity_id, s["user_id"]),
+            )
+            awarded_count += 1
+            try:
+                execute_insert(
+                    "INSERT INTO notifications (user_id, title, content, type, ref_type, ref_id, created_at) VALUES (%s, %s, %s, 'system', 'activity', %s, NOW())",
+                    (s["user_id"], "活力值+{}".format(vitality_reward), f"参加活动「{activity['title']}」，获得{vitality_reward}活力值", activity_id),
+                )
+            except Exception:
+                pass
+        except Exception:
+            pass
+
+    # 队长也要加活力值（如果还没加过）
+    try:
+        execute_update(
+            "UPDATE activities SET captain_vitality_awarded = 1 WHERE id = %s AND captain_vitality_awarded = 0",
+            (activity_id,),
+        )
+        already_awarded = any(s["user_id"] == captain_id for s in (signups or []))
+        if not already_awarded:
+            execute_update(
+                "INSERT INTO user_stats (user_id, vitality, updated_at) VALUES (%s, %s, NOW()) ON DUPLICATE KEY UPDATE vitality = vitality + %s, updated_at = NOW()",
+                (captain_id, vitality_reward, vitality_reward),
+            )
+            awarded_count += 1
+            try:
+                execute_insert(
+                    "INSERT INTO notifications (user_id, title, content, type, ref_type, ref_id, created_at) VALUES (%s, %s, %s, 'system', 'activity', %s, NOW())",
+                    (captain_id, "活力值+{}".format(vitality_reward), f"发起活动「{activity['title']}」，获得{vitality_reward}活力值", activity_id),
+                )
+            except Exception:
+                pass
+    except Exception:
+        pass
 
     # 通知创建者
     try:

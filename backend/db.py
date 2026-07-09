@@ -40,7 +40,7 @@ def execute_query(sql: str, params: tuple | None = None) -> list[dict]:
     conn = get_connection()
     with conn.cursor() as cursor:
         cursor.execute(sql, params or ())
-        return cursor.fetchall()
+        return list(cursor.fetchall())
 
 
 def execute_query_one(sql: str, params: tuple | None = None) -> dict | None:

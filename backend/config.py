@@ -34,6 +34,14 @@ class Config:
     MAX_CONTENT_LENGTH = 10 * 1024 * 1024
     ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "gif", "webp", "mp3", "wav", "ogg", "amr"}
 
+    # 活力值
+    ACTIVITY_VITALITY_REWARD = int(os.getenv("ACTIVITY_VITALITY_REWARD", 50))
+
+    # 高德地图
+    AMAP_KEY = os.getenv("AMAP_KEY", "")
+    AMAP_POI_SEARCH_URL = "https://restapi.amap.com/v3/place/text"
+    AMAP_GEOCODE_URL = "https://restapi.amap.com/v3/geocode/geo"
+
 
     # Swagger
     SWAGGER = {

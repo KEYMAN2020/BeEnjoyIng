@@ -26,8 +26,17 @@
       </div>
       <div v-else v-for="item in mergedList" :key="item._key" class="msg-item" @click="onMsgClick(item)">
         <div class="msg-avatar-wrap">
-          <div class="msg-avatar">
-            <img v-if="item._avatar" :src="item._avatar" />
+          <!-- 群聊：九宫格头像 -->
+          <div v-if="item._type === 'group' && item._members && item._members.length > 0" class="group-grid" :class="gridClass(item._members.length, item._memberCount)">
+            <div v-for="(m, mi) in gridCells(item)" :key="mi" class="grid-cell">
+              <img v-if="m.avatar_url && !failedImgs.has(m.avatar_url)" :src="m.avatar_url" class="grid-img" @error="onImgError(m.avatar_url)" loading="lazy" />
+              <span v-else>{{ (m.nickname || '?')[0] }}</span>
+              <span v-if="mi === 8 && item._memberCount > 9" class="grid-more">+{{ item._memberCount - 8 }}</span>
+            </div>
+          </div>
+          <!-- 单头像：群聊无成员 或 私聊 -->
+          <div v-else class="msg-avatar">
+            <img v-if="item._avatar && !failedImgs.has(item._avatar)" :src="item._avatar" @error="onImgError(item._avatar)" loading="lazy" />
             <span v-else>{{ item._initial }}</span>
           </div>
           <span v-if="item._unread" class="msg-badge">{{ item._unread > 99 ? '99+' : item._unread }}</span>
@@ -68,42 +77,87 @@ const pendingCount = ref(0)
 const showAction = ref(false)
 let pollTimer = null
 
+// 图片加载失败追踪
+const failedImgs = ref(new Set())
+function onImgError(url) { if (url) failedImgs.value = new Set([...failedImgs.value, url]) }
+
+// 独立未读计数器
+const unreadCounts = ref({})
+
+// 九宫格单元格
+function gridCells(item) {
+  const members = item._members || []
+  if (members.length <= 9) return members.slice(0, 9)
+  return members.slice(0, 9)
+}
+function gridClass(len, total) {
+  if (total > 9 || len >= 9) return 'grid-9'
+  if (len === 1) return 'grid-1'
+  if (len <= 4) return 'grid-4'
+  return 'grid-9'
+}
+
 const mergedList = computed(() => {
   const list = []
   if (Array.isArray(groups.value)) {
     groups.value.forEach(g => {
+      const key = 'g-' + g.id
+      const unread = unreadCounts.value[key] !== undefined ? unreadCounts.value[key] : (g.unread_count || 0)
       list.push({
-        _key: 'g-' + g.id, _type: 'group', _name: g.name || '群聊',
+        _key: key, _type: 'group', _name: g.name || '群聊',
         _avatar: g.avatar || '', _initial: (g.name || '群')[0],
-        _avatarBg: {}, _preview: g.last_message || '暂无消息',
-        _time: formatTime(g.last_message_at), _unread: g.unread_count || 0, _targetId: g.id
+        _preview: g.last_message || '暂无消息',
+        _time: formatTime(g.last_message_at), _sortTime: g.last_message_at ? new Date(g.last_message_at).getTime() : 0,
+        _unread: unread, _targetId: g.id,
+        _members: g.members || [], _memberCount: g.member_count || 0
       })
     })
   }
   if (Array.isArray(privates.value)) {
     privates.value.forEach(p => {
       const other = p.other_user || {}
+      const key = 'p-' + (other.user_id || p.message_id)
+      const base = (other.user_id && !p.is_read) ? 1 : 0
+      const unread = unreadCounts.value[key] !== undefined ? unreadCounts.value[key] : base
       list.push({
-        _key: 'p-' + (other.user_id || p.message_id), _type: 'private',
+        _key: key, _type: 'private',
         _name: other.nickname || '用户', _avatar: other.avatar_url || '',
-        _initial: (other.nickname || '?')[0], _avatarBg: {},
-        _preview: p.content || '暂无消息', _time: formatTime(p.created_at),
-        _unread: (other.user_id && !p.is_read) ? 1 : 0, _targetId: other.user_id
+        _initial: (other.nickname || '?')[0],
+        _preview: p.content || '暂无消息',
+        _time: formatTime(p.created_at), _sortTime: p.created_at ? new Date(p.created_at).getTime() : 0,
+        _unread: unread, _targetId: other.user_id
       })
     })
   }
-  list.sort((a, b) => (b._time || '').localeCompare(a._time || ''))
+  sortByTime(list)
   return list
 })
 
 function formatTime(ts) {
   if (!ts) return ''
-  const d = new Date(ts); const now = new Date()
-  if (d.toDateString() === now.toDateString()) return d.toTimeString().slice(0, 5)
-  return (d.getMonth() + 1) + '/' + d.getDate()
+  const d = new Date(ts)
+  if (isNaN(d.getTime())) return ''
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const msgDay = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+  const diffDays = Math.floor((today - msgDay) / 86400000)
+  if (diffDays === 0) return d.toTimeString().slice(0, 5)
+  if (diffDays === 1) return '昨天'
+  if (diffDays < 7) { const days = ['周日','周一','周二','周三','周四','周五','周六']; return days[d.getDay()] }
+  if (d.getFullYear() === now.getFullYear()) return (d.getMonth()+1)+'月'+d.getDate()+'日'
+  return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日'
+}
+
+function sortByTime(list) {
+  list.sort((a, b) => (b._sortTime || 0) - (a._sortTime || 0))
+  return list
 }
 
 function onMsgClick(item) {
+  // 进入聊天清零未读
+  if (unreadCounts.value[item._key]) {
+    unreadCounts.value = { ...unreadCounts.value, [item._key]: 0 }
+  }
   if (item._type === 'group') router.push('/messages/' + item._targetId)
   else router.push('/chat/private/' + item._targetId)
 }
@@ -166,4 +220,5 @@ onUnmounted(() => { clearInterval(pollTimer) })
 .msg-empty { text-align: center; padding: 60px 0; color: #999; font-size: 14px }
 .msg-empty-icon { font-size: 48px; margin-bottom: 12px }
 .msg-empty-hint { font-size: 13px; margin-top: 4px }
+.group-grid { width: 48px; height: 48px; display: grid; gap: 1px; border-radius: 8px; overflow: hidden; flex-shrink: 0 } .group-grid.grid-1 { grid-template-columns: 1fr; grid-template-rows: 1fr } .group-grid.grid-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr } .group-grid.grid-9 { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr) } .grid-cell { position: relative; background: rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center; font-size: 10px; color: #fff; min-width: 0; min-height: 0 } .grid-img { width: 100%; height: 100%; object-fit: cover } .grid-more { position: absolute; inset: 0; background: rgba(0,0,0,.5); color: #fff; font-size: 10px; display: flex; align-items: center; justify-content: center }
 </style>

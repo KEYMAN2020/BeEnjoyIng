@@ -9,9 +9,10 @@
         <span v-else style="width:36px"></span>
       </div>
       <div class="up-avatar-wrap">
-        <div class="up-avatar">
+        <div class="up-avatar" :class="{ clickable: isSelf }" @click="isSelf && triggerUpload()">
           <img v-if="user.avatar_url" :src="user.avatar_url" @error="e=>e.target.style.display='none'" />
           <span v-else>{{ (user.nickname||'?')[0] }}</span>
+          <input ref="avatarInput" type="file" accept="image/*" style="display:none" @change="handleAvatarChange" />
         </div>
         <div class="up-name">{{ user.nickname }}</div>
         <div class="up-phone">{{ user.phone }}</div>
@@ -84,6 +85,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usersAPI } from '@/api'
+import { uploadAPI } from '@/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -110,8 +112,11 @@ async function checkFriendship() {
     }
   } catch(e) {}
   try {
-    const ui = localStorage.getItem('user_info')
-    if (ui) { const u = JSON.parse(ui); isSelf.value = u.user_id == route.params.id }
+    const token = localStorage.getItem('token')
+    if (token) {
+      const payload = JSON.parse(atob(token.split('.')[1]))
+      isSelf.value = payload.user_id == route.params.id
+    }
   } catch(e) {}
 }
 
@@ -125,7 +130,24 @@ async function deleteFriend() {
   } catch(e) { alert('操作失败') }
 }
 
+const avatarInput = ref(null)
+function triggerUpload() { avatarInput.value?.click() }
+async function handleAvatarChange(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  const fd = new FormData()
+  fd.append('file', file)
+  try {
+    const res = await uploadAPI.avatar(fd)
+    if (res.data?.code === 0) {
+      user.value.avatar_url = res.data.data.avatar_url + '?t=' + Date.now()
+    }
+  } catch(e) { alert('上传失败') }
+}
+
 onMounted(async () => {
+  // 同步判断 isSelf
+  try { const t = localStorage.getItem('token'); if(t) { const p = JSON.parse(atob(t.split('.')[1])); isSelf.value = p.user_id == route.params.id } } catch(e){}
   checkFriendship()
   try {
     const profileId = route.params.id
@@ -151,6 +173,7 @@ onMounted(async () => {
 .up-edit { color: #fff; font-size: 14px; cursor: pointer; width: 36px; text-align: right; border: 1px solid rgba(255,255,255,.5); border-radius: 12px; padding: 2px 10px; width: auto }
 .up-avatar-wrap { text-align: center }
 .up-avatar { width: 72px; height: 72px; border-radius: 50%; background: rgba(255,255,255,.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 32px; color: #fff; overflow: hidden }
+.up-avatar.clickable { cursor: pointer; border: 2px dashed rgba(255,255,255,.5) }
 .up-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50% }
 .up-name { color: #fff; font-size: 20px; font-weight: 700 }
 .up-phone { color: rgba(255,255,255,.75); font-size: 13px; margin-top: 4px }

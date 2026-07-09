@@ -12,6 +12,7 @@ from response import ApiError
 from db import close_connection, get_connection
 from config import active_config as Config
 from logger import log
+from geo_routes import geo_bp
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -79,6 +80,7 @@ app.register_blueprint(system_bp, url_prefix="/api/v1/system")
 
 from system_routes import regions_bp
 app.register_blueprint(regions_bp, url_prefix="/api/v1/regions")
+app.register_blueprint(geo_bp, url_prefix="/api/v1/geo")
 
 
 # ── 文件上传服务 ────────────────────────────────────────
@@ -190,6 +192,27 @@ def frontend_index():
 
 
 @app.route("/app/assets/<path:filename>")
+def frontend_app_assets(filename):
+    asset_path = os.path.join(FRONTEND_DIST, "assets", filename)
+    if os.path.isfile(asset_path):
+        with open(asset_path, encoding="utf-8") as f:
+            content = f.read()
+        ct = "text/css; charset=utf-8" if filename.endswith(".css") else "application/javascript; charset=utf-8"
+        return content, 200, {"Content-Type": ct, "Cache-Control": "public, max-age=31536000"}
+    return jsonify({"error": "not found"}), 404
+
+
+@app.route("/app/avatars/<path:filename>")
+def frontend_avatars(filename):
+    """用户头像静态文件（持久化目录，不受前端构建影响）"""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "avatars", filename)
+    if os.path.isfile(path):
+        ct = "image/svg+xml" if filename.endswith(".svg") else "image/png"
+        with open(path, "rb") as f:
+            return f.read(), 200, {"Content-Type": ct, "Cache-Control": "public, max-age=86400"}
+    return jsonify({"error": "not found"}), 404
+
+
 @app.route("/phone")
 def phone_preview():
     preview_path = os.path.join(FRONTEND_DIST, "phone_preview.html")
@@ -198,15 +221,6 @@ def phone_preview():
             resp = make_response(f.read(), 200)
             resp.headers["Content-Type"] = "text/html; charset=utf-8"
             return resp
-    return jsonify({"error": "not found"}), 404
-
-def frontend_app_assets(filename):
-    asset_path = os.path.join(FRONTEND_DIST, "assets", filename)
-    if os.path.isfile(asset_path):
-        with open(asset_path, encoding="utf-8") as f:
-            content = f.read()
-        ct = "text/css; charset=utf-8" if filename.endswith(".css") else "application/javascript; charset=utf-8"
-        return content, 200, {"Content-Type": ct, "Cache-Control": "public, max-age=31536000"}
     return jsonify({"error": "not found"}), 404
 
 @app.route("/assets/<path:filename>")
@@ -220,28 +234,11 @@ def frontend_assets(filename):
         return content, 200, {"Content-Type": ct, "Cache-Control": "public, max-age=31536000"}
     return jsonify({"error": "not found"}), 404
 
-
-
-#DISABLED: 
-#DISABLED: # ── 旧路由兼容重定向（Vue → React 迁移）──────────────
-#DISABLED: @app.route("/messages")
-#DISABLED: @app.route("/messages/<path:subpath>")
-#DISABLED: def redirect_messages(subpath=""):
-#DISABLED:     target = "/chat" + ("/" + subpath if subpath else "")
-#DISABLED:     return redirect(target, 302)
-#DISABLED: 
-@app.route("/payment-records")
-def redirect_payment_records():
-    return redirect("/payment", 302)
-
-@app.route("/create-activity")
-def redirect_create_activity():
-    return redirect("/activity/new", 302)
 @app.route("/<path:path>", methods=["GET"])
 def frontend_spa_fallback(path):
     """SPA 路由回退 — 非 API 路径返回 index.html"""
         # /app/ 及子路径返回 SPA（供手机壳iframe使用）
-    if (path == "app" or path.startswith("app/")) and not path.startswith("app/assets/"):
+    if (path == "app" or path.startswith("app/")) and not path.startswith("app/assets/") and not path.startswith("app/avatars/"):
         spa_path = os.path.join(FRONTEND_DIST, "index_spa.html")
         if not os.path.isfile(spa_path):
             spa_path = os.path.join(FRONTEND_DIST, "index.html")
