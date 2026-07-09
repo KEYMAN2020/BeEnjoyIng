@@ -149,7 +149,7 @@ onMounted(async () => {
 .ca-page { background: #F2F4F5; min-height: 100vh; font-family: 'PingFang SC', sans-serif }
 
 /* Header */
-.ca-header { background: linear-gradient(180deg, #06D6A0 0%, #0096C7 100%); padding: 12px 0 14px }
+.ca-header { background: linear-gradient(180deg, #06D6A0 0%, #0096C7 100%); padding: 48px 0 28px }
 .ca-header-row { display: flex; align-items: center; padding: 0 16px }
 .ca-back { color: #fff; font-size: 16px; cursor: pointer; font-weight: 500 }
 .ca-title { flex: 1; text-align: center; color: #fff; font-size: 17px; font-weight: 600 }

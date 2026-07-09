@@ -132,7 +132,7 @@ onMounted(() => { loadFriends(); loadPending() })
 .contacts-page { background: #F2F4F5; min-height: 100vh; font-family: 'PingFang SC', sans-serif }
 
 /* ═══ Header ═══ */
-.c-header { background: linear-gradient(180deg, #06D6A0 0%, #0096C7 100%); padding: 12px 0 14px }
+.c-header { background: linear-gradient(180deg, #06D6A0 0%, #0096C7 100%); padding: 48px 0 28px }
 .c-header-row { display: flex; align-items: center; padding: 0 16px }
 .c-back { color: #fff; font-size: 18px; cursor: pointer; width: 36px }
 .c-title { flex: 1; text-align: center; color: #fff; font-size: 17px; font-weight: 600 }

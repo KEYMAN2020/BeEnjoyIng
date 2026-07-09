@@ -1,20 +1,23 @@
 <template>
   <div class="mine-page-v3">
-    <div class="mine-header-v3">
-      <div class="mine-avatar-wrap" @click="goProfile">
-        <div class="mine-avatar-v3">
+    <!-- ═══ Continuous Teal Header ═══ -->
+    <div class="m-header">
+      <div class="m-statebar">9:41</div>
+      <div class="m-avatar-wrap" @click="goProfile">
+        <div class="m-avatar">
           <img v-if="user?.avatar_url" :src="user.avatar_url" @error="onAvatarError" />
-          <span v-else>{{ (user?.nickname || '?')[0] }}</span>
+          <svg v-else width="30" height="30" viewBox="0 0 30 30"><circle fill="#06D6A0" cx="15" cy="10" r="5"/><path fill="#06D6A0" d="M5 25v-2a4 4 0 014-4h12a4 4 0 014 4v2z"/></svg>
         </div>
-        <div class="mine-edit-btn-v3">✐</div>
       </div>
-      <div class="mine-nickname-v3">{{ user?.nickname || '加载中...' }}</div>
-      <div class="mine-level-v3">新芽 · 活力值 {{ user?.vitality_score || 0 }}</div>
-    </div>
-    <div class="mine-progress-v3">
-      <div class="mp-row"><span class="mp-label">升级进度</span><span class="mp-value">{{ user?.vitality_score || 0 }}/200</span></div>
-      <div class="mp-bar"><div class="mp-fill" :style="{ width: Math.min((user?.vitality_score || 0) / 200 * 100, 100) + '%' }"></div></div>
-      <div class="mp-flowers">🌸 花朵积分：<span>{{ user?.flower_score || 0 }}</span></div>
+      <div class="m-nickname">{{ user?.nickname || '加载中...' }}</div>
+      <div class="m-bio">热爱生活，喜欢运动</div>
+      
+      <!-- Stats -->
+      <div class="m-stats">
+        <div class="m-stat"><div class="m-stat-num">{{ user?.stats?.activity_count || 0 }}</div><div class="m-stat-label">活动</div></div>
+        <div class="m-stat"><div class="m-stat-num">{{ user?.stats?.friend_count || 0 }}</div><div class="m-stat-label">好友</div></div>
+        <div class="m-stat"><div class="m-stat-num">{{ user?.vitality_score || 0 }}</div><div class="m-stat-label">活力值</div></div>
+      </div>
     </div>
 
     <!-- Sub: Activities -->
@@ -264,21 +267,20 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.mine-page-v3{background:#f5f5f5;min-height:100vh;padding-bottom:80px}
-.mine-header-v3{background:linear-gradient(135deg,#06D6A0,#0096C7);padding:30px 20px 40px;text-align:center;border-radius:0 0 24px 24px}
-.mine-avatar-wrap{width:72px;height:72px;margin:0 auto 12px;position:relative;cursor:pointer}
-.mine-avatar-v3{width:72px;height:72px;border-radius:50%;background:#fff;color:#06D6A0;font-size:32px;font-weight:700;display:flex;align-items:center;justify-content:center;border:3px solid rgba(255,255,255,.5);overflow:hidden;margin:0 auto}
-.mine-avatar-v3 img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-.mine-edit-btn-v3{position:absolute;bottom:0;right:-4px;width:26px;height:26px;border-radius:50%;background:#fff;border:2px solid #06D6A0;color:#06D6A0;font-size:12px;display:flex;align-items:center;justify-content:center}
-.mine-nickname-v3{color:#fff;font-size:20px;font-weight:700;margin:8px 0 4px}
-.mine-level-v3{display:inline-block;background:rgba(255,255,255,.25);color:#fff;padding:2px 12px;border-radius:10px;font-size:12px}
-.mine-progress-v3{margin:0 20px;background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.08);transform:translateY(-20px)}
-.mp-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.mp-label{font-size:13px;color:#666}.mp-value{font-size:13px;color:#06D6A0;font-weight:600}
-.mp-bar{height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden}
-.mp-fill{height:100%;background:linear-gradient(90deg,#06D6A0,#0096C7);border-radius:3px;transition:width .3s}
-.mp-flowers{display:flex;align-items:center;justify-content:flex-end;margin-top:6px;font-size:12px;color:#999}
-.mp-flowers span{color:#06D6A0;font-weight:600;margin:0 2px}
+.mine-page-v3{background:#F2F4F5;min-height:100vh;padding-bottom:80px}
+
+/* ═══ Header — continuous teal gradient ═══ */
+.m-header{background:linear-gradient(180deg,#06D6A0 0%,#0096C7 100%);padding:16px 20px 28px;text-align:center;border-radius:0 0 24px 24px}
+.m-statebar{color:#fff;font-size:15px;font-weight:600;margin-bottom:10px;text-align:left}
+.m-avatar-wrap{width:64px;height:64px;margin:0 auto 12px;cursor:pointer}
+.m-avatar{width:64px;height:64px;border-radius:50%;border:3px solid rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0 auto;background:rgba(255,255,255,.2)}
+.m-avatar img{width:100%;height:100%;object-fit:cover}
+.m-nickname{color:#fff;font-size:18px;font-weight:700;margin-bottom:4px}
+.m-bio{color:rgba(255,255,255,.8);font-size:13px;margin-bottom:16px}
+.m-stats{display:flex;justify-content:center;gap:32px}
+.m-stat{text-align:center;color:#fff}
+.m-stat-num{font-size:18px;font-weight:700}
+.m-stat-label{font-size:12px;opacity:.8;margin-top:2px}
 
 /* 4-column Grid */
 .m-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 12px 16px }
