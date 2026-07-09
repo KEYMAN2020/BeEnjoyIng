@@ -9,6 +9,8 @@ const routes = [
   { path: '/login', name: 'Login', component: () => import('../views/Login.vue') },
   { path: '/register', name: 'Register', component: () => import('../views/Register.vue') },
   { path: '/profile/:id', name: 'UserProfile', component: () => import('../views/UserProfile.vue') },
+  { path: '/activity/:id', name: 'ActivityDetail', component: () => import('../views/ActivityDetail.vue') },
+  { path: '/profile/edit', name: 'ProfileEdit', component: () => import('../views/ProfileEdit.vue') },
 ]
 
 const router = createRouter({

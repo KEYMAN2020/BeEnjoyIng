@@ -22,7 +22,7 @@
 
     <!-- Sub: Activities -->
     <template v-if="subPage === 'activities'">
-      <div class="sub-back-v3"><button @click="subPage = ''">← 返回</button><span>我的活动</span></div>
+      <div class="sub-back-v3"><button @click="closeSub">← 返回</button><span>我的活动</span></div>
       <div class="sub-card-v3">
         <div v-if="loadingSub" class="empty-state">加载中...</div>
         <div v-else-if="myActivities.length === 0" class="empty-state">暂无活动</div>
@@ -38,7 +38,7 @@
 
     <!-- Sub: Favorites -->
     <template v-else-if="subPage === 'favorites'">
-      <div class="sub-back-v3"><button @click="subPage = ''">← 返回</button><span>我的收藏</span></div>
+      <div class="sub-back-v3"><button @click="closeSub">← 返回</button><span>我的收藏</span></div>
       <div class="sub-card-v3">
         <div v-if="loadingSub" class="empty-state">加载中...</div>
         <div v-else-if="myFavorites.length === 0" class="empty-state">暂无收藏</div>
@@ -53,7 +53,7 @@
 
     <!-- Sub: Achievements -->
     <template v-else-if="subPage === 'achievements'">
-      <div class="sub-back-v3"><button @click="subPage = ''">← 返回</button><span>活力成就</span></div>
+      <div class="sub-back-v3"><button @click="closeSub">← 返回</button><span>活力成就</span></div>
       <div class="sub-card-v3">
         <div v-for="ach in achievements" :key="ach.key" class="ach-item" :class="{ 'ach-done': ach.done }">
           <span class="ach-icon">{{ ach.done ? '✅' : '⬜' }}</span>
@@ -65,18 +65,18 @@
 
     <!-- Sub: Privacy -->
     <template v-else-if="subPage === 'privacy'">
-      <div class="sub-back-v3"><button @click="subPage = ''">← 返回</button><span>隐私设置</span></div>
+      <div class="sub-back-v3"><button @click="closeSub">← 返回</button><span>隐私设置</span></div>
       <div class="sub-card-v3">
-        <div class="toggle-row" @click="privacy.allowProfileView = !privacy.allowProfileView"><span>允许他人查看我的资料</span><span class="toggle-sw" :class="{ on: privacy.allowProfileView }"></span></div>
-        <div class="toggle-row" @click="privacy.allowPrivateMsg = !privacy.allowPrivateMsg"><span>允许陌生人私信</span><span class="toggle-sw" :class="{ on: privacy.allowPrivateMsg }"></span></div>
-        <div class="toggle-row" @click="privacy.ghostMode = !privacy.ghostMode"><span>隐身模式</span><span class="toggle-sw" :class="{ on: privacy.ghostMode }"></span></div>
+        <div class="toggle-row" @click="privacy.allow_profile_view = !privacy.allow_profile_view"><span>允许他人查看我的资料</span><span class="toggle-sw" :class="{ on: privacy.allow_profile_view }"></span></div>
+        <div class="toggle-row" @click="privacy.allow_private_msg = !privacy.allow_private_msg"><span>允许陌生人私信</span><span class="toggle-sw" :class="{ on: privacy.allow_private_msg }"></span></div>
+        <div class="toggle-row" @click="privacy.ghost_mode = !privacy.ghost_mode"><span>隐身模式</span><span class="toggle-sw" :class="{ on: privacy.ghost_mode }"></span></div>
         <button class="btn-save" @click="savePrivacy">保存</button>
       </div>
     </template>
 
     <!-- Sub: Health -->
     <template v-else-if="subPage === 'health'">
-      <div class="sub-back-v3"><button @click="subPage = ''">← 返回</button><span>健康声明</span></div>
+      <div class="sub-back-v3"><button @click="closeSub">← 返回</button><span>健康声明</span></div>
       <div class="sub-card-v3">
         <select v-model="health.chronic"><option value="">慢性病史</option><option value="none">无</option><option value="hypertension">高血压</option><option value="diabetes">糖尿病</option><option value="heart">心脏病</option></select>
         <select v-model="health.allergy" style="margin-top:12px"><option value="">药物过敏</option><option value="none">无</option><option value="penicillin">青霉素</option><option value="sulfa">磺胺类</option></select>
@@ -87,7 +87,7 @@
 
     <!-- Sub: Emergency -->
     <template v-else-if="subPage === 'emergency'">
-      <div class="sub-back-v3"><button @click="subPage = ''">← 返回</button><span>紧急联系人</span></div>
+      <div class="sub-back-v3"><button @click="closeSub">← 返回</button><span>紧急联系人</span></div>
       <div class="sub-card-v3">
         <div v-if="emergencyContacts.length === 0" class="empty-state">暂无紧急联系人</div>
         <div v-for="(ec, i) in emergencyContacts" :key="i" class="ec-card">
@@ -141,11 +141,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, reactive, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { usersAPI, activitiesAPI, authAPI } from '@/api'
 
 const router = useRouter()
+const route = useRoute()
 const user = ref(null)
 const subPage = ref('')
 const myActivities = ref([])
@@ -158,10 +159,10 @@ const pwdForm = ref({ old: '', newPwd: '', confirm: '' })
 let currentUserId = 4
 
 // Wrapper functions for subpage navigation
-function showAchievements() { subPage.value = 'achievements' }
-function showEmergency() { subPage.value = 'emergency' }
-function showHealth() { subPage.value = 'health' }
-function showPrivacy() { subPage.value = 'privacy' }
+function showAchievements() { openSub('achievements') }
+function showEmergency() { openSub('emergency') }
+function showHealth() { openSub('health') }
+function showPrivacy() { openSub('privacy') }
 
 const fontSizeLabels = { small: '小号', normal: '标准', large: '大号' }
 const fontSize = ref(localStorage.getItem('fontSize') || 'normal')
@@ -183,9 +184,9 @@ const achievements = ref([
   { key:'create_first', name:'发起者', desc:'创建第1个活动', current:0, target:1, done:false },
 ])
 
-const privacy = reactive({ allowProfileView: true, allowPrivateMsg: true, ghostMode: false })
+const privacy = reactive({ allow_profile_view: true, allow_private_msg: true, ghost_mode: false })
 async function savePrivacy() {
-  try { await usersAPI.updateProfile(privacy); alert('已保存'); subPage.value = '' }
+  try { await usersAPI.updateProfile(privacy); alert('已保存'); closeSub() }
   catch(e) { alert('保存失败') }
 }
 
@@ -208,15 +209,34 @@ const savingHealth = ref(false)
 async function saveHealth() {
   savingHealth.value = true; health.value.id = Date.now()
   localStorage.setItem('healthDeclaration', JSON.stringify(health.value))
-  alert('已保存'); subPage.value = ''; savingHealth.value = false
+  alert('已保存'); savingHealth.value = false; closeSub()
 }
 
-function goProfile() { router.push('/profile/' + currentUserId) }
+function goProfile() {
+  if (subPage.value) {
+    subPage.value = ''
+    router.replace({ query: {} }).then(() => { router.push('/profile/' + currentUserId) })
+  } else {
+    router.push('/profile/' + currentUserId)
+  }
+}
 function goActivity(id) { router.push('/activity/' + id) }
 function onAvatarError(e) { e.target.style.display = 'none' }
 
+function closeSub() {
+  subPage.value = ''
+  router.replace({ query: {} })
+}
+
+watch(() => route.query.sub, (newSub) => {
+  if (newSub && newSub !== subPage.value) openSub(newSub)
+  else if (!newSub && subPage.value) subPage.value = ''
+})
+
 async function openSub(page) {
-  subPage.value = page; loadingSub.value = true
+  subPage.value = page
+  router.replace({ query: { ...route.query, sub: page } })
+  loadingSub.value = true
   try {
     if (page === 'activities') {
       const res = await activitiesAPI.my({ type: 'all' }); const d = res.data || res
@@ -225,15 +245,22 @@ async function openSub(page) {
       const res = await activitiesAPI.myFavorites(); const d = res.data || res
       if (d.code === 0) myFavorites.value = d.data?.activities || d.data?.favorites || d.data || []
     } else if (page === 'achievements') {
-      try { const res = await usersAPI.me(); const u = (res.data||res)?.data?.user || (res.data||res)?.data || {}
-        const c = u.stats?.activity_count || 0
-        achievements.value.forEach((a,i) => { a.current = c; a.done = c >= a.target }) }
-      catch(e) {}
+      try {
+        const res = await usersAPI.achievements()
+        const d = res.data || res
+        if (d.code === 0 && d.data?.achievements) {
+          const list = d.data.achievements
+          achievements.value.forEach(a => {
+            const m = list.find(x => x.key === a.key)
+            if (m) { a.current = m.current; a.done = m.done }
+          })
+        }
+      } catch(e) {}
     } else if (page === 'privacy') {
       try { const res = await usersAPI.me(); const p = (res.data||res)?.data?.user?.profile || (res.data||res)?.data?.profile || {}
-        privacy.allowProfileView = p.allow_profile_view !== false
-        privacy.allowPrivateMsg = p.allow_private_msg !== false
-        privacy.ghostMode = p.ghost_mode === true }
+        privacy.allow_profile_view = p.allow_profile_view !== false
+        privacy.allow_private_msg = p.allow_private_msg !== false
+        privacy.ghost_mode = p.ghost_mode === true }
       catch(e) {}
     }
   } catch(e) {}
@@ -257,6 +284,10 @@ function logout() { if (confirm('确定退出登录？')) { localStorage.clear()
 
 onMounted(async () => {
   document.documentElement.style.fontSize = {small:'15px',normal:'17px',large:'20px'}[fontSize.value]
+  // Restore sub-page from URL query
+  if (route.query.sub) {
+    openSub(route.query.sub)
+  }
   try {
     const token = localStorage.getItem('token')
     if (token) { try { currentUserId = JSON.parse(atob(token.split('.')[1])).user_id } catch(e) {} }
