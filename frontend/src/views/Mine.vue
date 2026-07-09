@@ -107,18 +107,18 @@
     <!-- Main Menu -->
     <template v-else>
       <div class="m-grid">
-        <div class="m-gitem" @click="openSub('activities')"><div class="m-gicon">📋</div><div class="m-glabel">我的活动</div></div>
-        <div class="m-gitem" @click="openSub('favorites')"><div class="m-gicon">⭐</div><div class="m-glabel">我的收藏</div></div>
-        <div class="m-gitem" @click="$router.push('/contacts')"><div class="m-gicon">👥</div><div class="m-glabel">我的好友</div></div>
-        <div class="m-gitem" @click="showAchievements"><div class="m-gicon">🏆</div><div class="m-glabel">活力成就</div></div>
-        <div class="m-gitem" @click="showEmergency"><div class="m-gicon">🆘</div><div class="m-glabel">紧急联系人</div></div>
-        <div class="m-gitem" @click="showHealth"><div class="m-gicon">💚</div><div class="m-glabel">健康声明</div></div>
-        <div class="m-gitem" @click="toggleFontSize"><div class="m-gicon">🔤</div><div class="m-glabel">字体大小</div></div>
-        <div class="m-gitem" @click="toggleNotify"><div class="m-gicon">🔔</div><div class="m-glabel">消息通知</div></div>
-        <div class="m-gitem" @click="showChangePwd = true"><div class="m-gicon">🔑</div><div class="m-glabel">修改密码</div></div>
-        <div class="m-gitem" @click="goProfile"><div class="m-gicon">👤</div><div class="m-glabel">个人信息</div></div>
-        <div class="m-gitem" @click="showPrivacy"><div class="m-gicon">🔒</div><div class="m-glabel">隐私设置</div></div>
-        <div class="m-gitem" @click="logout"><div class="m-gicon">🚪</div><div class="m-glabel" style="color:#ff4d4f">退出登录</div></div>
+        <div class="m-gitem" @click="openSub('activities')"><div class="m-gicon" style="background:#E8F8F5;color:#06D6A0"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2" fill="currentColor"/><rect x="3" y="8.5" width="18" height="1" fill="#fff"/><path d="M8.5 2V6h-1V2h1Zm8 0v4h-1V2h1Z" fill="currentColor"/></svg></div><div class="m-glabel">我的活动</div></div>
+        <div class="m-gitem" @click="openSub('favorites')"><div class="m-gicon" style="background:#FFF8E1;color:#FFB800"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M17 3H7a2 2 0 00-2 2v16l7-3 7 3V5a2 2 0 00-2-2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div class="m-glabel">我的收藏</div></div>
+        <div class="m-gitem" @click="$router.push('/contacts')"><div class="m-gicon" style="background:#FFEBEE;color:#FF6B6B"><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="9" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M1 21v-2a4 4 0 014-4h8a4 4 0 014 4v2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="7" r="3" fill="none" stroke="currentColor" stroke-width="2"/><line x1="18" y1="12" x2="18" y2="16" stroke="currentColor" stroke-width="2"/><line x1="16" y1="14" x2="20" y2="14" stroke="currentColor" stroke-width="2"/></svg></div><div class="m-glabel">我的好友</div></div>
+        <div class="m-gitem" @click="showAchievements"><div class="m-gicon" style="background:#FFF8E1;color:#FFB800"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></div><div class="m-glabel">活力成就</div></div>
+        <div class="m-gitem" @click="showEmergency"><div class="m-gicon" style="background:#FFEBEE;color:#FF6B6B"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.362 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0122 16.92z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div class="m-glabel">紧急联系人</div></div>
+        <div class="m-gitem" @click="showHealth"><div class="m-gicon" style="background:#E8F8F5;color:#06D6A0"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" fill="none" stroke="currentColor" stroke-width="2"/><polyline points="14 2 14 8 20 8" fill="none" stroke="currentColor" stroke-width="2"/><line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2"/><line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2"/><polyline points="10 9 9 9 8 9" stroke="currentColor" stroke-width="2"/></svg></div><div class="m-glabel">健康声明</div></div>
+        <div class="m-gitem" @click="toggleFontSize"><div class="m-gicon" style="background:#E3F2FD;color:#0096C7"><svg width="24" height="24" viewBox="0 0 24 24"><text x="4" y="18" font-size="14" font-weight="bold" fill="currentColor" font-family="sans-serif">A</text><text x="14" y="20" font-size="20" font-weight="bold" fill="currentColor" font-family="sans-serif">A</text></svg></div><div class="m-glabel">字体大小</div></div>
+        <div class="m-gitem" @click="toggleNotify"><div class="m-gicon" style="background:#E3F2FD;color:#0096C7"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13.73 21a2 2 0 01-3.46 0" fill="none" stroke="currentColor" stroke-width="2"/></svg></div><div class="m-glabel">消息通知</div></div>
+        <div class="m-gitem" @click="showChangePwd = true"><div class="m-gicon" style="background:#E3F2FD;color:#0096C7"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 11V7a5 5 0 0110 0v4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg></div><div class="m-glabel">修改密码</div></div>
+        <div class="m-gitem" @click="goProfile"><div class="m-gicon" style="background:#E3F2FD;color:#0096C7"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2"/></svg></div><div class="m-glabel">个人信息</div></div>
+        <div class="m-gitem" @click="showPrivacy"><div class="m-gicon" style="background:#E3F2FD;color:#0096C7"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="none" stroke="currentColor" stroke-width="2"/></svg></div><div class="m-glabel">隐私设置</div></div>
+        <div class="m-gitem" @click="logout"><div class="m-gicon" style="background:#FFEBEE;color:#FF6B6B"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" fill="none" stroke="currentColor" stroke-width="2"/><polyline points="16 17 21 12 16 7" fill="none" stroke="currentColor" stroke-width="2"/><line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="2"/></svg></div><div class="m-glabel" style="color:#FF6B6B">退出登录</div></div>
       </div>
     </template>
 
@@ -280,12 +280,12 @@ onMounted(async () => {
 .mp-flowers{display:flex;align-items:center;justify-content:flex-end;margin-top:6px;font-size:12px;color:#999}
 .mp-flowers span{color:#06D6A0;font-weight:600;margin:0 2px}
 
-/* 3×4 Grid */
-.m-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 12px 16px }
-.m-gitem { background: #fff; border-radius: 14px; padding: 18px 8px; text-align: center; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.04); transition: transform .1s }
-.m-gitem:active { transform: scale(.96); background: #f9f9f9 }
-.m-gicon { font-size: 32px; margin-bottom: 8px }
-.m-glabel { font-size: 13px; color: #333; font-weight: 500; line-height: 1.3 }
+/* 4-column Grid */
+.m-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 12px 16px }
+.m-gitem { background: #fff; border-radius: 12px; padding: 14px 6px; text-align: center; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.04); transition: transform .1s }
+.m-gitem:active { transform: scale(.96) }
+.m-gicon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px }
+.m-glabel { font-size: 12px; color: #333; font-weight: 500; line-height: 1.3 }
 .sub-back-v3{display:flex;align-items:center;padding:12px 16px;background:#fff;border-bottom:1px solid #f0f0f0;position:sticky;top:0;z-index:10}
 .sub-back-v3 button{background:none;border:none;color:#06D6A0;font-size:15px;font-weight:600;cursor:pointer;padding:0}
 .sub-back-v3 span{font-size:16px;font-weight:700;color:#2D2D2D;margin-left:8px}
