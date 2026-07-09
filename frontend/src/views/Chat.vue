@@ -33,21 +33,21 @@
             <!-- 对方头像（左侧） -->
             <div class="msg-avatar" v-if="!isMine(msg)">
               <img
-                v-if="msg.sender_avatar"
-                :src="msg.sender_avatar"
-                :alt="msg.sender_name"
+                v-if="msg.avatar_url"
+                :src="msg.avatar_url"
+                :alt="msg.nickname"
                 class="avatar-img"
               />
               <div v-else class="avatar-placeholder">
-                {{ (msg.sender_name || '?').charAt(0) }}
+                {{ (msg.nickname || '?').charAt(0) }}
               </div>
             </div>
 
             <!-- 消息内容区 -->
             <div class="msg-content">
-              <!-- 对方昵称 -->
-              <div class="msg-sender-name" v-if="!isMine(msg) && msg.sender_name">
-                {{ msg.sender_name }}
+              <!-- 昵称（群聊中所有人都显示） -->
+              <div class="msg-sender-name" v-if="msg.nickname">
+                {{ msg.nickname }}
               </div>
               <!-- 气泡 -->
               <div class="msg-bubble-wrap">
@@ -127,9 +127,19 @@ const messagesEl = ref(null)
 const inputEl = ref(null)
 const currentUserId = ref(null)
 
-const myAvatar = computed(() => auth.user?.avatar_url || auth.user?.avatar || null)
+// 从JWT token解析user_id（兜底auth store的user）
+function getMyId() {
+  if (auth.user?.id) return auth.user.id
+  try {
+    const t = localStorage.getItem('token')
+    if (t) return JSON.parse(atob(t.split('.')[1])).user_id
+  } catch(e) {}
+  return null
+}
+
+const myAvatar = computed(() => auth.user?.avatar_url || null)
 const myInitial = computed(() => {
-  const name = auth.user?.nickname || auth.user?.username || '我'
+  const name = auth.user?.nickname || '我'
   return name.charAt(0)
 })
 
@@ -194,7 +204,7 @@ async function loadMessages() {
     if (res.data.code === 0) {
       const d = res.data.data
       const newMsgs = d.messages || d || []
-      currentUserId.value = auth.user?.id
+      currentUserId.value = getMyId()
       groupName.value = d?.group_name || d?.group?.name || '群聊'
       memberCount.value = d?.member_count || d?.group?.member_count || 0
 
@@ -257,7 +267,7 @@ async function readMessages() {
 }
 
 onMounted(async () => {
-  currentUserId.value = auth.user?.id
+  currentUserId.value = getMyId()
   await loadMessages()
   scrollToBottom()
   readMessages()

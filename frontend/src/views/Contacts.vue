@@ -30,11 +30,14 @@
         <span class="c-name">群聊</span>
         <span class="c-arrow">›</span>
       </div>
+      <!-- 标签功能暂不开放 -->
+      <!--
       <div class="c-item" @click="$router.push('/contacts/labels')">
         <div class="c-avatar c-avatar--gold"><span>📌</span></div>
         <span class="c-name">标签</span>
         <span class="c-arrow">›</span>
       </div>
+      -->
     </div>
 
     <!-- ═══ Friend List (white card) ═══ -->

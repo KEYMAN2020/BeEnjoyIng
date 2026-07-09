@@ -23,12 +23,15 @@
         <label class="h-flabel">📅 日期</label>
         <input type="date" v-model="filters.date" class="h-finput" @change="fetchActivities" />
       </div>
+      <!-- 标签功能暂不开放 -->
+      <!--
       <div class="h-frow">
         <label class="h-flabel">🏷️ 标签</label>
         <div class="h-ftags">
           <span v-for="tag in availableTags" :key="tag" class="h-ftag" :class="{ on: filters.tags.includes(tag) }" @click="toggleTag(tag)">{{ tag }}</span>
         </div>
       </div>
+      -->
     </div>
 
     <!-- ═══ Hotspot Section ═══ -->
