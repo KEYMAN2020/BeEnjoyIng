@@ -637,6 +637,7 @@ def list_messages():
             "msg_type": msg["msg_type"],
             "content": msg["content"],
             "is_read": bool(msg["is_read"]),
+            "is_unread": msg["sender_id"] != user_id and not bool(msg["is_read"]),
             "created_at": str(msg["created_at"]) if msg.get("created_at") else None,
         })
 
@@ -705,6 +706,14 @@ def get_messages_with_user(target_id):
            ORDER BY created_at ASC LIMIT 200""",
         (user_id, target_id, target_id, user_id),
     )
+    
+    # 标记收到的新消息为已读
+    execute_update(
+        "UPDATE user_private_messages SET is_read = 1 "
+        "WHERE sender_id = %s AND receiver_id = %s AND is_read = 0",
+        (target_id, user_id),
+    )
+
     return success({"messages": msgs or [], "other_user": {"user_id": other["id"], "nickname": other["nickname"], "avatar_url": other["avatar_url"]}})
 
 
