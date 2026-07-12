@@ -44,7 +44,7 @@ def my_groups():
     """
     user_id = g.current_user["user_id"]
     rows = execute_query("""
-        SELECT g.id, g.name, g.avatar, g.activity_id, g.member_count, g.status,
+        SELECT g.id, g.name, COALESCE(g.avatar_url, g.avatar, '') AS avatar, g.activity_id, g.member_count, g.status,
                gm.last_read_at, gm.is_muted,
                (SELECT content FROM chat_messages WHERE group_id = g.id ORDER BY created_at DESC LIMIT 1) AS last_message,
                (SELECT created_at FROM chat_messages WHERE group_id = g.id ORDER BY created_at DESC LIMIT 1) AS last_message_at,
@@ -277,6 +277,48 @@ def send_message(group_id):
             "content": msg.get("content", ""), "created_at": msg["created_at"].isoformat() if hasattr(msg["created_at"], "isoformat") else msg["created_at"],
         }
     }, "发送成功"), 201
+
+
+# ── POST /api/v1/chat/groups/<id>/avatar ─────────────
+@chat_bp.post("/groups/<int:group_id>/avatar")
+@require_auth
+def upload_group_avatar(group_id):
+    """上传群头像（每个群独立目录: uploads/chat/<group_id>/）"""
+    import os, time, uuid
+    from flask import current_app
+
+    # 验证群成员身份
+    member = execute_query_one(
+        "SELECT 1 FROM chat_group_members WHERE group_id=%s AND user_id=%s AND deleted_at IS NULL",
+        (group_id, g.current_user["user_id"]),
+    )
+    if not member:
+        return error("你不是该群成员", 403)
+
+    file = request.files.get("file")
+    if not file or not file.filename:
+        return error("请选择文件", 400)
+
+    ext = file.filename.rsplit(".", 1)[-1].lower()
+    if ext not in ("png", "jpg", "jpeg", "gif", "webp", "svg"):
+        return error("仅支持 png/jpg/jpeg/gif/webp/svg", 400)
+
+    unique = uuid.uuid4().hex[:8]
+    filename = f"{int(time.time())}_{unique}.{ext}"
+    save_dir = os.path.join(current_app.config.get("UPLOAD_FOLDER", "uploads"), "chat", str(group_id))
+    os.makedirs(save_dir, exist_ok=True)
+    file.save(os.path.join(save_dir, filename))
+
+    avatar_url = f"/uploads/chat/{group_id}/{filename}"
+
+    # 更新群头像
+    try:
+        execute_update("ALTER TABLE chat_groups ADD COLUMN avatar_url VARCHAR(500) DEFAULT ''")
+    except Exception:
+        pass
+    execute_update("UPDATE chat_groups SET avatar_url=%s WHERE id=%s", (avatar_url, group_id))
+
+    return success({"url": avatar_url}, "群头像已更新")
 
 
 @chat_bp.post("/groups/<int:group_id>/read")

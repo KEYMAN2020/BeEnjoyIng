@@ -1,106 +1,116 @@
 <template>
-  <div class="detail-page">
+  <div class="ad-page">
     <!-- Header -->
-    <div class="page-header">
-      <button class="back-btn" @click="$router.back()">‹ 返回</button>
-      <h1 style="flex:1;text-align:center;font-size:16px">活动详情</h1>
-      <div style="width:50px"></div>
+    <div class="ad-header">
+      <button class="ad-back" @click="$router.back()">‹</button>
+      <span class="ad-h-title">活动详情</span>
+      <div class="ad-h-right"></div>
     </div>
 
-    <div v-if="loading" class="loading-spinner" style="padding-top:80px"><div class="spinner"></div></div>
+    <div v-if="loading" class="ad-loading">
+      <div class="spinner"></div>
+    </div>
 
     <template v-else-if="activity">
-      <!-- Status Banner -->
-      <div class="status-banner" :style="{ background: activity.status_color + '1a', color: activity.status_color }">
-        {{ activity.status_text }}
-      </div>
+      <!-- Card 1: Title + Status + Meta -->
+      <div class="ad-card">
+        <!-- Status chip -->
+        <div class="ad-status" :style="{ background: activity.status_color + '18', color: activity.status_color }">
+          {{ activity.status_text }}
+        </div>
 
-      <!-- Title -->
-      <div class="detail-title">{{ activity.title }}</div>
+        <!-- Title -->
+        <div class="ad-title">{{ activity.title }}</div>
 
-      <!-- Meta Info -->
-      <div class="detail-meta">
-        <div class="meta-item" v-if="activity.captain">
-          <span>👨‍💼 队长</span>
-          <span>{{ activity.captain.nickname }}</span>
-        </div>
-        <div class="meta-item">
-          <span>📅 时间</span>
-          <span>{{ formatDate(activity.start_time) }}</span>
-        </div>
-        <div class="meta-item">
-          <span>📍 地点</span>
-          <span>{{ activity.city || activity.location_name || '待定' }}{{ activity.district ? ' ' + activity.district : '' }}</span>
-        </div>
-        <div class="meta-item" v-if="activity.distance_text">
-          <span>📏 距离</span>
-          <span>{{ activity.distance_text }}</span>
-        </div>
-        <div class="meta-item">
-          <span>👥 人数</span>
-          <span>{{ activity.current_participants || 0 }} / {{ activity.max_participants || '不限' }}</span>
-        </div>
-        <div class="meta-item" v-if="activity.category">
-          <span>🏷️ 分类</span>
-          <span>{{ activity.category }}</span>
-        </div>
-      </div>
-
-      <!-- Description -->
-      <div class="detail-section" v-if="activity.description">
-        <h3>活动介绍</h3>
-        <p>{{ activity.description }}</p>
-      </div>
-
-      <!-- Weather -->
-      <div class="detail-section" v-if="weather">
-        <h3>🌤️ 当地天气</h3>
-        <div class="weather-info">
-          <span>{{ weather.day_temp }}°C</span>
-          <span>{{ weather.day_weather }}</span>
+        <!-- Meta grid (2列) -->
+        <div class="ad-meta-grid">
+          <div class="ad-meta" v-if="activity.captain">
+            <span class="ad-meta-icon">👨‍💼</span>
+            <span class="ad-meta-label">队长</span>
+            <span class="ad-meta-val">{{ activity.captain.nickname }}</span>
+          </div>
+          <div class="ad-meta">
+            <span class="ad-meta-icon">📅</span>
+            <span class="ad-meta-label">时间</span>
+            <span class="ad-meta-val">{{ formatDate(activity.start_time) }}</span>
+          </div>
+          <div class="ad-meta">
+            <span class="ad-meta-icon">📍</span>
+            <span class="ad-meta-label">地点</span>
+            <span class="ad-meta-val">{{ activity.city || activity.location_name || '待定' }}{{ activity.district ? ' ' + activity.district : '' }}</span>
+          </div>
+          <div class="ad-meta">
+            <span class="ad-meta-icon">👥</span>
+            <span class="ad-meta-label">人数</span>
+            <span class="ad-meta-val">{{ activity.current_participants || 0 }} / {{ activity.max_participants || '不限' }}</span>
+          </div>
         </div>
       </div>
 
-      <!-- Albums -->
-      <div class="detail-section" v-if="albums.length > 0">
-        <h3>📷 活动相册</h3>
-        <div class="album-grid">
+      <!-- Card 2: Description -->
+      <div class="ad-card" v-if="activity.description">
+        <h3 class="ad-card-title">活动介绍</h3>
+        <p class="ad-card-text">{{ activity.description }}</p>
+      </div>
+
+      <!-- Card 3: Weather -->
+      <div class="ad-card" v-if="weather">
+        <h3 class="ad-card-title">🌤️ 当地天气</h3>
+        <div class="ad-weather">
+          <span class="ad-weather-temp">{{ weather.day_temp }}°C</span>
+          <span class="ad-weather-desc">{{ weather.day_weather }}</span>
+        </div>
+      </div>
+
+      <!-- Card 4: Albums -->
+      <div class="ad-card">
+        <div class="ad-card-header">
+          <h3 class="ad-card-title">📷 活动相册（{{ albums.length }}）</h3>
+          <button v-if="activity.is_captain && activity.status !== 'closed'" class="ad-album-upload" @click="triggerAlbumUpload">
+            <span v-if="uploadingAlbum">上传中...</span>
+            <span v-else>+ 添加照片</span>
+          </button>
+        </div>
+        <input ref="albumInput" type="file" accept="image/*" multiple style="display:none" @change="handleAlbumUpload" />
+        <div class="ad-albums" v-if="albums.length > 0">
           <img v-for="photo in albums" :key="photo.id" :src="photo.image_url" :alt="photo.description" />
         </div>
+        <div v-else class="ad-albums-empty">暂无照片</div>
       </div>
 
-      <!-- Action Buttons -->
-      <div class="detail-actions" v-if="activity.status !== 'closed' && activity.status_text !== '已结束' && activity.status_text !== '已结束' && activity.status_text !== '已解散'">
-        <button v-if="canSignup && !hasSignedUp && !activity.is_captain" class="btn btn-primary btn-block" @click="handleSignup">立即报名</button>
-        <button v-if="hasSignedUp && !activity.is_captain" class="btn btn-outline btn-block" @click="handleCancel">取消报名</button>
-        <button v-if="activity.is_captain && activity.status === 'open'" class="btn btn-block" :style="isEnded ? {background:'#52C41A',color:'#fff'} : {background:'#ccc',color:'#999'}" @click="isEnded ? handleComplete() : null" :disabled="!isEnded">完成活动{{ !isEnded ? ' (需等活动结束)' : '' }}</button>
-        <button v-if="activity.is_captain && activity.status === 'open'" class="btn btn-outline btn-block" @click="handleDisband">解散活动</button>
+      <!-- Card 5: Action Buttons (if active) -->
+      <div class="ad-card ad-card-actions" v-if="activity.status !== 'closed' && activity.status_text !== '已结束' && activity.status_text !== '已解散'">
+        <button v-if="canSignup && !hasSignedUp && !activity.is_captain" class="ad-btn ad-btn-primary" @click="handleSignup">立即报名</button>
+        <button v-if="hasSignedUp && !activity.is_captain" class="ad-btn ad-btn-outline" @click="handleCancel">取消报名</button>
+        <button v-if="activity.is_captain && activity.status === 'open'" class="ad-btn" :class="isEnded ? 'ad-btn-success' : 'ad-btn-disabled'" @click="isEnded ? handleComplete() : null" :disabled="!isEnded">完成活动{{ !isEnded ? '（活动结束后可用）' : '' }}</button>
+        <button v-if="activity.is_captain && activity.status === 'open'" class="ad-btn ad-btn-outline" @click="handleDisband">解散活动</button>
       </div>
 
-      <div style="padding: 0 16px; text-align: center;">
-        <button class="btn btn-outline btn-sm" @click="handleFavorite" style="margin-top:8px">
-          {{ activity.is_favorited ? '❤️ 已收藏' : '🤍 收藏' }}
+      <!-- Card 6: Favorite -->
+      <div class="ad-card ad-card-fav">
+        <button class="ad-fav-btn" @click="handleFavorite">
+          <span :class="activity.is_favorited ? 'ad-fav-on' : 'ad-fav-off'">{{ activity.is_favorited ? '❤️ 已收藏' : '🤍 收藏' }}</span>
         </button>
       </div>
 
-      <!-- Closed Label -->
-      <div v-if="activity.status_text === '已结束' || activity.status_text === '已结束' || activity.status_text === '已解散'" style="padding:16px;text-align:center;color:#999;font-size:14px">
-        <div class="closed-badge">{{ activity.status_text }}</div>
+      <!-- Card 7: Closed badge -->
+      <div class="ad-card ad-card-closed" v-if="activity.status_text === '已结束' || activity.status_text === '已解散'">
+        <div class="ad-closed">{{ activity.status_text }}</div>
       </div>
 
-      <!-- Reviews -->
-      <div class="detail-section" v-if="reviews.length > 0">
-        <h3>💬 评价 ({{ reviews.length }})</h3>
-        <div v-for="r in reviews" :key="r.id" class="review-item">
-          <div class="review-header">
-            <span class="review-user">{{ r.user?.nickname || '匿名' }}</span>
-            <span class="review-stars">⭐ {{ r.rating }}</span>
+      <!-- Card 8: Reviews -->
+      <div class="ad-card" v-if="reviews.length > 0">
+        <h3 class="ad-card-title">💬 评价（{{ reviews.length }}）</h3>
+        <div v-for="r in reviews" :key="r.id" class="ad-review">
+          <div class="ad-review-top">
+            <span class="ad-review-user">{{ r.user?.nickname || '匿名' }}</span>
+            <span class="ad-review-stars">⭐ {{ r.rating }}</span>
           </div>
-          <p v-if="r.content">{{ r.content }}</p>
+          <p class="ad-review-text" v-if="r.content">{{ r.content }}</p>
         </div>
       </div>
 
-      <div style="height:40px"></div>
+      <div style="height: 60px"></div>
     </template>
   </div>
 </template>
@@ -110,6 +120,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { activitiesAPI } from '@/api'
+import { uploadAPI } from '@/api'
 
 const route = useRoute()
 const auth = useAuthStore()
@@ -118,6 +129,8 @@ const loading = ref(true)
 const activity = ref(null)
 const weather = ref(null)
 const albums = ref([])
+const albumInput = ref(null)
+const uploadingAlbum = ref(false)
 const reviews = ref([])
 
 const canSignup = computed(() => activity.value?.status === 'open')
@@ -139,7 +152,7 @@ async function loadActivity() {
   try {
     const res = await activitiesAPI.detail(route.params.id)
     if (res.data.code === 0) {
-      activity.value = res.data.data.activity || res.data.data
+      activity.value = res.data.data?.activity || res.data.data
     }
   } catch (e) {
     console.error(e)
@@ -151,15 +164,35 @@ async function loadActivity() {
 async function loadWeather() {
   try {
     const res = await activitiesAPI.weather(route.params.id)
-    if (res.data.code === 0) weather.value = res.data.data.weather || res.data.data
+    if (res.data.code === 0) weather.value = res.data.data?.weather || res.data.data
   } catch (e) {}
 }
 
 async function loadAlbums() {
   try {
     const res = await activitiesAPI.albums(route.params.id)
-    if (res.data.code === 0) albums.value = res.data.data.photos || res.data.data
+    if (res.data.code === 0) albums.value = res.data.data?.photos || res.data.data
   } catch (e) {}
+}
+
+function triggerAlbumUpload() { albumInput.value?.click() }
+
+async function handleAlbumUpload(e) {
+  const files = e.target.files
+  if (!files.length) return
+  uploadingAlbum.value = true
+  for (const file of files) {
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await uploadAPI.album(fd)
+      if (res.data?.code === 0) {
+        await activitiesAPI.uploadPhoto(route.params.id, { image_url: res.data.data.avatar_url })
+      }
+    } catch (e) {}
+  }
+  uploadingAlbum.value = false
+  await loadAlbums()
 }
 
 async function loadReviews() {
@@ -233,97 +266,77 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.detail-page {
-  background: var(--bg-white);
-  min-height: 100vh;
-}
-.back-btn {
-  background: none;
-  font-size: 16px;
-  color: var(--primary);
-  font-weight: 500;
-}
-.status-banner {
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: 500;
-  text-align: center;
-}
-.detail-title {
-  padding: 16px;
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 1.4;
-}
-.detail-meta {
-  padding: 0 16px 16px;
-}
-.meta-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 0;
-  font-size: 14px;
-  border-bottom: 1px solid var(--border);
-}
-.meta-item span:first-child {
-  color: var(--text-hint);
-}
-.detail-section {
-  padding: 16px;
-  border-top: 8px solid var(--bg);
-}
-.detail-section h3 {
-  font-size: 15px;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-.detail-section p {
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--text-secondary);
-}
-.weather-info {
-  display: flex;
-  gap: 16px;
-  font-size: 16px;
-}
-.album-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-}
-.album-grid img {
-  width: 100%;
-  aspect-ratio: 1;
-  object-fit: cover;
-  border-radius: 6px;
-}
-.detail-actions {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.review-item {
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border);
-}
-.review-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
-.review-user {
-  font-weight: 500;
-  font-size: 14px;
-}
-.review-stars {
-  font-size: 13px;
-  color: #faad14;
-}
-.review-item p {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-.closed-badge { margin: 12px 16px; padding: 12px 0; text-align: center; background: #e0e0e0; color: #888; border-radius: 12px; font-size: 14px; font-weight: 600; }
+.ad-page { background: #F2F4F5; min-height: 100vh }
+
+/* Header */
+.ad-header { background: linear-gradient(180deg, #06D6A0 0%, #0096C7 100%); padding: 48px 16px 20px; display: flex; align-items: center; border-radius: 0 0 20px 20px }
+.ad-back { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; width: 36px; line-height: 1 }
+.ad-h-title { flex: 1; text-align: center; color: #fff; font-size: 18px; font-weight: 700 }
+.ad-h-right { width: 36px }
+
+/* Loading */
+.ad-loading { padding-top: 80px; text-align: center }
+.spinner { width: 32px; height: 32px; border: 3px solid #E8F8F5; border-top-color: #06D6A0; border-radius: 50%; margin: 0 auto; animation: spin 0.6s linear infinite }
+@keyframes spin { to { transform: rotate(360deg) } }
+
+/* Cards */
+.ad-card { background: #fff; margin: 12px 16px; border-radius: 16px; padding: 16px }
+
+/* Status chip */
+.ad-status { display: inline-block; padding: 4px 12px; border-radius: 10px; font-size: 12px; font-weight: 600; margin-bottom: 8px }
+
+/* Title */
+.ad-title { font-size: 20px; font-weight: 700; color: #222; line-height: 1.4; margin-bottom: 16px }
+
+/* Meta grid: 2 columns */
+.ad-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 8px }
+.ad-meta { display: flex; align-items: center; gap: 6px; font-size: 13px }
+.ad-meta-icon { font-size: 14px }
+.ad-meta-label { color: #999; min-width: 28px }
+.ad-meta-val { color: #333; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+
+/* Card title */
+.ad-card-title { font-size: 15px; font-weight: 600; color: #333; margin-bottom: 10px }
+
+/* Card text */
+.ad-card-text { font-size: 14px; line-height: 1.6; color: #666 }
+
+/* Weather */
+.ad-weather { display: flex; gap: 16px; align-items: center }
+.ad-weather-temp { font-size: 28px; font-weight: 700; color: #06D6A0 }
+.ad-weather-desc { font-size: 14px; color: #666 }
+
+/* Albums */
+.ad-albums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px }
+.ad-albums img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px }
+.ad-albums-empty { text-align: center; color: #999; font-size: 13px; padding: 20px 0 }
+.ad-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px }
+.ad-album-upload { background: #E8F8F5; color: #06D6A0; border: 1px dashed #06D6A0; border-radius: 8px; padding: 4px 12px; font-size: 13px; cursor: pointer }
+
+/* Buttons */
+.ad-card-actions { display: flex; flex-direction: column; gap: 10px }
+.ad-btn { width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer }
+.ad-btn-primary { background: linear-gradient(135deg, #06D6A0, #0096C7); color: #fff }
+.ad-btn-outline { background: #fff; color: #06D6A0; border: 2px solid #06D6A0 }
+.ad-btn-success { background: #52C41A; color: #fff }
+.ad-btn-disabled { background: #E8E8E8; color: #999 }
+.ad-btn:active { opacity: .85 }
+
+/* Favorite */
+.ad-card-fav { text-align: center }
+.ad-fav-btn { background: none; border: none; cursor: pointer; padding: 4px 12px }
+.ad-fav-on { color: #FF6B6B; font-size: 15px }
+.ad-fav-off { color: #999; font-size: 15px }
+
+/* Closed */
+.ad-card-closed { text-align: center }
+.ad-closed { color: #999; font-size: 14px; font-weight: 500 }
+
+/* Reviews */
+.ad-review { padding: 12px 0; border-bottom: 1px solid #f0f0f0 }
+.ad-review:last-child { border-bottom: none }
+.ad-review-top { display: flex; justify-content: space-between; margin-bottom: 4px }
+.ad-review-user { font-weight: 600; font-size: 14px; color: #333 }
+.ad-review-stars { font-size: 13px; color: #FAAD14 }
+.ad-review-text { font-size: 13px; color: #666; line-height: 1.5 }
 </style>

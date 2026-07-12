@@ -29,12 +29,19 @@ def search_poi():
         else: params["citylimit"] = "false"
         resp = requests.get(AMAP_POI_SEARCH_URL, params=params, timeout=5)
         data = resp.json()
-        if data.get("status") == "1" and data.get("tips"):
+        if data.get("status") == "1":
             results = []
-            for tip in data["tips"]:
-                item = {"name": tip.get("name", ""), "district": tip.get("district", ""), "adcode": tip.get("adcode", "")}
-                if tip.get("location"): item["location"] = tip["location"]
-                if tip.get("address"): item["address"] = tip.get("address")
+            items = data.get("tips") or data.get("pois") or []
+            for tip in items:
+                item = {
+                    "name": tip.get("name", ""),
+                    "district": tip.get("district") or tip.get("adname", ""),
+                    "adcode": tip.get("adcode", ""),
+                    "city": tip.get("cityname") or tip.get("city", ""),
+                    "address": tip.get("address", "")
+                }
+                if tip.get("location"):
+                    item["location"] = tip["location"]
                 results.append(item)
             return _success(results)
         return _success([])

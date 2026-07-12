@@ -61,6 +61,16 @@ def _get_real_activity_count(user_id):
     return result[0]["cnt"] if result else 0
 
 
+def _get_real_friends_count(user_id):
+    """动态计算用户的好友数量"""
+    result = execute_query(
+        "SELECT COUNT(DISTINCT CASE WHEN user_id = %s THEN friend_id ELSE user_id END) as cnt FROM user_friends "
+        "WHERE (user_id = %s OR friend_id = %s) AND status = 'active' AND deleted_at IS NULL",
+        (user_id, user_id, user_id),
+    )
+    return result[0]["cnt"] if result else 0
+
+
 def _full_user(user: dict, profile: dict | None = None, stats: dict | None = None) -> dict:
     """完整用户信息"""
     data = {
@@ -95,7 +105,7 @@ def _full_user(user: dict, profile: dict | None = None, stats: dict | None = Non
             "vitality": stats["vitality"],
             "activity_count": _get_real_activity_count(user["id"]),
             "activity_streak": stats["activity_streak"],
-            "friends_count": stats["friends_count"],
+            "friends_count": _get_real_friends_count(user["id"]),
             "last_active_at": str(stats["last_active_at"]) if stats.get("last_active_at") else None,
         }
     return data
@@ -311,7 +321,7 @@ def get_user_stats(user_id):
             "vitality": stats["vitality"],
             "activity_count": _get_real_activity_count(user["id"]),
             "activity_streak": stats["activity_streak"],
-            "friends_count": stats["friends_count"],
+            "friends_count": _get_real_friends_count(user["id"]),
             "last_active_at": str(stats["last_active_at"]) if stats.get("last_active_at") else None,
         },
     })
@@ -354,28 +364,84 @@ def search_users():
     })
 
 
-# ── #7 POST /api/v1/users/upload-avatar ────────────────
+# ── #7 POST /api/v1/users/upload ─────────────────────
+@users_bp.post("/upload")
+@require_auth
+def upload_file():
+    """通用文件上传（按类别分目录存储）
+    参数: file (multipart), category (avatar/cover/album/chat)
+    """
+    import os, time, uuid
+    from werkzeug.utils import secure_filename
+    from flask import current_app
+    user_id = g.current_user["user_id"]
+    category = request.form.get("category", "general")
+    # 白名单
+    allowed = {"avatar","cover","album","chat","general"}
+    if category not in allowed:
+        category = "general"
+
+    file = request.files.get("file")
+    if not file or not file.filename:
+        return error("请选择文件", 400)
+
+    ext = file.filename.rsplit(".", 1)[-1].lower()
+    if ext not in ("png", "jpg", "jpeg", "gif", "webp", "svg"):
+        return error("仅支持 png/jpg/jpeg/gif/webp/svg 格式", 400)
+
+    unique = uuid.uuid4().hex[:8]
+    filename = f"{user_id}_{int(time.time())}_{unique}.{ext}"
+    save_dir = os.path.join(current_app.config.get("UPLOAD_FOLDER", "uploads"), category)
+    os.makedirs(save_dir, exist_ok=True)
+    file.save(os.path.join(save_dir, filename))
+
+    url = f"/uploads/{category}/{filename}"
+
+    # 如果是 avatar 类别，更新用户头像字段
+    if category == "avatar":
+        execute_update("UPDATE users SET avatar_url=%s WHERE id=%s", (url, user_id))
+        log_operation(user_id, "UPLOAD_AVATAR", "user", user_id, "更新头像", _get_ip())
+
+    return success({"url": url}, "上传成功")
+
+
+# ── #7.5 POST /api/v1/users/upload-avatar ───────────
+# 兼容旧接口，内部转发到通用 upload 端点
 @users_bp.post("/upload-avatar")
 @require_auth
 def upload_avatar():
-    """上传头像（存 URL）
-    ---
-    tags:
-      - 用户
-    """
+    """上传头像（兼容旧版，推荐使用 /users/upload?category=avatar）"""
+    import os, time
+    from werkzeug.utils import secure_filename
+    from flask import current_app
     user_id = g.current_user["user_id"]
-    data = request.get_json(silent=True) or {}
-    avatar_url = data.get("avatar_url", "")
+    avatar_url = ""
+
+    file = request.files.get("file")
+    if file and file.filename:
+        ext = file.filename.rsplit(".", 1)[-1].lower()
+        if ext not in ("png", "jpg", "jpeg", "gif", "webp", "svg"):
+            return error("仅支持 png/jpg/jpeg/gif/webp/svg 格式", 400)
+        unique = __import__("uuid").uuid4().hex[:8]
+        filename = f"{user_id}_{int(time.time())}_{unique}.{ext}"
+        avatar_dir = os.path.join(current_app.config.get("UPLOAD_FOLDER", "uploads"), "avatar")
+        os.makedirs(avatar_dir, exist_ok=True)
+        filepath = os.path.join(avatar_dir, filename)
+        file.save(filepath)
+        avatar_url = f"/uploads/avatar/{filename}"
+    else:
+        data = request.get_json(silent=True) or {}
+        avatar_url = data.get("avatar_url", "")
 
     if not avatar_url:
-        return error("请提供 avatar_url", 400)
+        return error("请上传文件或提供 avatar_url", 400)
 
     execute_update(
         "UPDATE users SET avatar_url = %s, updated_at = NOW() WHERE id = %s",
         (avatar_url, user_id),
     )
 
-    log_operation(user_id, "UPLOAD_AVATAR", "user", user_id, f"更新头像", _get_ip())
+    log_operation(user_id, "UPLOAD_AVATAR", "user", user_id, "更新头像", _get_ip())
     return success({"avatar_url": avatar_url}, "头像已更新")
 
 

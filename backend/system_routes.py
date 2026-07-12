@@ -1,8 +1,7 @@
-"""系统模块路由 — 4 个 API 端点
+"""地区模块路由 — 2 个 API 端点
 
-路由前缀: /api/v1/system, /api/v1/regions
+路由前缀: /api/v1/regions
 功能:
-  - GET /api/v1/system/config/<key>  获取系统配置
   - GET /api/v1/regions             获取地区列表（支持 auto-refresh）
   - POST /api/v1/regions/refresh    从高德 District API 刷新地区数据
 """
@@ -15,7 +14,6 @@ from response import success, error
 from db import execute_query, execute_query_one, get_connection
 from config import Config
 
-system_bp = Blueprint("system", __name__)
 regions_bp = Blueprint("regions", __name__)
 
 
@@ -82,59 +80,7 @@ def _refresh_regions_table(rows):
 
 
 # ═══════════════════════════════════════════════════════
-# 1. 获取系统配置
-# ═══════════════════════════════════════════════════════
-@system_bp.get("/config/<key>")
-def get_config(key):
-    """获取系统配置项
-    ---
-    tags:
-      - 系统
-    parameters:
-      - name: key
-        in: path
-        type: string
-        required: true
-        description: 配置键名
-    responses:
-      200:
-        description: 配置值
-        schema:
-          type: object
-          properties:
-            code: {type: integer, example: 0}
-            data:
-              type: object
-              properties:
-                config:
-                  type: object
-                  properties:
-                    key: {type: string}
-                    value: {type: string}
-                    group: {type: string}
-                    description: {type: string}
-            message: {type: string, example: ok}
-      404: {description: 配置项不存在}
-    """
-    config = execute_query_one(
-        "SELECT * FROM system_config WHERE config_key = %s",
-        (key,),
-    )
-    if not config:
-        return error("配置项不存在", 404)
-
-    return success({
-        "config": {
-            "key": config["config_key"],
-            "value": config["config_value"],
-            "group": config.get("config_group", "general"),
-            "description": config.get("description", ""),
-        }
-    })
-
-
-# ═══════════════════════════════════════════════════════
-# 2. 获取地区列表
+# 1. 获取地区列表
 # ═══════════════════════════════════════════════════════
 @regions_bp.get("")
 def list_regions():
@@ -216,7 +162,7 @@ def list_regions():
 
 
 # ═══════════════════════════════════════════════════════
-# 3. 手动刷新地区数据（从高德 District API）
+# 2. 手动刷新地区数据（从高德 District API）
 # ═══════════════════════════════════════════════════════
 @regions_bp.post("/refresh")
 def refresh_regions():

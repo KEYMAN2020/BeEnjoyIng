@@ -2,8 +2,7 @@ import axios from "axios"
 
 const api = axios.create({
   baseURL: "/api/v1",
-  timeout: 15000,
-  headers: { "Content-Type": "application/json" }
+  timeout: 15000
 })
 
 api.interceptors.request.use(config => {
@@ -99,49 +98,4 @@ export const chatAPI = {
   leaveGroup: gid => api.delete(`/chat/groups/${gid}/leave`)
 }
 
-export const captainAPI = {
-  apply: d => api.post("/captain/apply", d),
-  application: () => api.get("/captain/application"),
-  profile: () => api.get("/captain/profile"),
-  updateProfile: d => api.put("/captain/profile", d),
-  training: () => api.get("/captain/training"),
-  submitTraining: d => api.post("/captain/training", d)
-}
-
-export const paymentAPI = {
-  create: d => api.post("/payment/create", d),
-  records: p => api.get("/payment/records", { params: p }),
-  recordDetail: id => api.get(`/payment/records/${id}`),
-  refund: id => api.post(`/payment/${id}/refund`),
-  subscription: () => api.get("/payment/subscription"),
-  createSubscription: d => api.post("/payment/subscription", d),
-  cancelSubscription: () => api.post("/payment/subscription/cancel")
-}
-
-export const notificationAPI = {
-  list: () => api.get("/notifications"),
-  read: id => api.put(`/notifications/${id}/read`),
-  readAll: () => api.post("/notifications/read-all")
-}
-
-export const partnerAPI = {
-  streets: p => api.get("/partner/streets", { params: p }),
-  profiles: p => api.get("/partner/profiles", { params: p }),
-  userProfile: id => api.get(`/partner/profiles/${id}`),
-  apply: d => api.post("/partner/apply", d)
-}
-
-export const healthAPI = {
-  declare: d => api.post("/health/declare", d),
-  insurance: aid => api.get(`/health/insurance/${aid}`)
-}
-
-export const systemAPI = {
-  config: key => api.get(`/system/config/${key}`)
-}
-
-export const regionsAPI = {
-  list: () => api.get("/regions")
-}
-
-export const uploadAPI = { avatar: d => api.post("/users/upload-avatar", d, { headers: { "Content-Type": "multipart/form-data" } }) }
+export const uploadAPI = { avatar: d => { d.append('category','avatar'); return api.post("/users/upload", d) }, cover: d => { d.append('category','cover'); return api.post("/users/upload", d) }, album: d => { d.append('category','album'); return api.post("/users/upload", d) } }

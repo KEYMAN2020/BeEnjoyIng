@@ -60,24 +60,6 @@ app.register_blueprint(activities_bp, url_prefix="/api/v1/activities")
 from chat_routes import chat_bp
 app.register_blueprint(chat_bp, url_prefix="/api/v1/chat")
 
-from captain_routes import captain_bp
-app.register_blueprint(captain_bp, url_prefix="/api/v1/captain")
-
-from partner_routes import partner_bp
-app.register_blueprint(partner_bp, url_prefix="/api/v1/partner")
-
-from payment_routes import payment_bp
-app.register_blueprint(payment_bp, url_prefix="/api/v1/payment")
-
-from health_routes import health_bp
-app.register_blueprint(health_bp, url_prefix="/api/v1/health")
-
-from notification_routes import notification_bp
-app.register_blueprint(notification_bp, url_prefix="/api/v1/notifications")
-
-from system_routes import system_bp
-app.register_blueprint(system_bp, url_prefix="/api/v1/system")
-
 from system_routes import regions_bp
 app.register_blueprint(regions_bp, url_prefix="/api/v1/regions")
 app.register_blueprint(geo_bp, url_prefix="/api/v1/geo")
@@ -213,16 +195,6 @@ def frontend_avatars(filename):
     return jsonify({"error": "not found"}), 404
 
 
-@app.route("/phone")
-def phone_preview():
-    preview_path = os.path.join(FRONTEND_DIST, "phone_preview.html")
-    if os.path.isfile(preview_path):
-        with open(preview_path, encoding="utf-8") as f:
-            resp = make_response(f.read(), 200)
-            resp.headers["Content-Type"] = "text/html; charset=utf-8"
-            return resp
-    return jsonify({"error": "not found"}), 404
-
 @app.route("/assets/<path:filename>")
 def frontend_assets(filename):
     """前端静态资源"""
@@ -271,11 +243,6 @@ def frontend_spa_fallback(path):
             resp.headers["Expires"] = "0"
             return resp
     return jsonify({"error": "not found"}), 404
-
-
-# ── 增强健康检查 ───────────────────────────────────────
-# 注意：健康检查端点已移至 /api/v1/health，避免与前端 /health 页面冲突
-# 通过 health_routes blueprint 注册：app.register_blueprint(health_bp, url_prefix="/api/v1/health")
 
 
 # ── 错误处理 ─────────────────────────────────────────────

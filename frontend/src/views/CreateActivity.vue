@@ -24,6 +24,42 @@
         </select>
       </div>
 
+      <div class="ca-group">
+        <label class="ca-label">封面图片</label>
+        <div class="ca-cover-wrap">
+          <input ref="coverInput" type="file" accept="image/*" style="display:none" @change="handleCoverUpload" />
+          <div v-if="coverPreview" class="ca-cover-preview">
+            <img :src="coverPreview" />
+            <span class="ca-cover-remove" @click="removeCover">✕</span>
+          </div>
+          <div v-else class="ca-cover-placeholder" @click="$refs.coverInput.click()">
+            <span class="ca-cover-icon">📷</span>
+            <span class="ca-cover-text">点击上传封面图片</span>
+          </div>
+          <p class="ca-hint" v-if="uploadingCover">上传中...</p>
+        </div>
+      </div>
+
+      <div class="ca-group">
+        <label class="ca-label">活动相册</label>
+        <div class="ca-albums-wrap">
+          <input ref="albumInput" type="file" accept="image/*" multiple style="display:none" @change="handleAlbumUpload" />
+          <!-- Preview grid -->
+          <div class="ca-albums-grid" v-if="albumPreviews.length > 0">
+            <div v-for="(url, idx) in albumPreviews" :key="idx" class="ca-album-item">
+              <img :src="url" />
+              <span class="ca-album-remove" @click="removeAlbum(idx)">✕</span>
+            </div>
+          </div>
+          <!-- Upload button -->
+          <div class="ca-album-add" @click="$refs.albumInput.click()">
+            <span class="ca-album-add-icon">+</span>
+            <span class="ca-album-add-text">添加照片</span>
+          </div>
+          <p class="ca-hint" v-if="uploadingAlbum">上传中...</p>
+        </div>
+      </div>
+
       <div class="ca-row">
         <div class="ca-group" style="flex:1">
           <label class="ca-label">开始时间 *</label>
@@ -91,9 +127,16 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { activitiesAPI } from '@/api'
+import { uploadAPI } from '@/api'
 
 const router = useRouter()
-const form = ref({ title:'', category_id:'', start_time:'', end_time:'', location_name:'', location_address:'', location_lng:null, location_lat:null, city:'', max_participants:null, price:0, description:'', tags:[] })
+const coverInput = ref(null)
+const coverPreview = ref('')
+const uploadingCover = ref(false)
+const albumInput = ref(null)
+const albumPreviews = ref([])
+const uploadingAlbum = ref(false)
+const form = ref({ title:'', category_id:'', start_time:'', end_time:'', location_name:'', location_address:'', location_lng:null, location_lat:null, city:'', max_participants:null, price:0, description:'', tags:[], cover_image:'', album_photos:[] })
 const tagInput = ref('')
 const error = ref('')
 const submitting = ref(false)
@@ -120,7 +163,7 @@ function onAddressBlur() { setTimeout(() => { addressSuggestions.value = [] }, 2
 function selectAddress(item) {
   form.value.location_name = item.name
   form.value.location_address = item.address || item.name
-  form.value.city = form.value.city || item.district || ''
+  form.value.city = item.city || item.district || item.adname || form.value.city || ''
   if (item.location) { const parts = item.location.split(','); form.value.location_lng = parseFloat(parts[0]); form.value.location_lat = parseFloat(parts[1]) }
   addressSuggestions.value = []
 }
@@ -143,6 +186,51 @@ async function handleSubmit() {
 onMounted(async () => {
   try { const res = await activitiesAPI.categories(); if (res.data.code === 0) categories.value = res.data.data.categories } catch (e) {}
 })
+
+async function handleCoverUpload(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  uploadingCover.value = true
+  try {
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await uploadAPI.cover(fd)
+    if (res.data?.code === 0) {
+      coverPreview.value = res.data.data.url
+      form.value.cover_image = res.data.data.avatar_url
+    }
+  } catch (e) {
+    error.value = '封面上传失败'
+  } finally {
+    uploadingCover.value = false
+  }
+}
+
+function removeCover() {
+  coverPreview.value = ''
+  form.value.cover_image = ''
+}
+
+async function handleAlbumUpload(e) {
+  const files = e.target.files
+  if (!files.length) return
+  uploadingAlbum.value = true
+  for (const file of files) {
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await uploadAPI.album(fd)
+      if (res.data?.code === 0) {
+        albumPreviews.value.push(res.data.data.url)
+      }
+    } catch (e) {}
+  }
+  uploadingAlbum.value = false
+}
+
+function removeAlbum(idx) {
+  albumPreviews.value.splice(idx, 1)
+}
 </script>
 
 <style scoped>
@@ -172,6 +260,28 @@ onMounted(async () => {
 /* Suggestions */
 .ca-suggestions { position: absolute; left: 0; right: 0; top: 100%; background: #fff; border: 1px solid #E0E0E0; border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,.1); z-index: 100; list-style: none; margin: 4px 0 0; padding: 4px 0; max-height: 220px; overflow-y: auto }
 .ca-sug-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; cursor: pointer; font-size: 14px }
+
+/* Cover upload */
+.ca-cover-wrap { width: 100% }
+.ca-cover-placeholder { width: 100%; height: 120px; border: 2px dashed #D0D0D0; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: #FAFAFA; transition: border-color .2s }
+.ca-cover-placeholder:hover { border-color: #06D6A0 }
+.ca-cover-icon { font-size: 32px; margin-bottom: 4px }
+.ca-cover-text { font-size: 13px; color: #999 }
+.ca-cover-preview { position: relative; border-radius: 12px; overflow: hidden }
+.ca-cover-preview img { width: 100%; max-height: 200px; object-fit: cover; display: block }
+.ca-cover-remove { position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; background: rgba(0,0,0,.5); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer }
+.ca-hint { font-size: 12px; color: #06D6A0; margin-top: 4px }
+
+/* Album photos */
+.ca-albums-wrap { display: flex; flex-direction: column; gap: 8px }
+.ca-albums-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px }
+.ca-album-item { position: relative; border-radius: 8px; overflow: hidden; aspect-ratio: 1 }
+.ca-album-item img { width: 100%; height: 100%; object-fit: cover }
+.ca-album-remove { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: rgba(0,0,0,.5); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer }
+.ca-album-add { width: 100%; height: 80px; border: 2px dashed #D0D0D0; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: #FAFAFA }
+.ca-album-add:hover { border-color: #06D6A0 }
+.ca-album-add-icon { font-size: 28px; color: #06D6A0; font-weight: 300; line-height: 1 }
+.ca-album-add-text { font-size: 12px; color: #999; margin-top: 2px }
 .ca-sug-item:hover { background: #E8F8F5 }
 .ca-sug-name { color: #333; font-weight: 500 }
 .ca-sug-dist { color: #999; font-size: 12px; margin-left: 8px; white-space: nowrap }

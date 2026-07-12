@@ -740,6 +740,7 @@ def activity_weather(activity_id):
     if not adcode:
         return success({"weather": None, "message": "无法确定城市"})
 
+    key = Config.AMAP_KEY
     if not key:
         return success({"weather": None, "message": "天气服务未配置"})
 
