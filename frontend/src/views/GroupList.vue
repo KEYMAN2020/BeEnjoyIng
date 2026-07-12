@@ -18,9 +18,9 @@
       <div
         v-else
         v-for="g in groups"
-        :key="g.group_id"
+        :key="g.id"
         class="wx-group-item"
-        @click="$router.push('/messages/' + g.group_id)"
+        @click="$router.push('/messages/' + g.id)"
       >
         <div class="wx-group-avatar">
           <img v-if="g.avatar_url" :src="g.avatar_url" />
@@ -64,7 +64,7 @@ async function loadGroups() {
   try {
     const res = await chatAPI.groups()
     if (res.data.code === 0) {
-      groups.value = res.data.groups || []
+      groups.value = res.data.data?.groups || res.data.groups || []
     }
   } catch (e) {
     console.error('loadGroups error', e)

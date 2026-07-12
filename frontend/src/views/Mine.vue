@@ -15,7 +15,7 @@
       <!-- Stats -->
       <div class="m-stats">
         <div class="m-stat"><div class="m-stat-num">{{ user?.stats?.activity_count || 0 }}</div><div class="m-stat-label">活动</div></div>
-        <div class="m-stat"><div class="m-stat-num">{{ user?.stats?.friend_count || 0 }}</div><div class="m-stat-label">好友</div></div>
+        <div class="m-stat"><div class="m-stat-num">{{ user?.stats?.friends_count || 0 }}</div><div class="m-stat-label">好友</div></div>
         <div class="m-stat"><div class="m-stat-num">{{ user?.vitality_score || 0 }}</div><div class="m-stat-label">活力值</div></div>
       </div>
     </div>

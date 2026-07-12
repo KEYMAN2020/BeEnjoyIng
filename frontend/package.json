@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "vite build",
+    "build": "vite build && cp ../backend/backend/frontend_dist/index.html ../backend/backend/frontend_dist/index_spa.html && cp ../backend/phone_shell.html ../backend/backend/frontend_dist/index.html 2>/dev/null; true",
     "preview": "vite preview"
   },
   "dependencies": {
