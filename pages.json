@@ -1,0 +1,29 @@
+{
+	"pages": [
+		{ "path": "pages/index/index", "style": { "navigationBarTitleText": "发现" } },
+		{ "path": "pages/activity/activity", "style": { "navigationBarTitleText": "活动详情" } },
+		{ "path": "pages/create/create", "style": { "navigationBarTitleText": "发起活动" } },
+		{ "path": "pages/messages/messages", "style": { "navigationBarTitleText": "消息" } },
+		{ "path": "pages/chat/chat", "style": { "navigationBarTitleText": "群聊" } },
+		{ "path": "pages/contacts/contacts", "style": { "navigationBarTitleText": "通讯录" } },
+		{ "path": "pages/mine/mine", "style": { "navigationBarTitleText": "我的" } }
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "white",
+		"navigationBarBackgroundColor": "#06D6A0",
+		"navigationBarTitleText": "银发圈",
+		"backgroundColor": "#F2F4F5"
+	},
+	"tabBar": {
+		"color": "#999999",
+		"selectedColor": "#06D6A0",
+		"backgroundColor": "#FFFFFF",
+		"list": [
+			{ "pagePath": "pages/index/index", "text": "发现" },
+			{ "pagePath": "pages/messages/messages", "text": "消息" },
+			{ "pagePath": "pages/create/create", "text": "发起" },
+			{ "pagePath": "pages/contacts/contacts", "text": "通讯录" },
+			{ "pagePath": "pages/mine/mine", "text": "我的" }
+		]
+	}
+}
